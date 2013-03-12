@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    	<title>BlocksJS</title>
+    </head>
+ 
+    <body>
+
+	    <!-- Game elements will be injected here -->
+        <div id="BlocksGame"></div>
+
+        <!-- Load framework js files -->
+        <script src="../../blocks/js/blocks.js"></script>
+        <script src="../../blocks/js/game.js"></script>
+        <script src="../../blocks/js/layer.js"></script>
+        <script src="../../blocks/js/slice.js"></script>
+
+	    <script>
+			(function () {
+		
+				var game, slice;
+				
+				// Create a game
+				game = BLOCKS.game();
+				
+				// Create an example slice
+				slice = BLOCKS.slice({
+					layer: BLOCKS.layer(game.element), // Create a new canvas for the slice
+					imageSrc: "images/ball-bounce.png", // Define sprite sheet location
+					numberOfFrames: 14 // Define number of frames of animation
+				});
+				
+				// Notify the slice of game loop
+				game.update = slice.update;			
+				game.render = slice.render;
+			
+			} ());
+	    </script>
+    </body>
+</html>
