@@ -17,7 +17,6 @@ module.exports = function(grunt) {
     },
 	jshint: {
 		src: 'src/blocks/**/*.js',
-		/* use strict options to mimic JSLINT until we migrate to JSHINT in Brackets */
 		options: {
 			"bitwise"       : true,
 			"curly"         : true,
@@ -34,7 +33,6 @@ module.exports = function(grunt) {
 			"undef"         : true,
 			"strict"        : true,
 			"trailing"      : false,
-			
 			"asi"           : false,
 			"boss"          : false,
 			"debug"         : false,
@@ -60,7 +58,6 @@ module.exports = function(grunt) {
 			"sub"           : false,
 			"supernew"      : false,
 			"validthis"     : false,
-			
 			"browser"       : true,
 			"couch"         : false,
 			"devel"         : false,
@@ -72,12 +69,10 @@ module.exports = function(grunt) {
 			"prototypejs"   : false,
 			"rhino"         : false,
 			"wsh"           : false,
-			
 			"nomen"         : false,
 			"onevar"        : false,
 			"passfail"      : false,
 			"white"         : false,
-		 
 			"maxerr"        : 100,
 			"predef"        : [
 			],
