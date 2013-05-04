@@ -8,11 +8,78 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*global window */
+
 var BLOCKS = function () {
 	
 	"use strict";
 	
 	var that = {};
 	
+	that.log = function (message) {
+			
+		if (window.console) {
+			window.console.log(message);
+		}
+	};
+	
+	that.debug = function (message) {
+			
+		if (that.debug) {
+			that.log(message);
+		}
+	};
+	
+	that.debug = true;
+	
+	return that;
+};
+
+// Add the ability to dispatch messages between objects
+BLOCKS.eventDispatcher = function () {
+	
+	"use strict";
+	
+	var that = {},
+		eventListeners = {};
+	
+	that.addEventListener = function (eventLabel, callback) {
+		
+		// If there are no callbacks to the current event then create a new array
+		if (eventListeners[eventLabel] === undefined) {
+			eventListeners[eventLabel] = [];	
+		}
+		// Add the callback 
+		eventListeners[eventLabel].push(callback);
+	};
+
+	that.removeEventListener = function (eventLabel, callback) {
+		
+		var i;
+		
+		// If the listener is found
+		if (eventListeners[eventLabel]) {
+			for (i = 0; i < eventListeners[eventLabel].length; i += 1) {
+				// Remove listeners' callbacks
+				if (eventListeners[eventLabel][i] === callback) {
+					eventListeners[eventLabel].splice(i, 1);
+				}
+			}
+		}
+	};
+
+	that.dispatchEvent = function (eventLabel, args) {
+		
+		var i;
+		
+		// If the listener is found
+		if (eventListeners[eventLabel] !== undefined) {
+			// Invoke all callbacks
+			for (i = 0; i < eventListeners[eventLabel].length; i += 1) {
+				eventListeners[eventLabel][i](args);
+			}
+		}
+	};
+
 	return that;
 };
