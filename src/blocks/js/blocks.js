@@ -23,6 +23,13 @@ var BLOCKS = function () {
 		}
 	};
 	
+	that.warning = function (message) {
+			
+		if (that.warning) {
+			window.console.log(message);
+		}
+	};
+	
 	that.debug = function (message) {
 			
 		if (that.debug) {
@@ -30,6 +37,7 @@ var BLOCKS = function () {
 		}
 	};
 	
+	that.warning = true;
 	that.debug = true;
 	
 	return that;

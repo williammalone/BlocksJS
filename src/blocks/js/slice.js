@@ -8,6 +8,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*global window, Image */
+
 var BLOCKS;
 
 if (BLOCKS === undefined) {
@@ -25,6 +27,9 @@ BLOCKS.slice = function (options) {
 		curFrameIndex = 0,
 		context = options && options.layer && options.layer.ctx,
 		imageResource,
+		paused = false,
+		frameCnt = 0,
+		frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4,
 	
 		// Private Methods
 		onResourceLoaded = function () {
@@ -37,29 +42,46 @@ BLOCKS.slice = function (options) {
 		};
 	
 	// Public Properties
-	that.width;
-	that.height;
+	that.width = 0;
+	that.height = 0;
 	that.x = 0;
 	that.y = 0;
+	that.loop = options && options.loop;
 	
 	// Public Methods
 	that.update = function () {
 		
-		// If the sprite is an animation
-		if (numberOfFrames > 1) {
-			
-			// If the current frame is the last frame
-			if (curFrameIndex >= numberOfFrames - 1) {
+		if (!paused) {
+			// If the sprite is an animation
+			if (numberOfFrames > 1) {
 				
-				// Reset the frame back to the first frame
-				curFrameIndex = 0;
-			} else {
-				// Go to the next frame
-				curFrameIndex += 1;
+				// If the current frame is the last frame
+				if (curFrameIndex >= numberOfFrames - 1) {
+					
+					if (that.loop) {
+						// Reset the frame back to the first frame
+						curFrameIndex = 0;
+					} else {
+						that.stop();
+					}
+				} else {
+				
+					frameCnt += 1;
+					
+					if (frameCnt >= frameDelay) {
+						// Go to the next frame
+						curFrameIndex += 1;
+						frameCnt = 0;
+					}
+				}
 			}
 		}
 		
 		// Go to the next frame in the animation
+	};
+	
+	that.stop = function () {
+		paused = true;
 	};
 	
 	that.render = function () {
