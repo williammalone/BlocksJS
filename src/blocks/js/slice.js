@@ -23,7 +23,7 @@ BLOCKS.slice = function (options) {
 	var that = {},
 	
 		// Private Properties
-		numberOfFrames = options.numberOfFrames || 1,
+		numberOfFrames = (options && options.numberOfFrames) || 1,
 		curFrameIndex = 0,
 		context = options && options.layer && options.layer.ctx,
 		imageResource,
@@ -110,9 +110,9 @@ BLOCKS.slice = function (options) {
 	
 	(function () {
 		
-		var image = options.image,
-			imageSrc = options.imageSrc || (options.image && options.src),
-			imagePreloaded = options.imagePreloaded || false;
+		var image = options && options.image,
+			imageSrc = (options && options.imageSrc) || (options && options.image && options.src),
+			imagePreloaded = options && options.imagePreloaded;
 		
 		imageResource = {
 			image: image,

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-    	<title>Slice Demo [BlocksJS]</title>
+    	<title>Block Demo [BlocksJS]</title>
     </head>
     
     <link rel="stylesheet" href="../../css/style.css" media="screen" />
@@ -10,7 +10,7 @@
     
     	<div id="container">
 		    <header>
-				<h1>Slice Demo</h1>
+				<h1>Block Demo</h1>
 		    </header>
 		    <div id="main" role="main">
     
@@ -21,23 +21,26 @@
 				    <code>
 (function () {
 		
-    var game, slice;
-	
+    var game, block;
+				
     // Create a game
     game = BLOCKS.game();
+    
+    // Create an example block
+    block = BLOCKS.block();
 	
-    // Create an example slice
-    slice = BLOCKS.slice({
+    block.addSlice({
+        name: "default",
         layer: BLOCKS.layer(game.element), // Create a new canvas for the slice
         imageSrc: "images/coin.png", // Define sprite sheet location
         numberOfFrames: 10, // Define number of frames of animation
         loop: true
     });
-	
-    // Notify the slice of game loop
-    game.update = slice.update;			
-    game.render = slice.render;
-
+    
+    // Notify the block of game loop
+    game.update = block.update;			
+    game.render = block.render;
+			
 } ());</code>
 		    	</pre>
 		    </article>
@@ -53,36 +56,39 @@
 		
 		 </div>
 
-	    <!-- Game elements will be injected here -->
-        <div id="BlocksGame"></div>
+	    
 
         <!-- Load framework js files -->
         <script src="../blocks/js/blocks.js"></script>
+        <script src="../blocks/js/block.js"></script>
         <script src="../blocks/js/game.js"></script>
         <script src="../blocks/js/layer.js"></script>
         <script src="../blocks/js/slice.js"></script>
 
 	    <script>
 			(function () {
-		
-				var game, slice;
 				
-				// Create a game
-				game = BLOCKS.game();
+		        var game, block;
+							
+		        // Create a game
+		        game = BLOCKS.game();
+		        
+		        // Create an example block
+		        block = BLOCKS.block();
 				
-				// Create an example slice
-				slice = BLOCKS.slice({
+				block.addSlice({
+					name: "default",
 					layer: BLOCKS.layer(game.element), // Create a new canvas for the slice
 					imageSrc: "images/coin.png", // Define sprite sheet location
 					numberOfFrames: 10, // Define number of frames of animation
 					loop: true
 				});
-				
-				// Notify the slice of game loop
-				game.update = slice.update;			
-				game.render = slice.render;
-			
-			} ());
+		        
+		         // Notify the block of game loop
+		        game.update = block.update;			
+		        game.render = block.render;
+						
+		    } ());
 	    </script>
     </body>
 </html>

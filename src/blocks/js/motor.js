@@ -16,46 +16,29 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.block = function (options) {
+BLOCKS.motor = function () {
 	
 	"use strict";
 	
+	// Private Properties
 	var that = {},
-	
-		// Private Properties
-		slices = [];
+		destroyed = false;
 	
 	// Public Properties
-	//that.width;
-	//that.height;
-	that.x = 0;
-	that.y = 0;
+	that.destroy = function () {
+		destroyed = true;	
+	};
 	
 	// Public Methods
-	that.update = function () {
-		
-		var i;
-		
-		for (i = 0; i < slices.length; i += 1) {
-			slices[i].update();
-		}
-	};
+	that.tick = function () {
 	
-	that.render = function () {
-		
-		var i;
-		
-		for (i = 0; i < slices.length; i += 1) {
-			slices[i].render();
+		if (!destroyed) {
+			
 		}
-	};
-	
-	that.addSlice = function (options) {
-		slices.push(BLOCKS.slice(options));	
 	};
 	
 	(function () {
-
+		
 	}());
 	
 	return that;
