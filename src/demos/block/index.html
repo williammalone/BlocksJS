@@ -77,9 +77,17 @@
 		        block = BLOCKS.block();
 				
 				block.addSlice({
-					name: "default",
+					name: "gold",
 					layer: BLOCKS.layer(game.element), // Create a new canvas for the slice
 					imageSrc: "images/coin.png", // Define sprite sheet location
+					numberOfFrames: 10, // Define number of frames of animation
+					loop: true
+				});
+				
+				block.addSlice({
+					name: "green",
+					layer: BLOCKS.layer(game.element), // Create a new canvas for the slice
+					imageSrc: "images/coin-green.png", // Define sprite sheet location
 					numberOfFrames: 10, // Define number of frames of animation
 					loop: true
 				});
@@ -87,7 +95,6 @@
 		         // Notify the block of game loop
 		        game.update = block.update;			
 		        game.render = block.render;
-						
 		    } ());
 	    </script>
     </body>
