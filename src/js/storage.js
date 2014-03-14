@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*global window */
+/*global window, JSON */
 
 var BLOCKS;
 
@@ -16,47 +16,36 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.block = function (options) {
+BLOCKS.storage = function () {
 	
 	"use strict";
 	
-	var that = {},
+	var storage = BLOCKS.eventDispatcher(),
 	
-		// Private Properties
-		slices = [];
-	
-	// Public Properties
-	//that.width;
-	//that.height;
-	that.x = 0;
-	that.y = 0;
-	
-	// Public Methods
-	that.update = function () {
+		// Private Methods
+		loop = function () {
 		
-		var i;
-		
-		for (i = 0; i < slices.length; i += 1) {
-			slices[i].update();
-		}
-	};
-	
-	that.render = function () {
-		
-		var i;
-		
-		for (i = 0; i < slices.length; i += 1) {
-			slices[i].render();
-		}
-	};
-	
-	that.addSlice = function (options) {
-		slices.push(BLOCKS.slice(options));	
-	};
-	
-	(function () {
 
-	}());
+		};
+
+	storage.get = function (item) {
 	
-	return that;
+		if (!window.localStorage) {
+			return null;
+		}
+	
+		return JSON.parse(window.localStorage.getItem(item)); 
+	};
+	
+	storage.save = function (item, str) {
+	
+		window.localStorage.setItem(item, JSON.stringify(str));
+	};
+	
+	storage.destroy = function () {
+	
+		storage = null;
+	};
+		
+	return storage;
 };

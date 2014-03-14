@@ -8,44 +8,63 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*global window */
+
 var BLOCKS;
 
 if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.layer = function (parentElement, options) {
-	
-	"use strict";
-	
-	var that = {},
-		name = options && options.name;
-	
-	// Public Properties
-	that.width = options && options.width;
-	that.height = options && options.height;
-	that.x = options && options.x;
-	that.y = options && options.y;
-	that.ctx;
-	
-	// Public Methods
-	that.clear = function () {
+BLOCKS.log = function (message) {
+			
+	if (window.console) {
+		if (window.console.log) {
+			window.console.log(message);
+		}
+	}
+};
 		
-		that.ctx.clearRect(0, 0, that.ctx.canvas.width, that.ctx.canvas.height);
-		//that.ctx.canvas.width = that.ctx.canvas.width;
-	};
+BLOCKS.warn = function (message) {
 	
-	(function () {
-		var canvasElement;
+	if (window.console) {
+		if (window.console.warn) {
+			window.console.warn(message);
+		} else if (window.console.log) {
+			window.console.log(message);
+		}
+	}
+};
+	
+BLOCKS.debug = function (message) {
 		
-		canvasElement = document.createElement("canvas");
-		canvasElement.width = that.width || 1000;
-		canvasElement.height = that.height || 1000;
-		canvasElement.className = "BlocksCanvas";
-		canvasElement.id = that.name + "Canvas";
-		
-		that.ctx = parentElement.appendChild(canvasElement).getContext("2d");
-	}());
+	if (window.console) {
+		if (window.console.debug) {
+			window.console.debug(message);
+		} else if (window.console.log) {
+			window.console.log(message);
+		}
+	}
+};
 
-	return that;
+BLOCKS.error = function (message) {
+		
+	if (window.console) {
+		if (window.console.error) {
+			window.console.error(message);
+		} else if (window.console.log) {
+			window.console.log(message);
+		}
+	}
+};
+
+BLOCKS.dir = function (obj) {
+		
+	if (window.console) {
+		if (window.console.dir) {
+			window.console.dir(obj);
+		} else if (window.console.log) {
+			window.console.log(obj);
+		}
+	}
 };
