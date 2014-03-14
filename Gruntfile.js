@@ -5,14 +5,14 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
 	concat: {
     // concat task configuration goes here.
-  	},
+	},
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
-        src: 'src/blocks/**/*.js',
-        dest: 'build/blocks/js/<%= pkg.name %>.min.js'
+        src: 'src/**/*.js',
+        dest: 'build/js/blocksjs-<%= pkg.version %>.min.js'
       }
     },
 	jshint: {
@@ -79,7 +79,7 @@ module.exports = function(grunt) {
 			"indent"        : 4,
 			"globals"       : [
 				"BLOCKS",
-				"window",
+				"window"
 			]
 		}
 	}
