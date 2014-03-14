@@ -1,4 +1,4 @@
-BlocksJS: A JavaScript framework for building HTML5 games.
+BlocksJS: A JavaScript framework for building HTML5 2D Canvas games
 -------------------
 
 ### Documentation
