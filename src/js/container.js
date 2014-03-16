@@ -23,7 +23,21 @@ BLOCKS.container = function (game) {
 	var container = BLOCKS.eventDispatcher(),
 	
 		// Private Properties
-		views = [];
+		views = [],
+		motors = [],
+		
+		// Private Methods
+		motorDestroyed = function (motor) {
+			
+			var i;
+			
+			motor.removeEventListener("destroyed", motorDestroyed);
+			
+			for (i = 0 ; i < motors.length; i += 1)  {
+				motors.splice(i, 1);
+				break;
+			}
+		};
 	
 	// Public Properties
 	container.visible = true;
@@ -85,6 +99,12 @@ BLOCKS.container = function (game) {
 				container.layers[key].clear();
 			}
 		}
+	};
+	
+	container.motorize = function (motor) {
+	
+		motor.addEventListener("destroyed", motorDestroyed);
+		motors.push(motor);
 	};
 	
 	container.update = function () {

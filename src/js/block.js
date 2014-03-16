@@ -43,7 +43,6 @@ BLOCKS.block = function (options) {
 			curSlice.alpha = block.alpha;
 		},
 		
-		// Private Method
 		motorDestroyed = function (motor) {
 			
 			var i;
