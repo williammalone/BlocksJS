@@ -37,17 +37,18 @@ BLOCKS.slice = function (options) {
 		// Private Methods
 		onResourceLoaded = function () {
 		
-			var context = slice.layer.ctx;
-		
 			// Will be used for webGL enabled contexts
 			//if (slice.layer && slice.layer.webGLEnabled) {
-			//	prepareWebGLContext(context);
+			//	prepareWebGLContext(slice.layer.ctx);
 			//}
 			
 			// Set the sprite dimensions to the image dimensions  
 			// Note: Divide the width by the number of frames in the sprite sheet if an animation. If the sprite is only an image then the number of frames will be 1.
-			slice.width = imageResource.image.width / numberOfFrames;
-			slice.height = imageResource.image.height;
+			
+			if (imageResource) {
+				slice.width = imageResource.image.width / numberOfFrames;
+				slice.height = imageResource.image.height;
+			}
 			
 			// If the registration point should be centered
 			if (centerRegistrationPoint) {
@@ -58,8 +59,8 @@ BLOCKS.slice = function (options) {
 	
 	// Public Properties
 	slice.name = (options && options.name !== undefined) ? options.name : undefined;
-	slice.width = 0;
-	slice.height = 0;
+	slice.width = (options && options.width) || 0;
+	slice.height = (options && options.height) || 0;
 	slice.x = 0;
 	slice.y = 0;
 	slice.offsetX = (options && options.offsetX) || 0;
@@ -83,44 +84,48 @@ BLOCKS.slice = function (options) {
 	slice.update = function () {
 		
 		if (!paused) {
+		
+			// If the slice has an image associated with it
+			if (imageResource) {
 
-			// If the sprite is an animation
-			if (numberOfFrames > 1) {
-			
-				frameCnt += 1;
-
-				// If the current frame is the last frame
-				if (curFrameIndex >= numberOfFrames - 1) {
-					
-					if (frameCnt >= slice.frameDelay) {
-					
-						frameCnt = 0;
-						loopIndex += 1;
+				// If the sprite is an animation
+				if (numberOfFrames > 1) {
+				
+					frameCnt += 1;
+	
+					// If the current frame is the last frame
+					if (curFrameIndex >= numberOfFrames - 1) {
 						
-						if (slice.loop === true || (typeof slice.loop === "number" && loopIndex < slice.loop)) {
-							// Reset the frame back to the first frame
-							curFrameIndex = 0;
-							slice.dirty = true;
+						if (frameCnt >= slice.frameDelay) {
 						
-						} else {
-						
-							if (resetOnComplete) {
+							frameCnt = 0;
+							loopIndex += 1;
+							
+							if (slice.loop === true || (typeof slice.loop === "number" && loopIndex < slice.loop)) {
 								// Reset the frame back to the first frame
 								curFrameIndex = 0;
 								slice.dirty = true;
+							
+							} else {
+							
+								if (resetOnComplete) {
+									// Reset the frame back to the first frame
+									curFrameIndex = 0;
+									slice.dirty = true;
+								}
+								paused = true;
+								slice.dispatchEvent("complete");
 							}
-							paused = true;
-							slice.dispatchEvent("complete");
 						}
-					}
-				} else {
-
-					if (frameCnt >= slice.frameDelay) {
-						// Go to the next frame
-						curFrameIndex += 1;
-						frameCnt = 0;
-						
-						slice.dirty = true;
+					} else {
+	
+						if (frameCnt >= slice.frameDelay) {
+							// Go to the next frame
+							curFrameIndex += 1;
+							frameCnt = 0;
+							
+							slice.dirty = true;
+						}
 					}
 				}
 			}
@@ -162,73 +167,77 @@ BLOCKS.slice = function (options) {
 		var i, bounds, restoreNeeded, context;
 		
 		if (slice.dirty && slice.visible) {
-		
-			context = slice.layer.ctx;
-		
-			// Using webGL
-			if (slice.layer && slice.layer.webGLEnabled) {
+
+			// If the slice has an image associated with it
+			if (imageResource) {
 			
-				//context.bindTexture(context.TEXTURE_2D, texture);
+				context = slice.layer.ctx;
 			
-				//setBufferData(
-				//	slice.x, 
-				//	slice.y, 
-				//	slice.cropWidth || slice.width, 
-				//	slice.cropHeight || slice.height);
+				// Using webGL
+				if (slice.layer && slice.layer.webGLEnabled) {
+				
+					//context.bindTexture(context.TEXTURE_2D, texture);
+				
+					//setBufferData(
+					//	slice.x, 
+					//	slice.y, 
+					//	slice.cropWidth || slice.width, 
+					//	slice.cropHeight || slice.height);
+						
+					//context.drawArrays(context.TRIANGLES, 0, 6);
 					
-				//context.drawArrays(context.TRIANGLES, 0, 6);
-				
-				//context.bindTexture(context.TEXTURE_2D, null);
-				
-			// Using 2d Canvas
-			} else {
-		
-				if (slice.angle || slice.alpha !== 1) {
-					context.save();
-					restoreNeeded = true;
-				}
-				
-				if (slice.alpha !== 1) {
-					context.globalAlpha = slice.alpha;
-				}
-				
-				if (slice.angle) {
-					context.translate(slice.x, slice.y);
-					context.rotate(slice.angle * Math.PI / 180);
-					context.translate(-slice.x, -slice.y);
-				}
-			
-				// If the sprite is an animation
-				if (numberOfFrames > 1) {
-					context.drawImage(
-						imageResource.image,
-						curFrameIndex * slice.width + slice.frameOffsetX,
-						slice.frameOffsetY,
-						slice.cropWidth || slice.width, 
-						slice.cropHeight || slice.height,
-						slice.x + slice.offsetX,
-						slice.y + slice.offsetY, 
-						slice.cropWidth || slice.width * slice.scale, 
-						slice.cropHeight || slice.height * slice.scale
-					);
-				// If the sprite is not an animation
+					//context.bindTexture(context.TEXTURE_2D, null);
+					
+				// Using 2d Canvas
 				} else {
-					context.drawImage(imageResource.image, 
-						slice.frameOffsetX, 
-						slice.frameOffsetY,
-						slice.cropWidth || slice.width, 
-						slice.cropHeight || slice.height,
-						slice.x + slice.offsetX,
-						slice.y + slice.offsetY, 
-						slice.cropWidth || slice.width * slice.scale,
-						slice.cropHeight || slice.height * slice.scale);
+			
+					if (slice.angle || slice.alpha !== 1) {
+						context.save();
+						restoreNeeded = true;
+					}
+					
+					if (slice.alpha !== 1) {
+						context.globalAlpha = slice.alpha;
+					}
+					
+					if (slice.angle) {
+						context.translate(slice.x, slice.y);
+						context.rotate(slice.angle * Math.PI / 180);
+						context.translate(-slice.x, -slice.y);
+					}
+				
+					// If the sprite is an animation
+					if (numberOfFrames > 1) {
+						context.drawImage(
+							imageResource.image,
+							curFrameIndex * slice.width + slice.frameOffsetX,
+							slice.frameOffsetY,
+							slice.cropWidth || slice.width, 
+							slice.cropHeight || slice.height,
+							slice.x + slice.offsetX,
+							slice.y + slice.offsetY, 
+							slice.cropWidth || slice.width * slice.scale, 
+							slice.cropHeight || slice.height * slice.scale
+						);
+					// If the sprite is not an animation
+					} else {
+						context.drawImage(imageResource.image, 
+							slice.frameOffsetX, 
+							slice.frameOffsetY,
+							slice.cropWidth || slice.width, 
+							slice.cropHeight || slice.height,
+							slice.x + slice.offsetX,
+							slice.y + slice.offsetY, 
+							slice.cropWidth || slice.width * slice.scale,
+							slice.cropHeight || slice.height * slice.scale);
+					}
+					
+					if (restoreNeeded) {
+						context.restore();
+					}
 				}
 				
-				if (restoreNeeded) {
-					context.restore();
-				}
-				
-				if (drawBounds) {
+				if (drawBounds && context) {
 					bounds = slice.getBounds();
 					if (!bounds.length) {
 						bounds = [bounds];
@@ -406,25 +415,30 @@ BLOCKS.slice = function (options) {
 		var image = options.image,
 			imageSrc = options.imageSrc || (options.image && options.src),
 			imagePreloaded = image ? true : false;
-		
-		imageResource = {
-			image: image,
-			imageSrc: imageSrc,
-			loaded: imagePreloaded
-		};
-		
-		// If the image is already loaded
-		if (imageResource.loaded) {
-			onResourceLoaded();	
-		} else {
 			
-			// If there is no image object
-			if (!imageResource.image) {
-				// Instantiate a new image
-				imageResource.image = new Image();
+		if (options.image) {
+		
+			imageResource = {
+				image: image,
+				imageSrc: imageSrc,
+				loaded: imagePreloaded
+			};
+			
+			// If the image is already loaded
+			if (imageResource.loaded) {
+				onResourceLoaded();	
+			} else {
+				
+				// If there is no image object
+				if (!imageResource.image) {
+					// Instantiate a new image
+					imageResource.image = new Image();
+				}
+				imageResource.image.addEventListener("load", onResourceLoaded);
+				imageResource.image.src = imageResource.imageSrc;
 			}
-			imageResource.image.addEventListener("load", onResourceLoaded);
-			imageResource.image.src = imageResource.imageSrc;
+		} else {
+			onResourceLoaded();	
 		}
 	}());
 	
