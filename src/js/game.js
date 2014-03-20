@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*global window, document */
+/*global window, document, navigator */
 
 var BLOCKS;
 
@@ -58,10 +58,16 @@ BLOCKS.game = function (spec, element) {
 				callbacks[i]();
 			}
 		},
+
+		onOrientationChange = function () {
 		
-		onResize = function () {
-		
-			hideChrome();
+			// Remove the space on iPhone / iPod when in landscape and using minimal ui meta tag
+			if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
+				if (window.orientation === 90 || window.orientation === -90) {
+					window.scrollTo(0, 0);
+				}
+			}
+			
 			resizeGame();
 		},
 		
@@ -131,10 +137,9 @@ BLOCKS.game = function (spec, element) {
 				});
 			}
 	
-			window.addEventListener("orientationchange", onResize);
-			window.addEventListener("resize", onResize);
+			window.addEventListener("orientationchange", onOrientationChange);
+			window.addEventListener("resize", resizeGame);
 			
-			hideChrome();
 			resizeGame();
 			
 			game.controller.addEventListener("keyUp", onKeyUp);
@@ -168,15 +173,6 @@ BLOCKS.game = function (spec, element) {
 				document.addEventListener("webkitvisibilitychange", onVisibilityChange);
 			}
 			
-		},
-		
-		hideChrome = function () {
-		
-			//window.document.body.style.minHeight = "150%";
-			//document.body.style.height = "150%";
-			//window.scrollTo(0, 1);
-			//window.document.body.style.height = window.innerHeight + "px";
-			//window.document.body.style.minHeight = window.innerHeight + "px";
 		},
 		
 		gameUpdate = function () {
@@ -254,8 +250,6 @@ BLOCKS.game = function (spec, element) {
 				}
 				virtualKeyboard.onTap(pos);
 			}
-			
-			hideChrome();
 		
 			if (game.tap) {
 				game.tap(pos);
