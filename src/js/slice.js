@@ -303,7 +303,7 @@ BLOCKS.slice = function (options) {
 		
 		for (i = 0; i < bounds.length; i += 1) {
 			
-			if (point.x > bounds[i].x && point.x < bounds[i].x + bounds[i].width && point.y > bounds[i].y && point.y < bounds[i].y + bounds[i].height) {
+			if (point.x >= bounds[i].x && point.x <= bounds[i].x + bounds[i].width && point.y >= bounds[i].y && point.y <= bounds[i].y + bounds[i].height) {
 				
 				collision = true;
 				break;
