@@ -47,7 +47,7 @@ BLOCKS.game = function (spec, element) {
 			for (i = 0; i < tickers.length; i += 1) {
 				tickers[i].curTick += 1;
 				if (tickers[i].curTick >= tickers[i].totalTicks) {
-					callbacks.push(tickers[i].callback);
+					callbacks.push(tickers[i]);
 				} else {
 					tickerArr.push(tickers[i]);
 				}
@@ -55,7 +55,7 @@ BLOCKS.game = function (spec, element) {
 			tickers = tickerArr;
 			
 			for (i = 0; i < callbacks.length; i += 1) {
-				callbacks[i]();
+				callbacks[i].callback(callbacks[i].parameters);
 			}
 		},
 
@@ -322,7 +322,7 @@ BLOCKS.game = function (spec, element) {
 		
 		checkLoadProgress = function () {
 		
-BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
+//BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
 		
 			if (gameTappedOnce && game.imageLoader.isLoaded() && game.speaker.isReady()) {
 
@@ -551,7 +551,8 @@ BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isL
 			id: id,
 			curTick: 0,
 			totalTicks: Math.ceil(duration / 1000 * 60),
-			callback: callback
+			callback: callback,
+			parameters: Array.prototype.slice.call(arguments).slice(2)
 		});
 		
 		return id;
@@ -654,7 +655,7 @@ BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isL
 		src: spec.audioSpriteSrc
 	});
 	game.speaker.addEventListener("ready", function () {
-BLOCKS.debug("Speaker load complete");
+//BLOCKS.debug("Speaker load complete");
 		checkLoadProgress();
 	}, true);
 	
