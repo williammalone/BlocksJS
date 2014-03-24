@@ -543,7 +543,7 @@ BLOCKS.game = function (spec, element) {
 		}
 	};
 	
-	game.addTicker = function (callback, duration) {
+	game.addTicker = function (callback, duration, parameters) {
 	
 		var id = (+ new Date()).toString() + tickers.length;
 	
@@ -552,7 +552,7 @@ BLOCKS.game = function (spec, element) {
 			curTick: 0,
 			totalTicks: Math.ceil(duration / 1000 * 60),
 			callback: callback,
-			parameters: Array.prototype.slice.call(arguments).slice(2)
+			parameters: parameters
 		});
 		
 		return id;
