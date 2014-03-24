@@ -182,6 +182,22 @@ BLOCKS.controller = function (element) {
 					event.touches[i].y = (event.touches[i].clientY - elementPos.y - controller.offsetY) * controller.scaleY;
 					
 				}
+				
+				event.changedTouches = [];
+				// For each touch invloved in this event on the screen
+				for (i = 0; i < e.changedTouches.length; i += 1) {
+					
+					event.changedTouches[i] = {};
+					for (key in e.changedTouches[i]) {
+						if (e.changedTouches[i].hasOwnProperty(key)) {
+							event.changedTouches[i][key] = e.changedTouches[i][key];
+						}
+					}
+				
+					event.changedTouches[i].x = (event.changedTouches[i].clientX - elementPos.x - controller.offsetX) * controller.scaleX;
+					event.changedTouches[i].y = (event.changedTouches[i].clientY - elementPos.y - controller.offsetY) * controller.scaleY;
+				}
+				
 				switch (event.type) {
 				
 				case "touchstart":
@@ -239,6 +255,7 @@ BLOCKS.controller = function (element) {
 				event.y = (event.clientY - elementPos.y - controller.offsetY) * controller.scaleY;
 				event.identifier = "mouse";
 				event.touches = [event];
+				event.changedTouches = [event];
 	
 				switch (event.type) {
 				
