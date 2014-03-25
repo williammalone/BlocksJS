@@ -55,9 +55,9 @@ BLOCKS.motorTween = function (property, spec) {
 			if (Math.abs(total - current) < Math.abs(speed)) {
 			
 				if (speed > 0) {
-					object[property] -= current;
+					object[property] -= Math.abs(total - current);
 				} else {
-					object[property] += current;
+					object[property] += Math.abs(total - current);
 				}
 				
 				motor.dispatchEvent("complete", motor);
@@ -373,6 +373,10 @@ BLOCKS.motors.rotate = function (spec) {
 BLOCKS.motors.rotate = function (spec) {
 	
 	"use strict";
+	
+	if (spec.angle) {
+		spec.amount = spec.angle;
+	}
 	
 	return BLOCKS.motorTween("angle", spec);
 };
