@@ -177,6 +177,8 @@ BLOCKS.game = function (spec, element) {
 		
 		gameUpdate = function () {
 			
+			var now;
+			
 			if (!paused) {
 				if (!game.update) {
 					BLOCKS.error("Game requires a 'update' method.");
@@ -184,9 +186,14 @@ BLOCKS.game = function (spec, element) {
 					return;
 				}
 				
-				remainingUpdate += (+ new Date() - lastUpdateTime);
+				now = + new Date();
+				remainingUpdate += (now - lastUpdateTime);
+				lastUpdateTime = now;	
+				
 				// If too much update then crop it
 				if (remainingUpdate > 1000) {
+				
+					//BLOCKS.warn("Cannot keep up with game loop. Chopping " + (remainingUpdate - 1000) / 60 + " frames.");
 					remainingUpdate = 1000;
 				}
 	
@@ -200,12 +207,12 @@ BLOCKS.game = function (spec, element) {
 	
 					game.update();
 					
-					remainingUpdate -= 16.666666666;
+					remainingUpdate -= 1000 / 60;
 					
 					game.dispatchEvent("tick");
 				}
 			}
-			lastUpdateTime = + new Date();	
+			
 		},
 		
 		gameRender = function () {
@@ -546,11 +553,11 @@ BLOCKS.game = function (spec, element) {
 	game.addTicker = function (callback, duration, parameters) {
 	
 		var id = (+ new Date()).toString() + tickers.length;
-	
+
 		tickers.push({
 			id: id,
 			curTick: 0,
-			totalTicks: Math.ceil(duration / 1000 * 60),
+			totalTicks: Math.ceil(duration * 60 / 1000),
 			callback: callback,
 			parameters: parameters
 		});
