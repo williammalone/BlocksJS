@@ -24,7 +24,9 @@ BLOCKS.introScreen = function (spec, game) {
 		
 		prepare = function () {
 		
-			layer = game.createLayer("intro");
+			layer = game.createLayer("intro", {
+				zIndex: 1
+			});
 		
 			bg = BLOCKS.slice({
 				layer: layer,
