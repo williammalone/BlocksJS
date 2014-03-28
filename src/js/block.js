@@ -235,6 +235,11 @@ BLOCKS.block = function (options) {
 		return curSlice.isRectInside(rect);
 	};
 	
+	block.gotoLastFrame = function () {
+	
+		curSlice.gotoLastFrame();
+	};
+	
 	block.destroy = function () {
 	
 		var i;

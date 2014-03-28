@@ -386,6 +386,14 @@ BLOCKS.slice = function (options) {
 		return result;
 	};
 	
+	slice.gotoLastFrame = function () {
+	
+		if (curFrameIndex !== numberOfFrames - 1) {
+			curFrameIndex = numberOfFrames - 1;
+			slice.dirty = true;
+		}
+	};
+	
 	slice.show = function () {
 	
 		if (!slice.visible) {
