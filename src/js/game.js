@@ -653,8 +653,12 @@ BLOCKS.game = function (spec, element) {
 	};
 	
 	game.imageLoader = BLOCKS.preloader(spec.imagesPath);
-	game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
-	game.introScreen = BLOCKS.introScreen(spec.intro, game);
+	if (spec && spec.loading) {
+		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
+	}
+	if (spec && spec.intro) {
+		game.introScreen = BLOCKS.introScreen(spec.intro, game);
+	}
 	
 	// Create sound player
 	game.speaker = BLOCKS.speaker({

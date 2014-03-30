@@ -151,7 +151,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 		}
 	};
 	
-	if (spec.message) {
+	if (spec && spec.message) {
 	
 		if (spec.message.fontFamily) {
 			fontFamily = spec.message.fontFamily;
