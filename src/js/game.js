@@ -21,7 +21,7 @@ BLOCKS.game = function (spec, element) {
 	"use strict";
 	
 	var game = BLOCKS.eventDispatcher(),
-		debug = (spec.debug !== undefined) ? spec.debug : true,
+		debug = (spec && spec.debug !== undefined) ? spec.debug : true,
 		clock = BLOCKS.clock(),
 		gameContainer,
 		interactionContainer,
