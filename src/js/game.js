@@ -21,7 +21,7 @@ BLOCKS.game = function (spec, element) {
 	"use strict";
 	
 	var game = BLOCKS.eventDispatcher(),
-		debug = (spec && spec.debug !== undefined) ? spec.debug : true,
+		debug = (spec && spec.debug !== undefined) ? spec.debug : false,
 		clock = BLOCKS.clock(),
 		gameContainer,
 		interactionContainer,
@@ -594,15 +594,19 @@ BLOCKS.game = function (spec, element) {
 		game.imageLoader.loadFromTree(spec);
 
 		// Define game sounds
-		for (i = 0; i < spec.sounds.length; i += 1) {
-			game.speaker.createSound(spec.sounds[i]);
+		if (spec.sounds) {
+			for (i = 0; i < spec.sounds.length; i += 1) {
+				game.speaker.createSound(spec.sounds[i]);
+			}
 		}
 
 		game.imageLoader.addEventListener("update", function (e) {
 		
 			var assetsLoaded = e.loaded + game.speaker.getNumFilesLoaded();
 
-			game.loadingScreen.setProgress(assetsLoaded, e.total + game.speaker.getNumFiles());
+			if (game.loadingScreen) {
+				game.loadingScreen.setProgress(assetsLoaded, e.total + game.speaker.getNumFiles());
+			}
 		});
 		
 		game.imageLoader.addEventListener("complete", function () {
