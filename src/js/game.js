@@ -588,7 +588,7 @@ BLOCKS.game = function (spec, element) {
 	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
 	
 	game.load = function () {
-
+	
 		var i;
 
 		game.imageLoader.loadFromTree(spec);

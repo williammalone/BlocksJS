@@ -424,7 +424,7 @@ BLOCKS.slice = function (options) {
 			imageSrc = options.imageSrc || (options.image && options.src),
 			imagePreloaded = image ? true : false;
 			
-		if (options.image) {
+		if (image || imageSrc) {
 		
 			imageResource = {
 				image: image,
