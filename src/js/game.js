@@ -330,15 +330,17 @@ BLOCKS.game = function (spec, element) {
 		checkLoadProgress = function () {
 		
 //BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
-		
-			if (gameTappedOnce && game.imageLoader.isLoaded() && game.speaker.isReady()) {
 
-				game.start();
-				if (game.loadingScreen) {
-					game.loadingScreen.destroy();
-					game.loadingScreen = null;
+			if ((game.introScreen && gameTappedOnce) || !game.introScreen) {
+				if (game.imageLoader.isLoaded() && game.speaker.isReady()) {
+	
+					game.start();
+					if (game.loadingScreen) {
+						game.loadingScreen.destroy();
+						game.loadingScreen = null;
+					}
+					game.dispatchEvent("loaded");
 				}
-				game.dispatchEvent("loaded");
 			}
 		},
 		
@@ -588,7 +590,6 @@ BLOCKS.game = function (spec, element) {
 	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
 	
 	game.load = function () {
-	
 		var i;
 
 		game.imageLoader.loadFromTree(spec);
@@ -628,7 +629,9 @@ BLOCKS.game = function (spec, element) {
 		lastUpdateTime = + new Date();
 		remainingUpdate = 0;
 
-		game.prepare();
+		if (game.prepare) {
+			game.prepare();
+		}
 		
 		clock.addEventListener("tick", gameUpdate);
 		clock.addEventListener("render", gameRender);
