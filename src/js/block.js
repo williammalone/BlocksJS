@@ -123,9 +123,13 @@ BLOCKS.block = function (options) {
 		return slice;
 	};
 	
-	block.getSlice = function () {
+	block.getSlice = function (name) {
 	
-		return curSlice;	
+		if (name === undefined) {
+			return curSlice;
+		} else {
+			return slicesObj[name];
+		}
 	};
 	
 	block.setSlice = function (name) {
