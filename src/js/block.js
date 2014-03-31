@@ -41,6 +41,7 @@ BLOCKS.block = function (options) {
 			curSlice.y = block.y;
 			curSlice.visible = block.visible;
 			curSlice.alpha = block.alpha;
+			curSlice.colorize = block.colorize;
 		},
 		
 		motorDestroyed = function (motor) {

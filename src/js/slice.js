@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*global window, Image, Float32Array */
+/*global window, document, Image, Float32Array */
 
 var BLOCKS;
 
@@ -33,6 +33,7 @@ BLOCKS.slice = function (options) {
 		texture,
 		centerRegistrationPoint = options && options.centerRegistrationPoint,
 		drawBounds = false, // This is used for debug only
+		tmpCtx, // Used when colorizing
 
 		// Private Methods
 		onResourceLoaded = function () {
@@ -191,7 +192,7 @@ BLOCKS.slice = function (options) {
 				// Using 2d Canvas
 				} else {
 			
-					if (slice.angle || slice.alpha !== 1) {
+					if (slice.angle || slice.alpha !== 1 || slice.colorize) {
 						context.save();
 						restoreNeeded = true;
 					}
@@ -205,7 +206,17 @@ BLOCKS.slice = function (options) {
 						context.rotate(slice.angle * Math.PI / 180);
 						context.translate(-slice.x, -slice.y);
 					}
-				
+					
+					if (slice.colorize) {
+						if (!tmpCtx) {
+							tmpCtx = document.createElement("canvas").getContext("2d");
+							tmpCtx.canvas.width = context.canvas.width;
+							tmpCtx.canvas.height = context.canvas.height;
+						}
+						context = tmpCtx;
+						context.globalCompositeOperation = "copy";
+					}
+
 					// If the sprite is an animation
 					if (numberOfFrames > 1) {
 						context.drawImage(
@@ -230,6 +241,15 @@ BLOCKS.slice = function (options) {
 							slice.y + slice.offsetY, 
 							slice.cropWidth || slice.width * slice.scale,
 							slice.cropHeight || slice.height * slice.scale);
+					}
+					
+					if (slice.colorize) {
+						// Draw the color that should be overlayed over the image
+						context.fillStyle = slice.colorize;
+						context.globalCompositeOperation = "source-in";
+						context.fillRect(slice.x, slice.y, slice.width, slice.height);
+						context = slice.layer.ctx; // Change back from the temp context
+						context.drawImage(tmpCtx.canvas, 0, 0);
 					}
 					
 					if (restoreNeeded) {
