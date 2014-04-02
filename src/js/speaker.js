@@ -241,8 +241,6 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			audioElement.volume = 1;
 		};
 		
-	speaker.debug = false;
-		
 	speaker.play = function (name, callback) {
 	
 		if (sounds[name]) {
@@ -387,6 +385,8 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		files = {},
 		instances = [],
 		tracks = {},
+		loadTimeoutId,
+		maxLoadTime = spec.maxLoadTime || 10000, // The maximum amount of time for all sounds to load
 		
 		createTrack = function (name) {
 		
@@ -413,17 +413,20 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 			if (speaker.debug) {
 				BLOCKS.debug("load: " + numFilesLoaded + " of " + totalNumFiles);
 			}
-BLOCKS.debug("load: " + numFilesLoaded + " of " + totalNumFiles);			
+//BLOCKS.debug("load: " + numFilesLoaded + " of " + totalNumFiles + " (" + file.src + ")");			
 			speaker.dispatchEvent("load", numFilesLoaded, totalNumFiles);
 			
 			if (numFilesLoaded === totalNumFiles) {
 				
 				if (!ready) {
 					ready = true;
+					
+					// Clear the load timeout
+					window.clearTimeout(loadTimeoutId);
 					if (speaker.debug) {
 						BLOCKS.debug("audio ready");
 					}
-BLOCKS.debug("speaker is ready");
+//BLOCKS.debug("speaker is ready");
 					speaker.dispatchEvent("ready");
 				}
 			}
@@ -431,15 +434,13 @@ BLOCKS.debug("speaker is ready");
 		
 		loadFile = function (file) {
 		
-			var request;
-		
-			request = new window.XMLHttpRequest();
-			request.open("get", path + file.src + extension, true);
-			request.responseType = "arraybuffer";
+			file.request = new window.XMLHttpRequest();
+			file.request.open("get", path + file.src + extension, true);
+			file.request.responseType = "arraybuffer";
 
-			request.onload = function() {
+			file.request.onload = function() {
 
-				ctx.decodeAudioData(request.response, function(buffer) {
+				ctx.decodeAudioData(file.request.response, function(buffer) {
 					
 					file.buffer = buffer;
 					file.loaded = true;
@@ -449,13 +450,16 @@ BLOCKS.debug("speaker is ready");
 					// TODO: Update the progress if we are waiting for pre-load
 					onFileLoaded(file);
 					
+					file.request = null;
+					
 				}, function (error) {
 					if (BLOCKS.debug) {
 						BLOCKS.debug("Error decoding buffer: " + path + file.src + extension);
 					}
+					file.request = null;
 				});
 			};
-			request.send();
+			file.request.send();
 		},
 		
 		load = function () {
@@ -657,9 +661,7 @@ BLOCKS.debug("speaker is ready");
 				}
 			}
 		};
-		
-	speaker.debug = false;
-	
+
 	speaker.play = function (name, callback, trackName, startTime, delay) {
 
 		if (sounds[name]) {
@@ -829,9 +831,30 @@ BLOCKS.debug("speaker is ready");
 	
 	// Load the audio element
 	speaker.load = function () {
-	
+BLOCKS.debug("speaker.load");	
 		if (!loadStarted) {
 			loadStarted = true;
+			
+			loadTimeoutId = window.setTimeout(function () {
+			
+				var key;
+BLOCKS.debug("loadTimeout");			
+				for (key in files) {
+					if (files.hasOwnProperty(key)) {
+						if (!files[key].loaded) {
+							
+							// Cancel the request
+							if (files[key].request) {
+								BLOCKS.warn("Sound file load has timed out. Aborting request and trying again: " + files[key].src);
+								files[key].request.abort();
+							} else {
+								BLOCKS.warn("Sound file load has timed out. Sending additional request: " + files[key].src);
+							}
+							loadFile(files[key]);
+						}
+					}
+				}
+			}, maxLoadTime);
 			
 			load();
 		}
@@ -851,12 +874,13 @@ BLOCKS.debug("speaker is ready");
 			end: spec.end,
 			loop: spec.loop
 		};
-		
+//BLOCKS.debug("Create Sound: " + spec.name);
 		if (!files[spec.src]) {
 			files[spec.src] = {
 				src: spec.src
 			};
 			loadFile(files[spec.src]);
+//BLOCKS.debug("Load Sound: " + spec.src);
 		}
 		
 		sounds[spec.name].file = files[spec.src];
@@ -954,6 +978,8 @@ BLOCKS.speaker = function (spec) {
 			speaker = BLOCKS.audio.audioElementPlayer(spec);
 		}
 	}());
+	
+	speaker.debug = false;
 	
 	return speaker;
 };
