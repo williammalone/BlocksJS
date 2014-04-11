@@ -262,8 +262,7 @@ BLOCKS.controller = function (element) {
 				case "mousedown":
 					eventType = "tap";
 					controller.dispatchEvent("mouseDown", event);
-BLOCKS.debug("elementPos: " + elementPos.x + ", " + elementPos.y);
-BLOCKS.debug("event: " + event.x + ", " + event.y);					
+				
 					break;
 					
 				case "mousemove":
