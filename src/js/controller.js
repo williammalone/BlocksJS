@@ -251,8 +251,8 @@ BLOCKS.controller = function (element) {
 				// TODO: ElementPos does not have to be calculated every time?
 				elementPos = getElementPos(element);
 				
-				event.x = (event.clientX - elementPos.x - controller.offsetX) * controller.scaleX;
-				event.y = (event.clientY - elementPos.y - controller.offsetY) * controller.scaleY;
+				event.x = (event.pageX - elementPos.x - controller.offsetX) * controller.scaleX;
+				event.y = (event.pageY - elementPos.y - controller.offsetY) * controller.scaleY;
 				event.identifier = "mouse";
 				event.touches = [event];
 				event.changedTouches = [event];
@@ -262,7 +262,8 @@ BLOCKS.controller = function (element) {
 				case "mousedown":
 					eventType = "tap";
 					controller.dispatchEvent("mouseDown", event);
-					
+BLOCKS.debug("elementPos: " + elementPos.x + ", " + elementPos.y);
+BLOCKS.debug("event: " + event.x + ", " + event.y);					
 					break;
 					
 				case "mousemove":
