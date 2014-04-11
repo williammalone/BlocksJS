@@ -37,6 +37,7 @@ BLOCKS.game = function (spec, element) {
 		scalePortrait,
 		debugLayer,
 		gameTappedOnce,
+		loaded,
 		
 		handleTickers = function () {
 			
@@ -330,17 +331,19 @@ BLOCKS.game = function (spec, element) {
 		checkLoadProgress = function () {
 		
 //BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
-
-			if ((game.introScreen && gameTappedOnce) || !game.introScreen) {
-				// If all images are loaded and all sounds (or number of sounds is zero) are laoded
-				if (game.imageLoader.isLoaded() && (game.speaker.isReady() || game.speaker.getNumFiles() === 0)) {
-	
-					game.start();
-					if (game.loadingScreen) {
-						game.loadingScreen.destroy();
-						game.loadingScreen = null;
+			if (!loaded) {
+				if ((game.introScreen && gameTappedOnce) || !game.introScreen) {
+					// If all images are loaded and all sounds (or number of sounds is zero) are laoded
+					if (game.imageLoader.isLoaded() && (game.speaker.isReady() || game.speaker.getNumFiles() === 0)) {
+		
+						loaded = true;
+						game.start();
+						if (game.loadingScreen) {
+							game.loadingScreen.destroy();
+							game.loadingScreen = null;
+						}
+						game.dispatchEvent("loaded");
 					}
-					game.dispatchEvent("loaded");
 				}
 			}
 		},
