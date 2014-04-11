@@ -332,7 +332,8 @@ BLOCKS.game = function (spec, element) {
 //BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
 
 			if ((game.introScreen && gameTappedOnce) || !game.introScreen) {
-				if (game.imageLoader.isLoaded() && game.speaker.isReady()) {
+				// If all images are loaded and all sounds (or number of sounds is zero) are laoded
+				if (game.imageLoader.isLoaded() && (game.speaker.isReady() || game.speaker.getNumFiles() === 0)) {
 	
 					game.start();
 					if (game.loadingScreen) {
