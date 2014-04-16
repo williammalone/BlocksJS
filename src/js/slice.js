@@ -147,6 +147,7 @@ BLOCKS.slice = function (options) {
 		frameCnt = 0;
 		curFrameIndex = 0;
 		loopIndex = 0;
+		slice.dirty = true;
 	};
 	
 	slice.stop = function () {
