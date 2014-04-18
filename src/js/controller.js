@@ -163,8 +163,8 @@ BLOCKS.controller = function (element) {
 					}
 				}
 				
-				event.x = (firstFinger.clientX - elementPos.x - controller.offsetX) * controller.scaleX;
-				event.y = (firstFinger.clientY - elementPos.y - controller.offsetY) * controller.scaleY;
+				event.x = (firstFinger.pageX - elementPos.x - controller.offsetX) * controller.scaleX;
+				event.y = (firstFinger.pageY - elementPos.y - controller.offsetY) * controller.scaleY;
 				event.type = e.type;
 				
 				event.touches = [];
@@ -194,8 +194,8 @@ BLOCKS.controller = function (element) {
 						}
 					}
 				
-					event.changedTouches[i].x = (event.changedTouches[i].clientX - elementPos.x - controller.offsetX) * controller.scaleX;
-					event.changedTouches[i].y = (event.changedTouches[i].clientY - elementPos.y - controller.offsetY) * controller.scaleY;
+					event.changedTouches[i].x = (event.changedTouches[i].pageX - elementPos.x - controller.offsetX) * controller.scaleX;
+					event.changedTouches[i].y = (event.changedTouches[i].pageY - elementPos.y - controller.offsetY) * controller.scaleY;
 				}
 				
 				switch (event.type) {
