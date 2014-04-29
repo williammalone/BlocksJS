@@ -386,7 +386,9 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		instances = [],
 		tracks = {},
 		loadTimeoutId,
-		maxLoadTime = spec.maxLoadTime || 10000, // The maximum amount of time for all sounds to load
+		maxLoadTime = spec.maxLoadTime || 60000, // The maximum amount of time for all sounds to load
+		loadTries = 0,
+		maxLoadTries = 5,
 		
 		createTrack = function (name) {
 		
@@ -409,12 +411,12 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 			
 			numFilesLoaded = speaker.getNumFilesLoaded();
 			totalNumFiles = speaker.getNumFiles();
-			
+		
 			if (speaker.debug) {
 				BLOCKS.debug("load: " + numFilesLoaded + " of " + totalNumFiles);
 			}
 //BLOCKS.debug("load: " + numFilesLoaded + " of " + totalNumFiles + " (" + file.src + ")");			
-			speaker.dispatchEvent("load", numFilesLoaded, totalNumFiles);
+			speaker.dispatchEvent("update", numFilesLoaded, totalNumFiles);
 			
 			if (numFilesLoaded === totalNumFiles) {
 				
@@ -440,7 +442,11 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 
 			file.request.onload = function() {
 
+//BLOCKS.debug("Sound Loaded: " + (path + file.src + extension) + " -> " + file.request);
+
 				ctx.decodeAudioData(file.request.response, function(buffer) {
+
+//BLOCKS.debug("Sound Decoded: " + (path + file.src + extension) + " -> " + file.request);
 					
 					file.buffer = buffer;
 					file.loaded = true;
@@ -660,6 +666,36 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 					BLOCKS.warn("Tried to play sound: " + name + ", but it is not loaded yet");
 				}
 			}
+		},
+		
+		createLoadTimer = function () {
+			
+			loadTimeoutId = window.setTimeout(function () {
+			
+				var key;
+			
+				for (key in files) {
+					if (files.hasOwnProperty(key)) {
+						if (!files[key].loaded) {
+							
+							// Cancel the request
+							if (files[key].request) {
+								BLOCKS.warn("Sound file load has timed out. Aborting request and trying again: " + files[key].src);
+								files[key].request.abort();
+							} else {
+								BLOCKS.warn("Sound file load has timed out. Sending additional request: " + files[key].src);
+							}
+							loadFile(files[key]);
+						}
+					}
+				}
+				
+				loadTries += 1;
+				if (loadTries < maxLoadTries) {
+					createLoadTimer();
+				}
+				
+			}, maxLoadTime);
 		};
 
 	speaker.play = function (name, callback, trackName, startTime, delay) {
@@ -831,30 +867,11 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	// Load the audio element
 	speaker.load = function () {
-BLOCKS.debug("speaker.load");	
+
 		if (!loadStarted) {
 			loadStarted = true;
 			
-			loadTimeoutId = window.setTimeout(function () {
-			
-				var key;
-BLOCKS.debug("loadTimeout");			
-				for (key in files) {
-					if (files.hasOwnProperty(key)) {
-						if (!files[key].loaded) {
-							
-							// Cancel the request
-							if (files[key].request) {
-								BLOCKS.warn("Sound file load has timed out. Aborting request and trying again: " + files[key].src);
-								files[key].request.abort();
-							} else {
-								BLOCKS.warn("Sound file load has timed out. Sending additional request: " + files[key].src);
-							}
-							loadFile(files[key]);
-						}
-					}
-				}
-			}, maxLoadTime);
+			createLoadTimer();
 			
 			load();
 		}
@@ -923,6 +940,11 @@ BLOCKS.debug("loadTimeout");
 		}
 		
 		return numFilesLoaded;
+	};
+	
+	speaker.getCurrentTime = function () {
+		
+		return ctx.currentTime;
 	};
 
 	(function () {

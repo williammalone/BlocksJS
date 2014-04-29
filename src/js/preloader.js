@@ -125,14 +125,14 @@ BLOCKS.preloader = function (path) {
 		return image;
 	};
 	
-	preloader.getNumImages = function () {
+	preloader.getNumFiles = function () {
 	
 		return imageList.length;
 	};
 	
-	preloader.getProgress = function () {
-
-		return imagesLoaded / imageList.length;
+	preloader.getNumFilesLoaded = function () {
+	
+		return imagesLoaded;
 	};
 	
 	preloader.isLoaded = function () {

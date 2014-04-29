@@ -605,12 +605,12 @@ BLOCKS.game = function (spec, element) {
 			}
 		}
 
-		game.imageLoader.addEventListener("update", function (e) {
+		game.imageLoader.addEventListener("update", function () {
 		
-			var assetsLoaded = e.loaded + game.speaker.getNumFilesLoaded();
+			var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
 
 			if (game.loadingScreen) {
-				game.loadingScreen.setProgress(assetsLoaded, e.total + game.speaker.getNumFiles());
+				game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
 			}
 		});
 		
@@ -675,6 +675,14 @@ BLOCKS.game = function (spec, element) {
 	game.speaker = BLOCKS.speaker({
 		path: spec.audioPath,
 		src: spec.audioSpriteSrc
+	});
+	game.speaker.addEventListener("update", function (e) {
+		
+		var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
+
+		if (game.loadingScreen) {
+			game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
+		}
 	});
 	game.speaker.addEventListener("ready", function () {
 //BLOCKS.debug("Speaker load complete");
