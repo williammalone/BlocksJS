@@ -19,6 +19,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 		dirty,
 		curPercentage = 0,
 		fontFamily = "Arial,sans",
+		animation,
 		fontSize = "24px",
 		fontWeight = "bold",
 		fontColor = "#eee",
@@ -26,6 +27,19 @@ BLOCKS.loadingScreen = function (spec, game) {
 		messageY = 0,
 		messageText = "loading... ",
 		progressBarImageLoaded,
+		
+		createAnimation = function () {
+		
+			if (!animation) {
+				
+				spec.animation.layer = layers.loading;
+				animation = BLOCKS.slice(spec.animation);
+				animation.x = spec.animation.x;
+				animation.y = spec.animation.y;
+			
+				dirty = true;
+			}
+		},
 		
 		createProgressBar = function () {
 		
@@ -54,6 +68,11 @@ BLOCKS.loadingScreen = function (spec, game) {
 					createProgressBar();
 				}
 			};
+			
+			if (spec.animation) {
+				spec.animation.image = game.imageLoader.loadNow(spec.animation);
+				spec.animation.image.onload = createAnimation;
+			}
 		},
 		
 		prepare = function () {
@@ -88,11 +107,14 @@ BLOCKS.loadingScreen = function (spec, game) {
 			if (progressBar) {
 				progressBar.update();
 			}
+			if (animation) {
+				animation.update();
+			}
 		},
 		
 		render = function () {
 			
-			if (dirty) {
+			if (dirty || (animation && animation.dirty) || (progressBar && progressBar.dirty)) {
 			
 				dirty = false;
 			
@@ -102,23 +124,27 @@ BLOCKS.loadingScreen = function (spec, game) {
 					progressBar.cropWidth = progressBar.width * curPercentage;
 					progressBar.dirty = true;
 				}
-			
-				if (!layers.loading.webGLEnabled) {
-					layers.loading.ctx.fillStyle = fontColor;
-					layers.loading.ctx.font = fontWeight + " " + fontSize + " " + fontFamily;
-					layers.loading.ctx.textAlign = "right";
-					
-					layers.loading.ctx.fillText(messageText, messageX, messageY);
-			
-					layers.loading.ctx.textAlign = "left";
-					layers.loading.ctx.fillText(Math.round(curPercentage * 100, 10) + "%", messageX, messageY);
+				if (animation) {
+					animation.dirty = true;
 				}
+			
+				layers.loading.ctx.fillStyle = fontColor;
+				layers.loading.ctx.font = fontWeight + " " + fontSize + " " + fontFamily;
+				layers.loading.ctx.textAlign = "right";
+				
+				layers.loading.ctx.fillText(messageText, messageX, messageY);
+		
+				layers.loading.ctx.textAlign = "left";
+				layers.loading.ctx.fillText(Math.round(curPercentage * 100, 10) + "%", messageX, messageY);
 			}
 			
 			bg.render();
 			
 			if (progressBar) {
 				progressBar.render();
+			}
+			if (animation) {
+				animation.render();
 			}
 		};
 	
@@ -132,10 +158,18 @@ BLOCKS.loadingScreen = function (spec, game) {
 			layers.loading.destroy();
 			layers.loading = null;
 			
+			bg.destroy();
+			bg = null;
+			
 			if (progressBar) {
 				progressBar.destroy();
+				progressBar = null;
 			}
-			bg.destroy();
+			
+			if (animation) {
+				animation.destroy();
+				animation = null;
+			}
 		}
 		
 		loadingScreen = null;
@@ -151,7 +185,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 		}
 	};
 	
-	if (spec && spec.message) {
+	if (spec.message) {
 	
 		if (spec.message.fontFamily) {
 			fontFamily = spec.message.fontFamily;
