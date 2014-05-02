@@ -42,8 +42,6 @@ BLOCKS.textField = function (options) {
 	textField.name = (options && options.name !== undefined) ? options.name : undefined;
 	textField.width = 0;
 	textField.height = 0;
-	textField.x = 0;
-	textField.y = 0;
 	textField.x = options.x || 0;
 	textField.y = options.y || 0;
 	textField.fontColor = options.fontColor || "#000000";
@@ -52,6 +50,7 @@ BLOCKS.textField = function (options) {
 	textField.fontWeight = options.fontWeight || "bold";
 	textField.textAlign = options.textAlign || "center";
 	textField.prependText = options.prependText || "";
+	textField.textBaseline = (options && options.top) || "top";
 	textField.visible = true;
 	textField.dirty = true;
 	textField.layer = options && options.layer;
@@ -95,6 +94,7 @@ BLOCKS.textField = function (options) {
 			
 			xLoc = textField.x;
 			yLoc = textField.y;
+			context.textBaseline = textField.textBaseline;
 			for (i = 0; i < wordArr.length; i += 1) {
 				tempLine = curLine + wordArr[i] + " ";
 				if (i && textField.width && context.measureText(tempLine).width > textField.width) {
@@ -114,42 +114,10 @@ BLOCKS.textField = function (options) {
 			}
 
 			if (drawBounds) {
-				bounds = textField.getBounds();
-				if (!bounds.length) {
-					bounds = [bounds];
-				}
-				context.lineWidth = 4;
-
-				for (i = 0; i < bounds.length; i += 1) {
-				
-					if (textField.dragging) {
-						context.beginPath();
-						context.fillStyle = "rgba(10, 255, 50, 0.4)";
-						context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
-						context.closePath();
-					} else if (textField.justTapped) {
-						context.beginPath();
-						context.fillStyle = "rgba(255, 10, 50, 0.4)";
-						context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
-						context.closePath();
-					} else if (textField.justNotTapped) {
-						context.beginPath();
-						context.fillStyle = "rgba(255, 10, 255, 0.4)";
-						context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
-						context.closePath();
-					} else if (textField.justReleased) {
-						context.beginPath();
-						context.fillStyle = "rgba(125, 10, 255, 0.4)";
-						context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
-						context.closePath();
-						textField.justReleased = false;
-					}
-				
-					context.beginPath();
-					context.strokeStyle = "rgba(255, 80, 0, 0.5)";
-					context.strokeRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
-					context.closePath();
-				}
+				context.beginPath();
+				context.strokeStyle = "rgba(255, 80, 0, 0.5)";
+				context.strokeRect(textField.x, textField.y, textField.width, textField.height);
+				context.closePath();
 			}
 		}
 		textField.dirty = false;
