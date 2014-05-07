@@ -78,7 +78,7 @@ BLOCKS.slice = function (options) {
 	slice.cropHeight = (options && options.cropHeight);
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.angle = (options && options.angle);
-	slice.alpha = (options && options.alpha);
+	slice.alpha = (options && options.alpha) || 1;
 	slice.scale = (options && options.scale) || 1;
 	
 	// Public Methods
@@ -168,7 +168,7 @@ BLOCKS.slice = function (options) {
 	
 		var i, bounds, restoreNeeded, context;
 		
-		if (slice.dirty && slice.visible) {
+		if (slice.dirty && slice.visible && slice.alpha !== 0) {
 
 			// If the slice has an image associated with it
 			if (imageResource) {
