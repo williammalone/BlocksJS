@@ -573,15 +573,17 @@ BLOCKS.game = function (spec, element) {
 	
 	game.removeTicker = function (id) {
 		
-		var i;
+		var i, existingTickers = [];
 		
 		for (i = 0; i < tickers.length; i += 1) {
 			if (tickers[i].id === id) {
 				tickers[i] = null;
-				tickers.splice(i, 1);
-				break;
+			} else {
+				existingTickers.push(tickers[i]);
 			}
 		}
+		
+		tickers = existingTickers;
 	};
 	
 	game.clearTickers = function () {
