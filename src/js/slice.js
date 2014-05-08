@@ -168,6 +168,13 @@ BLOCKS.slice = function (options) {
 	
 		var i, bounds, restoreNeeded, context;
 		
+		// Prevent alpha from being negative
+		if (slice.alpha < 0) {
+			slice.alpha = 0;
+		} else if (slice.alpha > 1) {
+			slice.alpha = 1;
+		}
+		
 		if (slice.dirty && slice.visible && slice.alpha !== 0) {
 
 			// If the slice has an image associated with it

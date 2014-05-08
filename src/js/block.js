@@ -40,6 +40,11 @@ BLOCKS.block = function (options) {
 			curSlice.x = block.x;
 			curSlice.y = block.y;
 			curSlice.visible = block.visible;
+			if (block.alpha < 0) {
+				block.alpha = 0;
+			} else if (block.alpha > 1) {
+				block.alpha = 1;
+			}
 			curSlice.alpha = block.alpha;
 			curSlice.colorize = block.colorize;
 		},
@@ -184,17 +189,20 @@ BLOCKS.block = function (options) {
 	
 	block.stopMotors = function (type) {
 		
-		var i, motorArr = motors.slice(0);
+		var i, motorArr = [];
 		
-		for (i = 0 ; i < motorArr.length; i += 1)  {
+		for (i = 0 ; i < motors.length; i += 1)  {
 			if (type) {
-				if (motorArr[i].type === type) {
-					motorArr[i].destroy();
+				if (motors[i].type === type) {
+					motors[i].destroy();
+				} else {
+					motorArr.push(motors[i]);
 				}
 			} else {
-				motorArr[i].destroy();
+				motors[i].destroy();
 			}
 		}
+		motors = motorArr;
 	};
 	
 	block.pause = function () {
