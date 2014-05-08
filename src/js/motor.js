@@ -236,9 +236,9 @@ BLOCKS.motors.move = function (spec) {
 			y: 0
 		},
 		angle = BLOCKS.toolbox.angle(curOffset, offset),
-		speed = spec.speed || 1,
-		deltaX = speed * Math.cos(angle),
-		deltaY = speed * Math.sin(angle);
+		speed = spec.speed,
+		deltaX,
+		deltaY;
 	
 	// Public Properties
 	motor.destroy = function () {
@@ -291,79 +291,20 @@ BLOCKS.motors.move = function (spec) {
 		if (clock) {
 			clock.addEventListener("tick", motor.tick);
 		}
+		
+		if (!speed) {
+			if (spec.duration) {
+				speed = BLOCKS.toolbox.dist(curOffset, offset) / (60 * (spec.duration / 1000));
+			} else {
+				speed = 1;
+			}
+		}
+		deltaX = speed * Math.cos(angle);
+		deltaY = speed * Math.sin(angle);
 	}());
 	
 	return motor;
 };
-
-/*
-// Rotates an object
-//   -clock
-//   -object
-//   -rotation
-//   -speed (optional)
-BLOCKS.motors.rotate = function (spec) {
-	
-	"use strict";
-	
-	// Private Properties
-	var motor = BLOCKS.motor(),
-		destroyed = false,
-		clock = spec.clock,
-		object = spec.object,
-		callback = spec.callback,
-		angle = spec.angle,
-		angleLeft = angle,
-		speed = spec.speed || 1;
-	
-	// Public Properties
-	motor.destroy = function () {
-	
-		if (!destroyed) {
-			destroyed = true;
-			if (clock) {
-				clock.removeEventListener("tick", motor.tick);
-			}
-			motor.dispatchEvent("destroyed", motor);
-			motor = null;
-		}
-	};
-	
-	// Public Methods
-	motor.tick = function () {
-	
-		if (!destroyed) {
-		
-			object.dirty = true;
-			object.layer.dirty = true;
-			
-			if (angleLeft <= speed) {
-			
-				object.angle += angleLeft;
-				
-				motor.dispatchEvent("complete", motor);
-				
-				if (callback) {
-					callback();
-				}
-				if (motor) {
-					motor.destroy();
-				}
-			} else {
-				object.angle += speed;
-				angleLeft -= speed;
-			}
-		}
-	};
-	
-	(function () {
-		if (clock) {
-			clock.addEventListener("tick", motor.tick);
-		}
-	}());
-	
-	return motor;
-};*/
 
 // Animations the rotate an object
 //   -clock
