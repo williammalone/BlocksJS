@@ -45,6 +45,8 @@ BLOCKS.block = function (options) {
 			} else if (block.alpha > 1) {
 				block.alpha = 1;
 			}
+			curSlice.cropWidth = block.cropWidth;
+			curSlice.cropHeight = block.cropHeight;
 			curSlice.alpha = block.alpha;
 			curSlice.colorize = block.colorize;
 		},

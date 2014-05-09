@@ -175,7 +175,7 @@ BLOCKS.slice = function (options) {
 			slice.alpha = 1;
 		}
 		
-		if (slice.dirty && slice.visible && slice.alpha !== 0) {
+		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0) {
 
 			// If the slice has an image associated with it
 			if (imageResource) {
