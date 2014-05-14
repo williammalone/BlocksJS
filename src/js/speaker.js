@@ -504,6 +504,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 			if (speaker.debug) {
 				BLOCKS.debug("Sound '" + inst.sound.name + "' Complete");
 			}
+
 			if (inst.callback) {
 				inst.callback(inst.name);
 			}
@@ -612,6 +613,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 					inst.delay = ctx.currentTime + delay;
 				} else {
 					// Play the sound immediately
+					delay = 0;
 					inst.delay = 0;
 				}
 				
@@ -637,7 +639,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 				inst.source.connect(inst.gain);
 				
 				// Timeout at the end of the sound
-				inst.timeout = window.setTimeout(soundCompleteChecker, (inst.delay + inst.source.buffer.duration - inst.currentTime) * 1000, inst);
+				inst.timeout = window.setTimeout(soundCompleteChecker, (delay + inst.source.buffer.duration - inst.currentTime) * 1000, inst);
 
 				if (speaker.debug) {
 					if (inst.currentTime) {
