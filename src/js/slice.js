@@ -23,7 +23,6 @@ BLOCKS.slice = function (options) {
 	var slice = BLOCKS.eventDispatcher(),
 	
 		// Private Properties
-		numberOfFrames = (options && options.numberOfFrames) || 1,
 		curFrameIndex = 0,
 		imageResource,
 		paused = false,
@@ -47,7 +46,7 @@ BLOCKS.slice = function (options) {
 			// Note: Divide the width by the number of frames in the sprite sheet if an animation. If the sprite is only an image then the number of frames will be 1.
 			
 			if (imageResource) {
-				slice.width = imageResource.image.width / numberOfFrames;
+				slice.width = imageResource.image.width / slice.numberOfFrames;
 				slice.height = imageResource.image.height;
 			}
 			
@@ -77,6 +76,7 @@ BLOCKS.slice = function (options) {
 	slice.cropWidth = (options && options.cropWidth);
 	slice.cropHeight = (options && options.cropHeight);
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
+	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.angle = (options && options.angle);
 	slice.alpha = (options && options.alpha) || 1;
 	slice.scale = (options && options.scale) || 1;
@@ -90,12 +90,12 @@ BLOCKS.slice = function (options) {
 			if (imageResource) {
 
 				// If the sprite is an animation
-				if (numberOfFrames > 1) {
+				if (slice.numberOfFrames > 1) {
 				
 					frameCnt += 1;
 	
 					// If the current frame is the last frame
-					if (curFrameIndex >= numberOfFrames - 1) {
+					if (curFrameIndex >= slice.numberOfFrames - 1) {
 						
 						if (frameCnt >= slice.frameDelay) {
 						
@@ -158,7 +158,7 @@ BLOCKS.slice = function (options) {
 	slice.play = function () {
 		
 		// If on the last frame then start over
-		if (curFrameIndex >= numberOfFrames - 1) {
+		if (curFrameIndex >= slice.numberOfFrames - 1) {
 			slice.stop();
 		}
 		paused = false;
@@ -226,7 +226,7 @@ BLOCKS.slice = function (options) {
 					}
 
 					// If the sprite is an animation
-					if (numberOfFrames > 1) {
+					if (slice.numberOfFrames > 1) {
 						context.drawImage(
 							imageResource.image,
 							curFrameIndex * slice.width + slice.frameOffsetX,
@@ -416,8 +416,8 @@ BLOCKS.slice = function (options) {
 	
 	slice.gotoLastFrame = function () {
 	
-		if (curFrameIndex !== numberOfFrames - 1) {
-			curFrameIndex = numberOfFrames - 1;
+		if (curFrameIndex !== slice.numberOfFrames - 1) {
+			curFrameIndex = slice.numberOfFrames - 1;
 			slice.dirty = true;
 		}
 	};
