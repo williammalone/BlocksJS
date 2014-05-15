@@ -424,9 +424,12 @@ BLOCKS.slice = function (options) {
 	
 	slice.gotoFrame = function (frameIndex) {
 	
-		if (curFrameIndex !== frameIndex) {
+		var newFrameCnt = Math.floor(slice.frameDelay * (frameIndex - Math.floor(frameIndex)) / 100);
+		frameIndex = Math.floor(frameIndex);
+	
+		if (curFrameIndex !== frameIndex || frameCnt !== newFrameCnt) {
 			curFrameIndex = frameIndex;
-			frameCnt = 0;
+			frameCnt = newFrameCnt;
 			slice.dirty = true;
 		}
 	};
