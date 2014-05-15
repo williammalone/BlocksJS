@@ -422,6 +422,15 @@ BLOCKS.slice = function (options) {
 		}
 	};
 	
+	slice.gotoFrame = function (frameIndex) {
+	
+		if (curFrameIndex !== frameIndex) {
+			curFrameIndex = frameIndex;
+			frameCnt = 0;
+			slice.dirty = true;
+		}
+	};
+	
 	slice.show = function () {
 	
 		if (!slice.visible) {

@@ -162,7 +162,7 @@ BLOCKS.block = function (options) {
 			
 			return true;
 		} else {
-			// If slice does not exist or is already set then do nothing
+			// If slice does not exist then do nothing
 			return false;
 		}
 	};
@@ -253,6 +253,10 @@ BLOCKS.block = function (options) {
 	block.gotoLastFrame = function () {
 	
 		curSlice.gotoLastFrame();
+	};
+	
+	block.gotoFrame = function (frameIndex) {
+		curSlice.gotoFrame(frameIndex);
 	};
 	
 	block.destroy = function () {
