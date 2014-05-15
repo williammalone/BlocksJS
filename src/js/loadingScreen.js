@@ -27,6 +27,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 		messageY = 0,
 		messageText = "loading... ",
 		progressBarImageLoaded,
+		animationLoaded,
 		
 		createAnimation = function () {
 		
@@ -71,7 +72,14 @@ BLOCKS.loadingScreen = function (spec, game) {
 			
 			if (spec.animation) {
 				spec.animation.image = game.imageLoader.loadNow(spec.animation);
-				spec.animation.image.onload = createAnimation;
+				spec.animation.image.onload = function () {
+				
+					animationLoaded = true;
+					
+					if (layers && layers.loading) {
+						createAnimation();
+					}
+				};
 			}
 		},
 		
@@ -92,6 +100,11 @@ BLOCKS.loadingScreen = function (spec, game) {
 			// If the progress bar is ready to be created and was not already created
 			if (progressBarImageLoaded && !progressBar) {
 				createProgressBar();
+			}
+			
+			// If the animation is ready to be created and was not already created
+			if (spec.animation && animationLoaded && !animation) {
+				createAnimation();
 			}
 
 			clock = BLOCKS.clock();
