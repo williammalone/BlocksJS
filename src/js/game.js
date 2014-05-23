@@ -38,6 +38,7 @@ BLOCKS.game = function (spec, element) {
 		debugLayer,
 		gameTappedOnce,
 		loaded,
+		tickerIndex = 0,
 		
 		handleTickers = function () {
 			
@@ -560,7 +561,12 @@ BLOCKS.game = function (spec, element) {
 	
 	game.addTicker = function (callback, duration, parameters) {
 	
-		var id = (+ new Date()).toString() + tickers.length;
+		var id = (+ new Date()).toString() + tickerIndex;
+		
+		tickerIndex += 1;
+		if (tickerIndex > 99999999) {
+			tickerIndex = 0;
+		}
 
 		tickers.push({
 			id: id,
