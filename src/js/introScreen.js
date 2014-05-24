@@ -15,6 +15,7 @@ BLOCKS.introScreen = function (spec, game) {
 		bg,
 		clock,
 		layer,
+		destroyed,
 		
 		load = function () {
 		
@@ -24,19 +25,22 @@ BLOCKS.introScreen = function (spec, game) {
 		
 		prepare = function () {
 		
-			layer = game.createLayer("intro", {
-				zIndex: 1
-			});
+			if (!destroyed) {
 		
-			bg = BLOCKS.slice({
-				layer: layer,
-				image: spec.bg.image
-			});
+				layer = game.createLayer("intro", {
+					zIndex: 1
+				});
 			
-			clock = BLOCKS.clock();
-			clock.addEventListener("tick", update);
-			clock.addEventListener("render", render);
-			clock.start();
+				bg = BLOCKS.slice({
+					layer: layer,
+					image: spec.bg.image
+				});
+				
+				clock = BLOCKS.clock();
+				clock.addEventListener("tick", update);
+				clock.addEventListener("render", render);
+				clock.start();
+			}
 		},
 		
 		update = function () {
@@ -51,12 +55,17 @@ BLOCKS.introScreen = function (spec, game) {
 	
 	introScreen.destroy = function () {
 	
+		destroyed = true;
+	
 		if (clock) {
 			clock.destroy();
-			
+		}
+		
+		if (layer) {
 			layer.destroy();
 			layer = null;
-			
+		}
+		if (bg) {
 			bg.destroy();
 		}
 
