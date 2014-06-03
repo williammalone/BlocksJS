@@ -21,7 +21,6 @@ BLOCKS.game = function (spec, element) {
 	"use strict";
 	
 	var game = BLOCKS.eventDispatcher(),
-		debug = (spec && spec.debug !== undefined) ? spec.debug : false,
 		clock = BLOCKS.clock(),
 		gameContainer,
 		maxLoopDuration = (spec && spec.maxLoopDuration !== undefined) ? spec.maxLoopDuration : 500,
@@ -104,16 +103,16 @@ BLOCKS.game = function (spec, element) {
 		
 			gameContainer = document.createElement("article");
 			gameContainer.id = "BlocksGameContainer";
-			if (spec.minHeight) {
+			if (spec && spec.minHeight) {
 				minHeight = spec.minHeight;
 				gameContainer.style.minHeight = minHeight + "px";
 			}
-			if (spec.scaleLandscape !== undefined) {
+			if (spec && spec.scaleLandscape !== undefined) {
 				scaleLandscape = spec.scaleLandscape;
 			} else {
 				scaleLandscape = true;
 			}
-			if (spec.scalePortrait !== undefined) {
+			if (spec && spec.scalePortrait !== undefined) {
 				scalePortrait = spec.scalePortrait;
 			} else {
 				scalePortrait = true;
@@ -126,7 +125,7 @@ BLOCKS.game = function (spec, element) {
 			
 			game.controller = BLOCKS.controller(interactionContainer);
 			
-			if (debug) {
+			if (game.debug) {
 
 				virtualKeyboard = BLOCKS.virtualKeyboard(game.controller, {
 					layer: game.createLayer("internalblocksjsdebuglayer", {
@@ -208,7 +207,7 @@ BLOCKS.game = function (spec, element) {
 				
 					game.dispatchEvent("preUpdate");
 				
-					if (debug) {
+					if (game.debug) {
 						virtualKeyboard.update();
 					}
 					
@@ -228,7 +227,7 @@ BLOCKS.game = function (spec, element) {
 
 				game.dispatchEvent("preRender");
 			
-				if (debug) {
+				if (game.debug) {
 					virtualKeyboard.render();
 				}
 			
@@ -260,7 +259,7 @@ BLOCKS.game = function (spec, element) {
 		
 		onTap = function (pos) {
 
-			if (debug) {
+			if (game.debug) {
 				if (pos.x < 100 && pos.y < 100) {
 					debugPressTimeout = window.setTimeout(function () {
 						virtualKeyboard.visible = !virtualKeyboard.visible;
@@ -277,7 +276,7 @@ BLOCKS.game = function (spec, element) {
 		
 		onDrag = function (pos) {
 		
-			if (debug) {
+			if (game.debug) {
 				window.clearTimeout(debugPressTimeout);
 			}
 			
@@ -288,7 +287,7 @@ BLOCKS.game = function (spec, element) {
 		
 		onRelease = function (pos) {
 			
-			if (debug) {
+			if (game.debug) {
 				window.clearTimeout(debugPressTimeout);
 			}
 			
@@ -430,10 +429,10 @@ BLOCKS.game = function (spec, element) {
 		};
 	
 	game.layers = [];
-	game.width = spec.width || 1024;
-	game.height = spec.height || 768;
+	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
+	game.height = (spec && spec.height !== undefined) ? spec.height : 768;
 	game.scale = 1;
-	game.debug = spec.debug;
+	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
 	game.state = "intro";
 
 	game.pause = function () {
@@ -681,12 +680,7 @@ BLOCKS.game = function (spec, element) {
 		return paused;
 	};
 	
-	game.isDebug = function () {
-
-		return debug;
-	};
-	
-	game.imageLoader = BLOCKS.preloader(spec.imagesPath);
+	game.imageLoader = (spec && spec.imagesPath) ?BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
 	if (spec && spec.loading) {
 		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
 	}
@@ -696,8 +690,8 @@ BLOCKS.game = function (spec, element) {
 	
 	// Create sound player
 	game.speaker = BLOCKS.speaker({
-		path: spec.audioPath,
-		src: spec.audioSpriteSrc
+		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
+		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : ""
 	});
 	game.speaker.addEventListener("update", function (e) {
 		
