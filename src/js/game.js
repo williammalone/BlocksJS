@@ -24,7 +24,7 @@ BLOCKS.game = function (spec, element) {
 		debug = (spec && spec.debug !== undefined) ? spec.debug : false,
 		clock = BLOCKS.clock(),
 		gameContainer,
-		maxLoopDuration = spec.maxLoopDuration || 500,
+		maxLoopDuration = (spec && spec.maxLoopDuration !== undefined) ? spec.maxLoopDuration : 500,
 		interactionContainer,
 		paused = false,
 		virtualKeyboard,
