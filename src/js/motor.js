@@ -28,7 +28,9 @@ BLOCKS.motorTween = function (property, spec) {
 		callback = spec.callback,
 		total = spec.amount,
 		current = 0,
+		lastDirtyValue = current,
 		duration = spec.duration / 1000 * 60, // Convert milliseconds to number of frames
+		dirtyTolerance = spec.dirtyTolerance || 0,
 		speed;
 	
 	// Public Properties
@@ -48,10 +50,7 @@ BLOCKS.motorTween = function (property, spec) {
 	motor.tick = function () {
 	
 		if (!destroyed) {
-		
-			object.dirty = true;
-			object.layer.dirty = true;
-			
+
 			if (Math.abs(total - current) < Math.abs(speed)) {
 			
 				if (speed > 0) {
@@ -59,6 +58,7 @@ BLOCKS.motorTween = function (property, spec) {
 				} else {
 					object[property] += Math.abs(total - current);
 				}
+				object.dirty = true;
 				
 				motor.dispatchEvent("complete", motor);
 				
@@ -71,6 +71,10 @@ BLOCKS.motorTween = function (property, spec) {
 			} else {
 				object[property] += speed;
 				current += speed;
+				if (Math.abs(lastDirtyValue - current) > dirtyTolerance) {
+					lastDirtyValue = current;
+					object.dirty = true;
+				}
 			}
 		}
 	};

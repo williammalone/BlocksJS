@@ -23,6 +23,12 @@ BLOCKS.introScreen = function (spec, game) {
 			spec.bg.image.onload = prepare;
 		},
 		
+		onTick = function () {
+		
+			update();
+			render();
+		},
+		
 		prepare = function () {
 		
 			if (!destroyed) {
@@ -37,8 +43,7 @@ BLOCKS.introScreen = function (spec, game) {
 				});
 				
 				clock = BLOCKS.clock();
-				clock.addEventListener("tick", update);
-				clock.addEventListener("render", render);
+				clock.addEventListener("tick", onTick);
 				clock.start();
 			}
 		},

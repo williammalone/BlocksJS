@@ -28,12 +28,11 @@ BLOCKS.clock = function () {
 		loop = function () {
 		
 			if (!paused) {
-				clock.dispatchEvent("tick");
 				
 				// Loop again on next animation frame
 				id = window.requestAnimationFrame(loop);
-
-				clock.dispatchEvent("render");
+				
+				clock.dispatchEvent("tick");
 			}
 		};
 

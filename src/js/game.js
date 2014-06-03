@@ -24,6 +24,7 @@ BLOCKS.game = function (spec, element) {
 		debug = (spec && spec.debug !== undefined) ? spec.debug : false,
 		clock = BLOCKS.clock(),
 		gameContainer,
+		maxLoopDuration = spec.maxLoopDuration || 500,
 		interactionContainer,
 		paused = false,
 		virtualKeyboard,
@@ -175,6 +176,7 @@ BLOCKS.game = function (spec, element) {
 				document.addEventListener("webkitvisibilitychange", onVisibilityChange);
 			}
 			
+			window.onunload = game.destroy;
 		},
 		
 		gameUpdate = function () {
@@ -182,24 +184,29 @@ BLOCKS.game = function (spec, element) {
 			var now;
 			
 			if (!paused) {
-				if (!game.update) {
-					BLOCKS.error("Game requires a 'update' method.");
-					clock.stop();
-					return;
-				}
-				
+
 				now = + new Date();
 				remainingUpdate += (now - lastUpdateTime);
 				lastUpdateTime = now;	
 				
 				// If too much update then crop it
-				if (remainingUpdate > 1000) {
+				if (remainingUpdate > maxLoopDuration) {
 				
-					//BLOCKS.warn("Cannot keep up with game loop. Chopping " + (remainingUpdate - 1000) / 60 + " frames.");
-					remainingUpdate = 1000;
+					BLOCKS.warn("Cannot keep up with game loop. Chopping " + Math.ceil((remainingUpdate - maxLoopDuration) / 60) + " frames.");
+					remainingUpdate = maxLoopDuration;
 				}
+				
+				//if (remainingUpdate < 16.666666666666) {
+				//	BLOCKS.debug("No update this time: " + remainingUpdate);
+				//}
 	
-				while (remainingUpdate >= 16.666666666) {
+				while (remainingUpdate >= 16.666666666666) {
+				
+					remainingUpdate -= 16.666666666666;
+					
+					game.dispatchEvent("tick"); // Simulate a clock
+				
+					game.dispatchEvent("preUpdate");
 				
 					if (debug) {
 						virtualKeyboard.update();
@@ -209,9 +216,7 @@ BLOCKS.game = function (spec, element) {
 	
 					game.update();
 					
-					remainingUpdate -= 1000 / 60;
-					
-					game.dispatchEvent("tick");
+					game.dispatchEvent("postUpdate");
 				}
 			}
 			
@@ -220,18 +225,23 @@ BLOCKS.game = function (spec, element) {
 		gameRender = function () {
 		
 			if (!paused) {
+
+				game.dispatchEvent("preRender");
+			
 				if (debug) {
 					virtualKeyboard.render();
 				}
+			
+				game.render();
 				
-				if (!game.render) {
-					BLOCKS.error("Game requires a 'render' method.");
-					clock.stop();
-				} else {
-					game.dispatchEvent("render");
-					game.render();
-				}
+				game.dispatchEvent("postRender");
 			}
+		},
+		
+		onClockTick = function () {
+			
+			gameUpdate();
+			gameRender();
 		},
 		
 		onKeyDown = function (e) {
@@ -425,7 +435,7 @@ BLOCKS.game = function (spec, element) {
 	game.scale = 1;
 	game.debug = spec.debug;
 	game.state = "intro";
-	
+
 	game.pause = function () {
 	
 		if (!paused) {
@@ -632,9 +642,8 @@ BLOCKS.game = function (spec, element) {
 	};
 	
 	game.stop = function () {
-	
-		clock.removeEventListener("tick", gameUpdate);
-		clock.removeEventListener("render", gameRender);
+		
+		clock.removeEventListener("tick", onClockTick);	
 		clock.stop();
 	};
 	
@@ -647,8 +656,8 @@ BLOCKS.game = function (spec, element) {
 			game.prepare();
 		}
 		
-		clock.addEventListener("tick", gameUpdate);
-		clock.addEventListener("render", gameRender);
+		clock.removeEventListener("tick", onClockTick);	
+		clock.addEventListener("tick", onClockTick);
 		clock.start();
 	};
 	
@@ -657,6 +666,10 @@ BLOCKS.game = function (spec, element) {
 		var i;
 
 		clock.destroy();
+		
+		if (game.loadingScreen) {
+			game.loadingScreen.destroy();
+		}
 		
 		for (i = 0; i < game.layers; i += 1) {
 			game.removeLayer(game.layers[i]);

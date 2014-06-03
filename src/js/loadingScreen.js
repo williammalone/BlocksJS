@@ -108,8 +108,10 @@ BLOCKS.loadingScreen = function (spec, game) {
 			}
 
 			clock = BLOCKS.clock();
-			clock.addEventListener("tick", update);
-			clock.addEventListener("render", render);
+			clock.addEventListener("tick", function () {
+				update();
+				render();
+			});
 			clock.start();
 		},
 		

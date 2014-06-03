@@ -664,9 +664,9 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 				return inst;
 			} else {
 				// TODO: Play the unloaded sound once its loaded
-				if (speaker.debug) {
+				//if (speaker.debug) {
 					BLOCKS.warn("Tried to play sound: " + name + ", but it is not loaded yet");
-				}
+				//}
 			}
 		},
 		

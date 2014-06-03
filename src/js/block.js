@@ -146,7 +146,7 @@ BLOCKS.block = function (options) {
 		
 		slice = slicesObj[name];
 
-		if (slice) {
+		if (slice && slice !== curSlice) {
 
 			block.layer = slice.layer;
 			block.width = slice.width;

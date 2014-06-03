@@ -20,13 +20,7 @@ BLOCKS.storage = function () {
 	
 	"use strict";
 	
-	var storage = BLOCKS.eventDispatcher(),
-	
-		// Private Methods
-		loop = function () {
-		
-
-		};
+	var storage = BLOCKS.eventDispatcher();
 
 	storage.get = function (item) {
 	
