@@ -158,7 +158,9 @@ BLOCKS.block = function (options) {
 			curSlice = slice;
 			assignBlockProperties();
 			curSlice.reset();
-			curSlice.play();
+			if (curSlice.autoPlay) {
+				curSlice.play();
+			}
 			
 			return true;
 		} else {

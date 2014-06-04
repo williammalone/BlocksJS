@@ -77,6 +77,7 @@ BLOCKS.slice = function (options) {
 	slice.cropHeight = (options && options.cropHeight);
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
+	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
 	slice.angle = (options && options.angle);
 	slice.alpha = (options && options.alpha) || 1;
 	slice.scale = (options && options.scale) || 1;
