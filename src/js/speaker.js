@@ -948,6 +948,8 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		
 		return ctx.currentTime;
 	};
+	
+	speaker.multipleTracksSupported = true;
 
 	(function () {
 	
