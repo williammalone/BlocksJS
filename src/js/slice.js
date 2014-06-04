@@ -468,6 +468,11 @@ BLOCKS.slice = function (options) {
 			imageSrc = options.imageSrc || (options.image && options.src),
 			imagePreloaded = image ? true : false;
 			
+		// Pause the slice if autoPlay property is set to false
+		if (!slice.autoPlay) {
+			paused = true;
+		}
+			
 		if (image || imageSrc) {
 		
 			imageResource = {
