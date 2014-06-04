@@ -434,6 +434,10 @@ BLOCKS.game = function (spec, element) {
 	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
 	game.scale = 1;
 	game.stage = BLOCKS.container(game);
+	game.camera = BLOCKS.camera({
+		width: game.width,
+		height: game.height
+	});
 	game.state = "intro";
 
 	game.pause = function () {
@@ -659,8 +663,14 @@ BLOCKS.game = function (spec, element) {
 	
 	game.start = function () {
 	
+		var i;
+	
 		lastUpdateTime = + new Date();
 		remainingUpdate = 0;
+		
+		for (i = 0; i < 10; i += 1) {
+			game.addLayer("blocksGameLayer" + (i + 1));
+		}
 
 		if (game.prepare) {
 			game.prepare();
