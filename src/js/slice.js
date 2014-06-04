@@ -145,10 +145,13 @@ BLOCKS.slice = function (options) {
 	};
 	
 	slice.reset = function () {
+		
+		if (frameCnt !== 0 || curFrameIndex !== 0 || loopIndex !== 0) {
+			slice.dirty = true;
+		}
 		frameCnt = 0;
 		curFrameIndex = 0;
 		loopIndex = 0;
-		slice.dirty = true;
 	};
 	
 	slice.stop = function () {
