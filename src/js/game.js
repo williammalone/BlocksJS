@@ -431,8 +431,9 @@ BLOCKS.game = function (spec, element) {
 	game.layers = [];
 	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
 	game.height = (spec && spec.height !== undefined) ? spec.height : 768;
-	game.scale = 1;
 	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
+	game.scale = 1;
+	game.stage = BLOCKS.container(game);
 	game.state = "intro";
 
 	game.pause = function () {
@@ -467,6 +468,16 @@ BLOCKS.game = function (spec, element) {
 				game.dispatchEvent("unpause");
 			}
 		}
+	};
+	
+	game.update = function () {
+		
+		game.stage.update();
+	};
+	
+	game.render = function () {
+	
+		game.stage.render();
 	};
 	
 	game.getLayer = function (name) {
@@ -680,7 +691,7 @@ BLOCKS.game = function (spec, element) {
 		return paused;
 	};
 	
-	game.imageLoader = (spec && spec.imagesPath) ?BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
+	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
 	if (spec && spec.loading) {
 		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
 	}
