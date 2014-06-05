@@ -501,7 +501,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		
 		soundCompleteChecker = function (inst) {
 		
-			var callback;
+			var callback, soundName;
 		
 			if (speaker.debug) {
 				BLOCKS.debug("Sound '" + inst.sound.name + "' Complete");
@@ -509,13 +509,14 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 
 			if (inst.callback) {
 				callback = inst.callback;
+				soundName = inst.name;
 			}
 		
 			// Destroy the instance before calling a possible callback
 			destroyInstance(inst);
 			
 			if (callback) {
-				callback(inst.name);
+				callback(soundName);
 			}
 		},
 
