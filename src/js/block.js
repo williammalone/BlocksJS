@@ -78,7 +78,8 @@ BLOCKS.block = function (options) {
 		
 			assignBlockProperties();
 			curSlice.update();
-			if (curSlice.dirty) {
+			// The slice could have been deleted after updating and firing a complete event
+			if (curSlice && curSlice.dirty) {
 				block.dirty = curSlice.dirty;
 			}
 		}
