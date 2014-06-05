@@ -501,15 +501,22 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		
 		soundCompleteChecker = function (inst) {
 		
+			var callback;
+		
 			if (speaker.debug) {
 				BLOCKS.debug("Sound '" + inst.sound.name + "' Complete");
 			}
 
 			if (inst.callback) {
-				inst.callback(inst.name);
+				callback = inst.callback;
 			}
 		
+			// Destroy the instance before calling a possible callback
 			destroyInstance(inst);
+			
+			if (callback) {
+				callback(inst.name);
+			}
 		},
 
 		stopSound = function (inst) {
@@ -626,9 +633,6 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 					inst.track = tracks["default"];
 				}
 				
-				// Assign a callback to be called once the sound is complete
-				inst.callback = callback;
-				
 				// Create a new source for this sound instance
 				inst.source = ctx.createBufferSource();
 				inst.source.buffer = sounds[name].file.buffer;
@@ -638,8 +642,13 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 				// Connect the source to the gains
 				inst.source.connect(inst.gain);
 				
-				// Timeout at the end of the sound
-				inst.timeout = window.setTimeout(soundCompleteChecker, (delay + inst.source.buffer.duration - inst.currentTime) * 1000, inst);
+				if (!sounds[name].loop) {
+					// Timeout at the end of the sound
+					inst.timeout = window.setTimeout(soundCompleteChecker, (delay + inst.source.buffer.duration - inst.currentTime) * 1000, inst);
+					
+					// Assign a callback to be called once the sound is complete
+					inst.callback = callback;
+				}
 
 				if (speaker.debug) {
 					if (inst.currentTime) {
@@ -818,8 +827,9 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	speaker.stop = function () {
 	
 		var i, instanceArr = instances.slice(0);
-			
+BLOCKS.debug("Stop all sounds");			
 		for (i = 0; i < instanceArr.length; i += 1) {
+BLOCKS.debug("Stop sound: " + instanceArr[i].name);
 			stopSound(instanceArr[i]);
 		}
 	};
@@ -1005,7 +1015,7 @@ BLOCKS.speaker = function (spec) {
 		}
 	}());
 	
-	speaker.debug = false;
+	speaker.debug = true;
 	
 	return speaker;
 };
