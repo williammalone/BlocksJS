@@ -828,9 +828,8 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	speaker.stop = function () {
 	
 		var i, instanceArr = instances.slice(0);
-BLOCKS.debug("Stop all sounds");			
+		
 		for (i = 0; i < instanceArr.length; i += 1) {
-BLOCKS.debug("Stop sound: " + instanceArr[i].name);
 			stopSound(instanceArr[i]);
 		}
 	};
