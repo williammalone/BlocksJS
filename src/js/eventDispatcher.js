@@ -88,5 +88,10 @@ BLOCKS.eventDispatcher = function (options) {
 		}
 	};
 	
+	that.clearEventListeners = function () {
+		
+		eventListeners = {};
+	};
+	
 	return that;
 };
