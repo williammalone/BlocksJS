@@ -27,7 +27,6 @@ BLOCKS.slice = function (options) {
 		imageResource,
 		paused = false,
 		frameCnt = 0,
-		resetOnComplete = options && options.resetOnComplete,
 		loopIndex = 0,
 		texture,
 		centerRegistrationPoint = options && options.centerRegistrationPoint,
@@ -78,6 +77,7 @@ BLOCKS.slice = function (options) {
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
+	slice.resetOnComplete = (options && options.resetOnComplete !== undefined) ? options.resetOnComplete : true;
 	slice.angle = (options && options.angle);
 	slice.alpha = (options && options.alpha) || 1;
 	slice.scale = (options && options.scale) || 1;
@@ -110,7 +110,7 @@ BLOCKS.slice = function (options) {
 							
 							} else {
 							
-								if (resetOnComplete) {
+								if (slice.resetOnComplete) {
 									// Reset the frame back to the first frame
 									curFrameIndex = 0;
 									slice.dirty = true;
