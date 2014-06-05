@@ -123,8 +123,18 @@ BLOCKS.container = function (game) {
 		
 		if (container.visible) {
 		
+			// Check if any layers were set to dirty (or the container is dirty)
+			for (key in container.layers) {
+				if (container.layers.hasOwnProperty(key)) {
+					if (container.layers[key].dirty || container.dirty) {
+						dirtyLayers[key] = container.layers[key];
+					}
+				}
+			}
+			
+			// Check if any views are dirty
 			for (i = 0; i < views.length; i += 1) {
-				if (views[i].dirty || container.dirty || views[i].layer.dirty) {
+				if (views[i].dirty/* || container.dirty || views[i].layer.dirty*/) {
 					dirtyLayers[views[i].layer.name] = views[i].layer;
 				}
 			}
