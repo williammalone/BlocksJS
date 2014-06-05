@@ -117,6 +117,10 @@ BLOCKS.slice = function (options) {
 								}
 								paused = true;
 								slice.dispatchEvent("complete");
+								if (slice.callback) {
+									slice.callback();
+									slice.callback = null;
+								}
 							}
 						}
 					} else {
@@ -145,6 +149,8 @@ BLOCKS.slice = function (options) {
 	};
 	
 	slice.reset = function () {
+	
+		slice.callback = null;
 		
 		if (frameCnt !== 0 || curFrameIndex !== 0 || loopIndex !== 0) {
 			slice.dirty = true;
@@ -155,17 +161,21 @@ BLOCKS.slice = function (options) {
 	};
 	
 	slice.stop = function () {
+	
 		paused = true;
 		slice.reset();
 	};
 	
-	slice.play = function () {
+	slice.play = function (callback) {
 		
 		// If on the last frame then start over
 		if (curFrameIndex >= slice.numberOfFrames - 1) {
 			slice.stop();
 		}
 		paused = false;
+		
+		// Assign an optional callback to be played once the animation is complete
+		slice.callback = callback;
 	};
 	
 	slice.render = function () {

@@ -141,7 +141,7 @@ BLOCKS.block = function (options) {
 		}
 	};
 	
-	block.setSlice = function (name) {
+	block.setSlice = function (name, callback) {
 	
 		var i, slice;
 		
@@ -160,7 +160,7 @@ BLOCKS.block = function (options) {
 			assignBlockProperties();
 			curSlice.reset();
 			if (curSlice.autoPlay) {
-				curSlice.play();
+				curSlice.play(callback);
 			}
 			
 			return true;
@@ -230,9 +230,9 @@ BLOCKS.block = function (options) {
 		curSlice.stop();
 	};
 	
-	block.play = function () {
+	block.play = function (callback) {
 		
-		curSlice.play();
+		curSlice.play(callback);
 	};
 	
 	block.isPointInside = function (point) {
