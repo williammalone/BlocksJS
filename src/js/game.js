@@ -101,6 +101,8 @@ BLOCKS.game = function (spec, element) {
 		
 		init = function () {
 		
+			var i;
+		
 			gameContainer = document.createElement("article");
 			gameContainer.id = "BlocksGameContainer";
 			if (spec && spec.minHeight) {
@@ -125,16 +127,16 @@ BLOCKS.game = function (spec, element) {
 			
 			game.controller = BLOCKS.controller(interactionContainer);
 			
+			for (i = 0; i < 10; i += 1) {
+				game.addLayer("blocksGameLayer" + (i + 1));
+			}
+			
 			if (game.debug) {
 
 				virtualKeyboard = BLOCKS.virtualKeyboard(game.controller, {
-					layer: game.createLayer("internalblocksjsdebuglayer", {
+					layer: game.addLayer("internalblocksjsdebuglayer", {
 						zIndex: 999999
 					}, false),
-					x: 100,
-					y: 100,
-					width: game.width - 200,
-					height: game.height - 200,
 					customKeys: spec.customVirtualKeys
 				});
 			}
@@ -222,18 +224,22 @@ BLOCKS.game = function (spec, element) {
 		},
 		
 		gameRender = function () {
+			
+			var e = {
+				camera: game.camera
+			};
 		
 			if (!paused) {
 
-				game.dispatchEvent("preRender");
+				game.dispatchEvent("preRender", e);
 			
 				if (game.debug) {
-					virtualKeyboard.render();
+					virtualKeyboard.render(e);
 				}
-			
-				game.render();
 				
-				game.dispatchEvent("postRender");
+				game.render(e);
+				
+				game.dispatchEvent("postRender", e);
 			}
 		},
 		
@@ -360,19 +366,18 @@ BLOCKS.game = function (spec, element) {
 		
 		resizeGame = function () {
 		
-			var viewportWidth, viewportHeight, maxGameWidth, maxGameHeight, newGameWidth, newGameHeight, newGameX, newGameY;
-
+			var i, viewportWidth, viewportHeight, newGameWidth, newGameHeight, newGameX, newGameY, gameContainerWidth, gameContainerHeight, gameAspectRatio, gameSafeAspectRatio, viewportAspectRatio;
+			
 			// Get the dimensions of the viewport
 			viewportWidth = game.element.offsetWidth;
-			maxGameWidth = viewportWidth;
 			viewportHeight = game.element.offsetHeight;
-			maxGameHeight = viewportHeight;
 			
 			// If the viewport is greater than the minumum game height use the miniumum instead
-			if (minHeight && maxGameHeight < minHeight) {
-				maxGameHeight = minHeight;
+			if (minHeight && viewportHeight < minHeight) {
+				viewportHeight = minHeight;
 			}
 		
+			// If the game should not be scaled
 			if (!scaleLandscape && Math.abs(window.orientation) === 90 || 
 				!scalePortrait && Math.abs(window.orientation) !== 90) {
 			
@@ -381,49 +386,85 @@ BLOCKS.game = function (spec, element) {
 				
 			} else {
 			
-				// Calculate the new game height so it's proportional to the viewport width
-				newGameHeight = (game.height / game.width) * maxGameWidth;
+				viewportAspectRatio = viewportHeight / viewportWidth;
+				gameAspectRatio = game.height / game.width;
 				
-				// If the new game height is greater than the viewport then use the max instead
-				if (newGameHeight > maxGameHeight) {
-					newGameHeight = maxGameHeight;
+				if (gameAspectRatio > viewportAspectRatio) {
+
+					// Landscape letterbox on top and bottom
+					if (game.safeHeight / game.width > viewportAspectRatio) {
+//BLOCKS.debug("1");
+						gameContainerHeight = viewportHeight * game.height / game.safeHeight;
+						gameContainerWidth = gameContainerHeight / gameAspectRatio;
+					// Landscape cropping game on right and left
+					} else {
+//BLOCKS.debug("2");
+						gameContainerWidth = viewportWidth;
+						gameContainerHeight = gameContainerWidth * gameAspectRatio;
+					}
+
+				} else {
+					// Landscape cropping game on right and left
+					if (game.height / game.safeWidth > viewportAspectRatio) {
+//BLOCKS.debug("3");
+						gameContainerHeight = viewportHeight;
+						gameContainerWidth = gameContainerHeight / gameAspectRatio;
+					// Portrait Letterbox on top and bottom
+					} else { 
+//BLOCKS.debug("4");
+						gameContainerWidth = viewportWidth * game.width / game.safeWidth;
+						gameContainerHeight = gameContainerWidth * gameAspectRatio;
+					}
 				}
-			
-				// Calculate the new game width so it's is proportional to the new height
-				newGameWidth = newGameHeight / (game.height / game.width);
+
+				newGameWidth = gameContainerWidth;
+				newGameHeight = gameContainerHeight;
 			}
 			
 			// If the game is not wide enough to fill the viewport
-			if (newGameWidth < viewportWidth) {
+			//if (newGameWidth < viewportWidth) {
 				newGameX = (viewportWidth - newGameWidth) / 2;
-			} else {
-				newGameX = 0;
-			}
+			//} else {
+			//	newGameX = 0;
+			//}
 
 			// If the game is not tall enough to fill the viewport
-			if (newGameHeight < viewportHeight) {
+			//if (newGameHeight < viewportHeight) {
 				newGameY = (viewportHeight - newGameHeight) / 2;
+			//} else {
+			//	newGameY = 0;
+			//}
+			
+			// Save the game scale amount
+			game.scale = newGameWidth / game.width;
+			
+			if (newGameX < 0) {
+				game.camera.x = -newGameX / game.scale;
 			} else {
-				newGameY = 0;
+				game.camera.x = 0;
 			}
-			
+			if (newGameY < 0) {
+				game.camera.y = -newGameY / game.scale;
+			} else {
+				game.camera.y = 0;
+			}
+
 			// Set the new padding of the game so it will be centered
-            gameContainer.style.padding = newGameY + "px " + newGameX + "px";
-            
-            // Set the new dimensions of the game
-			gameContainer.style.width = (newGameWidth - newGameX * 2) + "px";
-			gameContainer.style.height = (newGameHeight - newGameY * 2) + "px";
-			
-			// Set the new dimensions of the interaction container
-			interactionContainer.style.width = (newGameWidth) + "px";
-			interactionContainer.style.height = (newGameHeight) + "px";
+            gameContainer.style.padding = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
 			
 			// Tell the controller the game dimensions
 			game.controller.scaleX = game.width / newGameWidth;
 			game.controller.scaleY = game.height / newGameHeight;
+			
+			game.camera.width = (viewportWidth - Math.max(newGameX, 0) * 2) / game.scale;
+			game.camera.height = (viewportHeight - Math.max(newGameY, 0) * 2) / game.scale;
+			
+//BLOCKS.debug("Resize Game -> camera: " + game.camera.width + " x " + game.camera.height + " (" + game.camera.x + ", " + game.camera.y + ") ");
 
-			// Save the game scale amount
-			game.scale = newGameWidth / game.width;
+			for (i = 0; i < game.layers.length; i += 1) {			
+				game.layers[i].width = game.camera.width;
+				game.layers[i].height = game.camera.height;
+			}
 			
 			game.dispatchEvent("resize");
 		};
@@ -431,6 +472,8 @@ BLOCKS.game = function (spec, element) {
 	game.layers = [];
 	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
 	game.height = (spec && spec.height !== undefined) ? spec.height : 768;
+	game.safeWidth = (spec && spec.safeWidth);
+	game.safeHeight = (spec && spec.safeHeight);
 	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
 	game.scale = 1;
 	game.stage = BLOCKS.container(game);
@@ -479,9 +522,9 @@ BLOCKS.game = function (spec, element) {
 		game.stage.update();
 	};
 	
-	game.render = function () {
-	
-		game.stage.render();
+	game.render = function (e) {
+
+		game.stage.render(e);
 	};
 	
 	game.getLayer = function (name) {
@@ -502,10 +545,10 @@ BLOCKS.game = function (spec, element) {
 		}
 		options.parentElement = interactionContainer;
 		if (!options.width) {
-			options.width = game.width;
+			options.width = game.camera.width;
 		}
 		if (!options.height) {
-			options.height = game.height;
+			options.height = game.camera.height;
 		}
 		
 		return BLOCKS.layer(name, options);
@@ -534,13 +577,17 @@ BLOCKS.game = function (spec, element) {
 	
 	game.removeLayer = function (name) {
 	
-		var layer = game.getLayer(name);
-	
-		if (layer) {
-			game.destroyLayer(layer);
-		} else {
-			BLOCKS.warn("Cannot remove layer '" + name + "' because it cannot be found.");
+		var i;
+		
+		for (i = 0; i < game.layers.length; i += 1) {
+			if (game.layers[i].name === name) {
+				game.destroyLayer(game.layers[i]);
+				game.layers.splice(i, 1);
+				return true;
+			}
 		}
+	
+		BLOCKS.warn("Cannot remove layer '" + name + "' because it cannot be found.");
 	};
 	
 	game.addMotor = function (type) {
@@ -668,9 +715,9 @@ BLOCKS.game = function (spec, element) {
 		lastUpdateTime = + new Date();
 		remainingUpdate = 0;
 		
-		for (i = 0; i < 10; i += 1) {
-			game.addLayer("blocksGameLayer" + (i + 1));
-		}
+		//for (i = 0; i < 10; i += 1) {
+		//	game.addLayer("blocksGameLayer" + (i + 1));
+		//}
 
 		if (game.prepare) {
 			game.prepare();

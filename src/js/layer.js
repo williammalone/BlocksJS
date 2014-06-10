@@ -23,12 +23,12 @@ BLOCKS.layer = function (name, options) {
 	var layer = {},
 		canvasElement,
 		parentElement,
+		width = (options && options.width) || 1000,
+		height = (options && options.height) || 1000,
 		zIndex = (options && options.zIndex !== undefined) ? options.zIndex : 0;
 	
 	// Public Properties
 	layer.name = name;
-	layer.width = options && options.width;
-	layer.height = options && options.height;
 	layer.x = options && options.x;
 	layer.y = options && options.y;
 	
@@ -44,7 +44,7 @@ BLOCKS.layer = function (name, options) {
 		} else {
 			// Not using clear rect due to Samsung render issues
 			//layer.ctx.clearRect(0, 0, layer.ctx.canvas.width, layer.ctx.canvas.height);
-			layer.ctx.canvas.width = layer.ctx.canvas.width;
+			canvasElement.width = canvasElement.width;
 		}
 		
 		layer.dirty = false;
@@ -63,6 +63,32 @@ BLOCKS.layer = function (name, options) {
 		layer = null;
 	};
 	
+	Object.defineProperty(layer, "width", {
+		get: function () {
+			return width;
+		},
+		set: function (value) {
+			if (value !== width) {
+				layer.dirty = true;
+				width = value;
+				canvasElement.width = width;
+			}
+		}
+	});
+	
+	Object.defineProperty(layer, "height", {
+		get: function () {
+			return height;
+		},
+		set: function (value) {
+			if (value !== height) {
+				layer.dirty = true;
+				height = value;
+				canvasElement.height = height;
+			}
+		}
+	});
+	
 	if (!options) {
 		options = {};
 	}
@@ -72,8 +98,8 @@ BLOCKS.layer = function (name, options) {
 		var i, children, layerInserted;
 		
 		canvasElement = document.createElement("canvas");
-		canvasElement.width = layer.width || 1000;
-		canvasElement.height = layer.height || 1000;
+		canvasElement.width = width;
+		canvasElement.height = height;
 		canvasElement.className = "BlocksCanvas";
 		canvasElement.style.zIndex = zIndex;
 		if (layer.name) {

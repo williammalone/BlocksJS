@@ -239,8 +239,13 @@ BLOCKS.motors.move = function (spec) {
 			x: 0,
 			y: 0
 		},
+		totalDist = BLOCKS.toolbox.dist(curOffset, offset),
 		angle = BLOCKS.toolbox.angle(curOffset, offset),
+		curTick,
+		totalTicks,
 		speed = spec.speed,
+		duration,
+		easing = spec.easing,
 		deltaX,
 		deltaY;
 	
@@ -260,11 +265,14 @@ BLOCKS.motors.move = function (spec) {
 	// Public Methods
 	motor.tick = function () {
 	
-		var distLeft, moveAmt = {};
+		var distLeft, curTime, easeAmt,
+			moveAmt = {};
 	
 		if (!destroyed) {
 		
 			distLeft = BLOCKS.toolbox.dist(curOffset, offset);
+			
+			curTick += 1;
 			
 			object.dirty = true;
 			object.layer.dirty = true;
@@ -283,6 +291,16 @@ BLOCKS.motors.move = function (spec) {
 					motor.destroy();
 				}
 			} else {
+				
+				if (easing === "easeIn") {
+					easeAmt =  Math.pow(curTick / totalTicks, 4) * totalDist;
+					deltaX = easeAmt * Math.cos(angle) - curOffset.x;
+					deltaY = easeAmt * Math.sin(angle) - curOffset.y;
+				} else if (easing === "easeOut") {
+					easeAmt = -(Math.pow(curTick / totalTicks - 1, 4) - 1) * totalDist;
+					deltaX = easeAmt * Math.cos(angle) - curOffset.x;
+					deltaY = easeAmt * Math.sin(angle) - curOffset.y;
+				}
 				curOffset.x += deltaX;
 				curOffset.y += deltaY;
 				object.x += deltaX;
@@ -292,19 +310,27 @@ BLOCKS.motors.move = function (spec) {
 	};
 	
 	(function () {
+		if (!totalDist) {
+			motor.destroy();
+			return null;
+		}
+		
 		if (clock) {
 			clock.addEventListener("tick", motor.tick);
 		}
-		
-		if (!speed) {
-			if (spec.duration) {
-				speed = BLOCKS.toolbox.dist(curOffset, offset) / (60 * (spec.duration / 1000));
-			} else {
-				speed = 1;
-			}
+
+		if (spec.duration) {
+			duration = spec.duration;
+			speed = totalDist / (spec.duration / 1000 * 60);
+		} else {
+			duration = (totalDist / speed) * (1000 / 60);
 		}
+
 		deltaX = speed * Math.cos(angle);
 		deltaY = speed * Math.sin(angle);
+		
+		curTick = 0;
+		totalTicks = totalDist / speed;
 	}());
 	
 	return motor;

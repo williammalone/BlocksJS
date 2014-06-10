@@ -86,10 +86,10 @@ BLOCKS.loadingScreen = function (spec, game) {
 		prepare = function () {
 		
 			layers = {
-				loadingBg: game.createLayer("loadingBg", {
+				loadingBg: game.addLayer("loadingBg", {
 					enableWebGL: false
 				}),
-				loading: game.createLayer("loading")
+				loading: game.addLayer("loading")
 			};
 
 			bg = BLOCKS.slice({
@@ -153,13 +153,13 @@ BLOCKS.loadingScreen = function (spec, game) {
 				layers.loading.ctx.fillText(Math.round(curPercentage * 100, 10) + "%", messageX, messageY);
 			}
 			
-			bg.render();
+			bg.render(game);
 			
 			if (progressBar) {
-				progressBar.render();
+				progressBar.render(game);
 			}
 			if (animation) {
-				animation.render();
+				animation.render(game);
 			}
 		};
 	
@@ -168,10 +168,10 @@ BLOCKS.loadingScreen = function (spec, game) {
 		if (clock) {
 			clock.destroy();
 			
-			layers.loadingBg.destroy();
-			layers.loadingBg = null;
-			layers.loading.destroy();
-			layers.loading = null;
+			if (layers) {
+				game.removeLayer("loadingBg");
+				game.removeLayer("loading");
+			}
 			
 			bg.destroy();
 			bg = null;

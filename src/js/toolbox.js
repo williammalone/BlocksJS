@@ -59,12 +59,6 @@ BLOCKS.toolbox.randomizeArr = function (arr) {
 	for (i = arr.length; i; j = parseInt(Math.random() * i, 10), k = arr[--i], arr[i] = arr[j], arr[j] = k) {
 		// Loop until randomized
 	}
-	
-    return arr;
-
-	//return arr.sort(function () {
-	//	return (Math.round(Math.random()) - 0.5);
-	//});
 };
 
 BLOCKS.toolbox.isPointInsideRect = function (point, rect) {

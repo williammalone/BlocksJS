@@ -20,20 +20,157 @@ BLOCKS.stack = function (options) {
 	
 	"use strict";
 	
-	var stack = BLOCKS.eventDispatcher();
+	var stack = BLOCKS.eventDispatcher(),
+		blocks = [],
+		dirty,
+		alpha;
 	
 	// Public Properties
 	stack.x = (options && options.x) || 0;
 	stack.y = (options && options.y) || 0;
+	stack.visible = true;
 	
 	// Public Methods
-	stack.update = function () {
-
+	stack.addBlock = function (block) {
+	
+		block.stack = stack;
+		blocks.push(block);
 	};
 	
-	stack.render = function () {
-
+	stack.getBlock = function (name) {
+	
+		var i;
+		
+		for (i = 0; i < blocks.length; i += 1) {
+			if (blocks[i].name === name) {
+				return blocks[i];
+			}
+		}
 	};
+	
+	stack.removeBlock = function (block) {
+	
+		var i;
+		
+		for (i = 0; i < blocks.length; i += 1) {
+			if (blocks[i] === block) {
+				blocks[i].splice(i, 1);
+				break;
+			}
+		}
+	};
+	
+	stack.show = function () {
+	
+		var i;
+	
+		if (!stack.visible) {
+			stack.visible = true;
+
+			for (i = 0; i < blocks.length; i += 1) {
+				blocks[i].show();
+			}
+		}
+	};
+	
+	stack.hide = function () {
+	
+		var i;
+		
+		if (stack.visible) {
+			stack.visible = false;
+			stack.dirty = true;
+			
+			blocks[i].hide();
+		}
+	};
+	
+	stack.isPointInside = function (pos) {
+	
+		var i;
+		
+		for (i = 0; i < blocks.length; i += 1) {
+			if (blocks[i].isPointInside(pos)) {
+				return true;
+			}
+		}
+		
+		return false;
+	};
+	
+	stack.destroy = function () {
+	
+		var i;
+		
+		for (i = 0; i < blocks.length; i += 1) {
+			if (blocks[i].layer && blocks[i].layer.container) {
+				blocks[i].layer.container.removeView(blocks[i]);
+			}
+			blocks[i].destroy();
+		}
+		blocks = [];
+		stack = null;
+	};
+	
+	Object.defineProperty(stack, "dirty", {
+		get: function () {
+			return dirty;
+		},
+		set: function (value) {
+			var i;
+				
+			for (i = 0; i < blocks.length; i += 1) {
+				blocks[i].dirty = value;
+			}
+		}
+	});
+	
+	Object.defineProperty(stack, "alpha", {
+		get: function () {
+			return alpha !== undefined ? alpha : 1;
+		},
+		set: function (value) {
+			var i;
+			
+			alpha = value;
+				
+			for (i = 0; i < blocks.length; i += 1) {
+				blocks[i].alpha = value;
+			}
+		}
+	});
+	
+	Object.defineProperty(stack, "width", {
+		get: function () {
+		
+			var i, 
+				largestWidth = 0;
+				
+			for (i = 0; i < blocks.length; i += 1) {
+				if (blocks[i].width > largestWidth) {
+					largestWidth = blocks[i].width;
+				}
+			}
+		
+			return largestWidth;
+		}
+	});
+	
+	Object.defineProperty(stack, "height", {
+		get: function () {
+		
+			var i, 
+				largestHeight = 0;
+				
+			for (i = 0; i < blocks.length; i += 1) {
+				if (blocks[i].height > largestHeight) {
+					largestHeight = blocks[i].height;
+				}
+			}
+		
+			return largestHeight;
+		}
+	});
 	
 	return stack;
 };

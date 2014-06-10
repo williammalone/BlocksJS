@@ -32,7 +32,9 @@ BLOCKS.slice = function (options) {
 		centerRegistrationPoint = options && options.centerRegistrationPoint,
 		drawBounds = false, // This is used for debug only
 		tmpCtx, // Used when colorizing
-
+		x = (options && options.x) || 0,
+		y = (options && options.y) || 0,
+		
 		// Private Methods
 		onResourceLoaded = function () {
 		
@@ -60,8 +62,8 @@ BLOCKS.slice = function (options) {
 	slice.name = (options && options.name !== undefined) ? options.name : undefined;
 	slice.width = (options && options.width) || 0;
 	slice.height = (options && options.height) || 0;
-	slice.x = 0;
-	slice.y = 0;
+	//slice.x = 0;
+	//slice.y = 0;
 	slice.offsetX = (options && options.offsetX) || 0;
 	slice.offsetY = (options && options.offsetY) || 0;
 	slice.frameOffsetX = (options && options.frameOffsetX) || 0;
@@ -84,7 +86,7 @@ BLOCKS.slice = function (options) {
 	
 	// Public Methods
 	slice.update = function () {
-		
+			
 		if (!paused) {
 		
 			// If the slice has an image associated with it
@@ -116,11 +118,23 @@ BLOCKS.slice = function (options) {
 									slice.dirty = true;
 								}
 								paused = true;
-								slice.dispatchEvent("complete");
-								if (slice.callback) {
-									slice.callback();
-									slice.callback = null;
-								}
+								
+								(function () {
+								
+									var callback;
+
+									if (slice.callback) {
+										// Save the callback in case the slice is destroyed after the complete event
+										callback = slice.callback;
+										slice.callback = null;
+									}
+									// Dispatch the complete event before any callback
+									slice.dispatchEvent("complete");
+									// If there is a callback then invoke it now
+									if (callback) {
+										callback();
+									}
+								}());
 							}
 						}
 					} else {
@@ -178,9 +192,9 @@ BLOCKS.slice = function (options) {
 		slice.callback = callback;
 	};
 	
-	slice.render = function () {
+	slice.render = function (e) {
 	
-		var i, bounds, restoreNeeded, context;
+		var i, bounds, restoreNeeded, context, cameraOffset;
 		
 		// Prevent alpha from being negative
 		if (slice.alpha < 0) {
@@ -190,6 +204,11 @@ BLOCKS.slice = function (options) {
 		}
 		
 		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0) {
+		
+			cameraOffset = {
+				x: (e && e.camera && e.camera.x) || 0,
+				y: (e && e.camera && e.camera.y) || 0
+			};
 
 			// If the slice has an image associated with it
 			if (imageResource) {
@@ -202,8 +221,8 @@ BLOCKS.slice = function (options) {
 					//context.bindTexture(context.TEXTURE_2D, texture);
 				
 					//setBufferData(
-					//	slice.x, 
-					//	slice.y, 
+					//	x, 
+					//	y, 
 					//	slice.cropWidth || slice.width, 
 					//	slice.cropHeight || slice.height);
 						
@@ -224,9 +243,9 @@ BLOCKS.slice = function (options) {
 					}
 					
 					if (slice.angle) {
-						context.translate(slice.x, slice.y);
+						context.translate(x, y);
 						context.rotate(slice.angle * Math.PI / 180);
-						context.translate(-slice.x, -slice.y);
+						context.translate(-x, -y);
 					}
 					
 					if (slice.colorize) {
@@ -246,9 +265,9 @@ BLOCKS.slice = function (options) {
 							curFrameIndex * slice.width + slice.frameOffsetX,
 							slice.frameOffsetY,
 							slice.cropWidth || slice.width, 
-							slice.cropHeight || slice.height,
-							slice.x + slice.offsetX,
-							slice.y + slice.offsetY, 
+							slice.cropHeight || slice.height, 
+							x + slice.offsetX - cameraOffset.x,
+							y + slice.offsetY - cameraOffset.y,
 							slice.cropWidth || slice.width * slice.scale, 
 							slice.cropHeight || slice.height * slice.scale
 						);
@@ -259,8 +278,8 @@ BLOCKS.slice = function (options) {
 							slice.frameOffsetY,
 							slice.cropWidth || slice.width, 
 							slice.cropHeight || slice.height,
-							slice.x + slice.offsetX,
-							slice.y + slice.offsetY, 
+							x + slice.offsetX - cameraOffset.x,
+							y + slice.offsetY - cameraOffset.y, 
 							slice.cropWidth || slice.width * slice.scale,
 							slice.cropHeight || slice.height * slice.scale);
 					}
@@ -269,7 +288,7 @@ BLOCKS.slice = function (options) {
 						// Draw the color that should be overlayed over the image
 						context.fillStyle = slice.colorize;
 						context.globalCompositeOperation = "source-in";
-						context.fillRect(slice.x, slice.y, slice.width, slice.height);
+						context.fillRect(x, y, slice.width, slice.height);
 						context = slice.layer.ctx; // Change back from the temp context
 						context.drawImage(tmpCtx.canvas, 0, 0);
 					}
@@ -319,7 +338,7 @@ BLOCKS.slice = function (options) {
 					}
 					
 					context.beginPath();
-					context.arc(slice.x, slice.y, 7, 0, 2 * Math.PI, false);
+					context.arc(x, y, 7, 0, 2 * Math.PI, false);
 					context.fillStyle = "rgba(96, 255, 0, 0.5)";
 					context.fill();
 				}
@@ -362,8 +381,8 @@ BLOCKS.slice = function (options) {
 
 		if (boundingRectOnly || (!slice.hotspots && !slice.minHotspot)) {
 			bounds =  {
-				x: slice.x + slice.offsetX,
-				y: slice.y + slice.offsetY,
+				x: x + slice.offsetX,
+				y: y + slice.offsetY,
 				width: slice.width,
 				height: slice.height
 			};
@@ -372,8 +391,8 @@ BLOCKS.slice = function (options) {
 			if (slice.hotspots) {
 				for (i = 0; i < slice.hotspots.length; i += 1) {
 					bounds.push({
-						x: slice.x + slice.offsetX + slice.hotspots[i].x,
-						y: slice.y + slice.offsetY + slice.hotspots[i].y,
+						x: x + slice.offsetX + slice.hotspots[i].x,
+						y: y + slice.offsetY + slice.hotspots[i].y,
 						width: slice.hotspots[i].width,
 						height: slice.hotspots[i].height
 					});
@@ -385,8 +404,8 @@ BLOCKS.slice = function (options) {
 				extraHeight = slice.height < slice.minHotspot ? slice.minHotspot - slice.height : 0;
 
 				bounds.push({
-					x: slice.x + slice.offsetX - extraWidth / 2,
-					y: slice.y + slice.offsetY - extraHeight / 2,
+					x: x + slice.offsetX - extraWidth / 2,
+					y: y + slice.offsetY - extraHeight / 2,
 					width: slice.width + extraWidth,
 					height: slice.height + extraHeight
 				});
@@ -467,10 +486,31 @@ BLOCKS.slice = function (options) {
 	
 	slice.destroy = function () {
 	
+		if (slice) {
+			slice.dispatchEvent("destroyed", slice);
+		}
 		imageResource = null;
 		options = null;
 		slice = null;
 	};
+	
+	Object.defineProperty(slice, "x", {
+		get: function () {
+			return slice.stack ? slice.stack.x + x : x;
+		},
+		set: function (value) {
+			x = value;
+		}
+	});
+	
+	Object.defineProperty(slice, "y", {
+		get: function () {
+			return slice.stack ? slice.stack.y + y : y;
+		},
+		set: function (value) {
+			y = value;
+		}
+	});
 	
 	(function () {
 		

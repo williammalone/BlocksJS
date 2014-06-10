@@ -23,8 +23,9 @@ BLOCKS.container = function (game) {
 	var container = BLOCKS.eventDispatcher(),
 	
 		// Private Properties
-		views = [],
 		motors = [],
+		layers = [],
+		views = [],
 		
 		// Private Methods
 		motorDestroyed = function (motor) {
@@ -42,19 +43,17 @@ BLOCKS.container = function (game) {
 	// Public Properties
 	container.visible = true;
 	container.dirty = true;
-	container.layers = {};
 	
 	// Public Methods
-	container.assignLayer = function (name) {
+	/*container.assignLayer = function (name) {
 	
 		var i, key, found;
 		
 		if (container.layers[name]) {
-			BLOCKS.error("Layer already assigned to this container: " + name);
+			BLOCKS.error("Layer with this name already assigned to this container: " + name);
 		} else {
 			
 			for (i = 0; i < game.layers.length; i += 1) {
-			
 				found = false;
 				for (key in container.layers) {
 					if (container.layers.hasOwnProperty(key)) {
@@ -70,34 +69,71 @@ BLOCKS.container = function (game) {
 				}
 			}
 		}
+	};*/
+	
+	container.addLayer = function (layer) {
+	
+	};
+	
+	container.removeLayer = function (layer) {
+	
 	};
 	
 	container.addView = function (view) {
 	
+		var i, layerInArray;
+	
+		view.addEventListener("destroyed", container.removeView);
 		views.push(view);
+		
+		for (i = 0; i < layers.length; i += 1) {
+			if (view.layer === layers[i]) {
+				layerInArray = true;
+				break;
+			}
+		}
+		if (!layerInArray) {
+			layers.push(view.layer);
+		}
 	};
 	
 	container.removeView = function (view) {
 	
-		var i;
+		var i, layer, keepLayer;
+		
+		view.removeEventListener("destroyed", container.removeView);
 		
 		for (i = 0; i < views.length; i += 1) {
 			
 			if (view === views[i]) {
+				layer = views.layer;
 				views.splice(i, 1);
 				break;
+			}
+		}
+		
+		for (i = 0; i < views.length; i += 1) {
+			if (view.layer === layer) {
+				keepLayer = true;
+				break;
+			}
+		}
+		if (!keepLayer) {
+			for (i = 0; i < layers.length; i += 1) {
+				if (layer === layers[i]) {
+					layers.splice(i, 1);
+					break;
+				}
 			}
 		}
 	};
 	
 	container.clear = function () {
 	
-		var key;
+		var i;
 			
-		for (key in container.layers) {
-			if (container.layers.hasOwnProperty(key)) {
-				container.layers[key].clear();
-			}
+		for (i = 0; i < layers.length; i += 1) {
+			container.layers[i].clear();
 		}
 	};
 	
@@ -105,6 +141,24 @@ BLOCKS.container = function (game) {
 	
 		motor.addEventListener("destroyed", motorDestroyed);
 		motors.push(motor);
+	};
+	
+	container.removeMotors = function (type) {
+		
+		var i, motorArr = [];
+		
+		for (i = 0 ; i < motors.length; i += 1)  {
+			if (type) {
+				if (motors[i].type === type) {
+					motors[i].destroy();
+				} else {
+					motorArr.push(motors[i]);
+				}
+			} else {
+				motors[i].destroy();
+			}
+		}
+		motors = motorArr;
 	};
 	
 	container.update = function () {
@@ -116,40 +170,39 @@ BLOCKS.container = function (game) {
 		}
 	};
 	
-	container.render = function () {
+	container.render = function (e) {
 	
 		var i, key,
 			dirtyLayers = {};
-		
-		if (container.visible) {
-		
-			// Check if any layers were set to dirty (or the container is dirty)
-			for (key in container.layers) {
-				if (container.layers.hasOwnProperty(key)) {
-					if (container.layers[key].dirty || container.dirty) {
-						dirtyLayers[key] = container.layers[key];
-					}
-				}
+
+		// Check if any layers were set to dirty (or the container is dirty)
+		for (i = 0; i < layers.length; i += 1) {
+			if (layers[i].dirty || container.dirty) {
+				dirtyLayers[layers[i].name] = layers[i];
 			}
-			
-			// Check if any views are dirty
-			for (i = 0; i < views.length; i += 1) {
-				if (views[i].dirty/* || container.dirty || views[i].layer.dirty*/) {
-					dirtyLayers[views[i].layer.name] = views[i].layer;
-				}
-			}
-			
-			for (key in dirtyLayers) {
-				if (dirtyLayers.hasOwnProperty(key)) {
-					dirtyLayers[key].clear();
-				}
-			}
+		}
 		
-			for (i = 0; i < views.length; i += 1) {
-				if (dirtyLayers[views[i].layer.name]) {
-					views[i].dirty = true;
-				}
-				views[i].render();
+		// If any view is dirty then mark its layer dirty
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i].dirty) {
+				dirtyLayers[views[i].layer.name] = views[i].layer;
+			}
+		}
+		
+		// Clear all dirty layers
+		for (key in dirtyLayers) {
+			if (dirtyLayers.hasOwnProperty(key)) {
+				dirtyLayers[key].clear();
+			}
+		}
+	
+		// Mark all container views dirty
+		for (i = 0; i < views.length; i += 1) {
+			if (dirtyLayers[views[i].layer.name]) {
+				views[i].dirty = true;
+			}
+			if (container.visible) {
+				views[i].render(e);
 			}
 		}
 		
@@ -161,10 +214,13 @@ BLOCKS.container = function (game) {
 		var i;
 		
 		for (i = 0; i < views.length; i += 1) {
+			container.removeView(views[i]);
 			views[i].destroy();
 			views[i] = null;
 		}
 		views = null;
+		layers = null;
+		motors = null;
 	};
 	
 	return container;

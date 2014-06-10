@@ -29,6 +29,9 @@ BLOCKS.block = function (options) {
 		name = options && options.name,
 		motors = [],
 		layer = options && options.layer,
+		stack,
+		x = (options && options.x) || 0,
+		y = (options && options.y) || 0,
 		
 		assignBlockProperties = function () {
 		
@@ -45,9 +48,9 @@ BLOCKS.block = function (options) {
 			} else if (block.alpha > 1) {
 				block.alpha = 1;
 			}
+			curSlice.alpha = block.alpha;
 			curSlice.cropWidth = block.cropWidth;
 			curSlice.cropHeight = block.cropHeight;
-			curSlice.alpha = block.alpha;
 			curSlice.colorize = block.colorize;
 		},
 		
@@ -64,6 +67,7 @@ BLOCKS.block = function (options) {
 		};
 	
 	// Public Properties
+	block.name = (options && options.name !== undefined) ? options.name : undefined;
 	block.x = (options && options.x) || 0;
 	block.y = (options && options.y) || 0;
 	block.angle = (options && options.angle) || 0;
@@ -85,7 +89,7 @@ BLOCKS.block = function (options) {
 		}
 	};
 	
-	block.render = function () {
+	block.render = function (e) {
 		
 		if (block && (block.dirty || curSlice.dirty)) {
 		
@@ -97,7 +101,7 @@ BLOCKS.block = function (options) {
 		
 			assignBlockProperties();
 			curSlice.dirty = true;
-			curSlice.render();
+			curSlice.render(e);
 			
 			block.dirty = false;
 		}
@@ -192,7 +196,7 @@ BLOCKS.block = function (options) {
 		motors.push(motor);
 	};
 	
-	block.stopMotors = function (type) {
+	block.removeMotors = function (type) {
 		
 		var i, motorArr = [];
 		
@@ -267,9 +271,12 @@ BLOCKS.block = function (options) {
 		var i;
 		
 		if (block) {
-			block.stopMotors();
+			block.removeMotors();
 			
 			for (i = 0; i < slicesArr.length; i += 1) {
+				if (slicesArr[i].layer && slicesArr[i].layer.container) {
+					slicesArr[i].layer.container.removeView(slicesArr[i]);
+				}
 				slicesArr[i].destroy();
 			}
 			slicesArr = null;
@@ -279,6 +286,41 @@ BLOCKS.block = function (options) {
 			block = null;
 		}
 	};
+	
+	Object.defineProperty(block, "stack", {
+		get: function () {
+		
+			return stack;
+		},
+		set: function (value) {
+		
+			var i;
+			
+			stack = value;
+			
+			for (i = 0; i < slicesArr.length; i += 1) {
+				slicesArr[i].stack = stack;
+			}
+		}
+	});
+	
+	Object.defineProperty(block, "x", {
+		get: function () {
+			return block.stack ? block.stack.x + x : x;
+		},
+		set: function (value) {
+			x = block.stack ? value - block.stack.x : value;
+		}
+	});
+	
+	Object.defineProperty(block, "y", {
+		get: function () {
+			return block.stack ? block.stack.y + y : y;
+		},
+		set: function (value) {
+			y = block.stack ? value - block.stack.y : value;
+		}
+	});
 	
 	(function () {
 		var i, spec = options && options.spec;
