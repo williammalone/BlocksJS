@@ -67,10 +67,9 @@ BLOCKS.game = function (spec, element) {
 			if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
 				if (window.orientation === 90 || window.orientation === -90) {
 					window.scrollTo(0, 0);
+					resizeGame();
 				}
 			}
-			
-			resizeGame();
 		},
 		
 		onVisibilityChange = function () {
@@ -468,7 +467,7 @@ BLOCKS.game = function (spec, element) {
 			
 			game.dispatchEvent("resize");
 		};
-	
+
 	game.layers = [];
 	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
 	game.height = (spec && spec.height !== undefined) ? spec.height : 768;

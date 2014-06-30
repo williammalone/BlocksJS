@@ -124,12 +124,11 @@ BLOCKS.motor = function () {
 	var motor = BLOCKS.eventDispatcher(),
 		destroyed = false;
 	
-	// Public Properties
+	// Public Methods
 	motor.destroy = function () {
 		destroyed = true;	
 	};
 	
-	// Public Methods
 	motor.tick = function () {
 	
 		if (!destroyed) {

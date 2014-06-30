@@ -27,8 +27,8 @@ BLOCKS.block = function (options) {
 		slicesObj = {},
 		curSlice,
 		name = options && options.name,
-		motors = [],
 		layer = options && options.layer,
+		motors = [],
 		stack,
 		x = (options && options.x) || 0,
 		y = (options && options.y) || 0,
@@ -68,8 +68,6 @@ BLOCKS.block = function (options) {
 	
 	// Public Properties
 	block.name = (options && options.name !== undefined) ? options.name : undefined;
-	block.x = (options && options.x) || 0;
-	block.y = (options && options.y) || 0;
 	block.angle = (options && options.angle) || 0;
 	block.scale = (options && options.scale !== undefined) ? options.scale : 1;
 	block.alpha = (options && options.alpha !== undefined) ? options.alpha : 1;

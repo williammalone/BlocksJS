@@ -111,21 +111,21 @@ BLOCKS.toolbox.vector = function (x, y) {
 	return vector;
 };
 
-BLOCKS.toolbox.sum = function(a, b) {
+BLOCKS.toolbox.sum = function(p1, p2) {
 	return {
-		x: a.x + b.x,
-		y: a.y + b.y
+		x: p1.x + p2.x,
+		y: p1.y + p2.y
 	};
 };
 
-BLOCKS.toolbox.diff = function(a, b) {
+BLOCKS.toolbox.diff = function(p1, p2) {
 
 	return {
-		x: a.x - b.x,
-		y: a.y - b.y
+		x: p1.x - p2.x,
+		y: p1.y - p2.y
 	};
 };
 
-BLOCKS.toolbox.dot = function (a, b) {
-	return a.x * b.x + a.y * b.y;
+BLOCKS.toolbox.dot = function (p1, p2) {
+	return p1.x * p2.x + p1.y * p2.y;
 };

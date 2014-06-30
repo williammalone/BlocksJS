@@ -23,8 +23,8 @@ BLOCKS.layer = function (name, options) {
 	var layer = {},
 		canvasElement,
 		parentElement,
-		width = (options && options.width) || 1000,
-		height = (options && options.height) || 1000,
+		width = (options && options.width) || 300,
+		height = (options && options.height) || 150,
 		zIndex = (options && options.zIndex !== undefined) ? options.zIndex : 0;
 	
 	// Public Properties
