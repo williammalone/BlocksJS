@@ -362,7 +362,7 @@ BLOCKS.game = function (spec, element) {
 			}
 		},
 		
-		resizeGame = function () {
+		/*resizeGame = function () {
 		
 			var i, viewportWidth, viewportHeight, newGameWidth, newGameHeight, newGameX, newGameY, gameContainerWidth, gameContainerHeight, gameAspectRatio, gameSafeAspectRatio, viewportAspectRatio;
 			
@@ -456,6 +456,65 @@ BLOCKS.game = function (spec, element) {
 			
 			game.camera.width = (viewportWidth - Math.max(newGameX, 0) * 2) / game.scale;
 			game.camera.height = (viewportHeight - Math.max(newGameY, 0) * 2) / game.scale;
+			
+//BLOCKS.debug("Resize Game -> camera: " + game.camera.width + " x " + game.camera.height + " (" + game.camera.x + ", " + game.camera.y + ") ");
+
+			for (i = 0; i < game.layers.length; i += 1) {			
+				game.layers[i].width = game.camera.width;
+				game.layers[i].height = game.camera.height;
+			}
+			
+			game.dispatchEvent("resize");
+		},*/
+		
+		resizeGame = function () {
+		
+			var i, viewport, newGameWidth, newGameHeight, newGameX, newGameY;
+					
+			// Get the dimensions of the viewport
+			viewport = {
+				width: game.element.offsetWidth,
+				height: game.element.offsetHeight
+			};
+		
+			// Determine game size
+			if (game.height / game.width > viewport.height / viewport.width) {
+				if (game.safeHeight / game.width > viewport.height / viewport.width) {
+					// A
+					newGameHeight = viewport.height * game.height / game.safeHeight;
+					newGameWidth = newGameHeight * game.width / game.height;
+				} else {
+					// B
+					newGameWidth = viewport.width;
+					newGameHeight = newGameWidth * game.height / game.width;
+				}
+			} else {
+				if (game.height / game.safeWidth > viewport.height / viewport.width) {
+					// C
+					newGameHeight = viewport.height;
+					newGameWidth = newGameHeight * game.width / game.height;
+				} else {
+					// D
+					newGameWidth = viewport.width * game.width / game.safeWidth;
+					newGameHeight = newGameWidth * game.height / game.width;
+				}
+			}
+
+			game.element.style.width = newGameWidth + "px";
+			game.element.style.height = newGameHeight + "px";
+					
+			newGameX = (viewport.width - newGameWidth) / 2;
+			newGameY = (viewport.height - newGameHeight) / 2;
+					
+			// Set the new padding of the game so it will be centered
+			game.element.style.margin = newGameY + "px " + newGameX + "px";
+			
+			// Tell the controller the game dimensions
+			game.controller.scaleX = game.width / newGameWidth;
+			game.controller.scaleY = game.height / newGameHeight;
+			
+			game.camera.width = (viewport.width - Math.max(newGameX, 0) * 2) / game.scale;
+			game.camera.height = (viewport.height - Math.max(newGameY, 0) * 2) / game.scale;
 			
 //BLOCKS.debug("Resize Game -> camera: " + game.camera.width + " x " + game.camera.height + " (" + game.camera.x + ", " + game.camera.y + ") ");
 
