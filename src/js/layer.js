@@ -16,7 +16,7 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.layer = function (name, options) {
+BLOCKS.layer = function (options) {
 	
 	"use strict";
 	
@@ -28,7 +28,7 @@ BLOCKS.layer = function (name, options) {
 		zIndex = (options && options.zIndex !== undefined) ? options.zIndex : 0;
 	
 	// Public Properties
-	layer.name = name;
+	layer.name = options && options.name;
 	layer.x = options && options.x;
 	layer.y = options && options.y;
 	
@@ -103,7 +103,6 @@ BLOCKS.layer = function (name, options) {
 		canvasElement.className = "BlocksCanvas";
 		canvasElement.style.zIndex = zIndex;
 		if (layer.name) {
-			name = options.layer;
 			canvasElement.id = "BlocksCanvas_" + layer.name;
 		}
 		if (options.parentElement) {

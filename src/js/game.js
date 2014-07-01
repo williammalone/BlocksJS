@@ -569,7 +569,10 @@ BLOCKS.game = function (spec, element) {
 		
 		if (!game.getLayer(name)) {
 		
-			layer = game.createLayer(name, options);
+			options = options || {};
+			options.name = name;
+		
+			layer = game.createLayer(options);
 
 			game.layers.push(layer);
 			return layer;
