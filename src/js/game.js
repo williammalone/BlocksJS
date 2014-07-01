@@ -23,7 +23,6 @@ BLOCKS.game = function (spec, element) {
 	var game = BLOCKS.eventDispatcher(),
 		clock = BLOCKS.clock(),
 		gameContainer,
-		maxLoopDuration = (spec && spec.maxLoopDuration !== undefined) ? spec.maxLoopDuration : 500,
 		interactionContainer,
 		paused = false,
 		virtualKeyboard,
@@ -190,10 +189,10 @@ BLOCKS.game = function (spec, element) {
 				lastUpdateTime = now;	
 				
 				// If too much update then crop it
-				if (remainingUpdate > maxLoopDuration) {
+				if (remainingUpdate > game.maxLoopDuration) {
 				
-					BLOCKS.warn("Cannot keep up with game loop. Chopping " + Math.ceil((remainingUpdate - maxLoopDuration) / 60) + " frames.");
-					remainingUpdate = maxLoopDuration;
+					BLOCKS.warn("Cannot keep up with game loop. Chopping " + Math.ceil((remainingUpdate - game.maxLoopDuration) / 60) + " frames.");
+					remainingUpdate = game.maxLoopDuration;
 				}
 				
 				//if (remainingUpdate < 16.666666666666) {
@@ -467,6 +466,9 @@ BLOCKS.game = function (spec, element) {
 			
 			game.dispatchEvent("resize");
 		};
+	
+	// Define spec as empty object if it was specified as a parameter
+	spec = spec || {};
 
 	game.layers = [];
 	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
@@ -474,6 +476,7 @@ BLOCKS.game = function (spec, element) {
 	game.safeWidth = (spec && spec.safeWidth);
 	game.safeHeight = (spec && spec.safeHeight);
 	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
+	game.maxLoopDuration = (spec && spec.maxLoopDuration !== undefined) ? spec.maxLoopDuration : 500;
 	game.scale = 1;
 	game.stage = BLOCKS.container(game);
 	game.camera = BLOCKS.camera({
@@ -481,7 +484,8 @@ BLOCKS.game = function (spec, element) {
 		height: game.height
 	});
 	game.state = "intro";
-
+	
+	
 	game.pause = function () {
 	
 		if (!paused) {
