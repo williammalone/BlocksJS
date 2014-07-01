@@ -543,9 +543,9 @@ BLOCKS.game = function (spec, element) {
 	
 	game.createLayer = function (name, options) {
 	
-		if (!options) {
-			options = {};
-		}
+		options = options || {};
+		options.name = name;
+		
 		options.parentElement = interactionContainer;
 		if (!options.width) {
 			options.width = game.camera.width;
@@ -553,8 +553,8 @@ BLOCKS.game = function (spec, element) {
 		if (!options.height) {
 			options.height = game.camera.height;
 		}
-		
-		return BLOCKS.layer(name, options);
+
+		return BLOCKS.layer(options);
 	};
 		
 	game.destroyLayer = function (layer) {
@@ -569,10 +569,7 @@ BLOCKS.game = function (spec, element) {
 		
 		if (!game.getLayer(name)) {
 		
-			options = options || {};
-			options.name = name;
-		
-			layer = game.createLayer(options);
+			layer = game.createLayer(name, options);
 
 			game.layers.push(layer);
 			return layer;
