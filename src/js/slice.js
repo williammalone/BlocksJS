@@ -374,12 +374,11 @@ BLOCKS.slice = function (options) {
 		return collision;
 	};
 	
-	// - boundingRectOnly returns only the bounding rectangle
-	slice.getBounds = function (boundingRectOnly) {
+	slice.getBounds = function () {
 		
 		var i, bounds, extraWidth, extraHeight;
 
-		if (boundingRectOnly || (!slice.hotspots && !slice.minHotspot)) {
+		if (!slice.hotspots && !slice.minHotspot) {
 			bounds =  {
 				x: x + slice.offsetX,
 				y: y + slice.offsetY,
@@ -416,6 +415,16 @@ BLOCKS.slice = function (options) {
 		}
 
 		return bounds;
+	};
+	
+	slice.getBoundingBox = function () {
+	
+		return {
+			x: x + slice.offsetX,
+			y: y + slice.offsetY,
+			width: slice.width,
+			height: slice.height
+		};
 	};
 	
 	slice.isRectInside = function (rect) {

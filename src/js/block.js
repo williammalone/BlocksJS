@@ -243,10 +243,16 @@ BLOCKS.block = function (options) {
 		return curSlice.isPointInside(point);
 	};
 	
-	block.getBounds = function (boundingRectOnly) {
+	block.getBounds = function () {
 		
 		assignBlockProperties();
-		return curSlice.getBounds(boundingRectOnly);
+		return curSlice.getBounds();
+	};
+	
+	block.getBoundingBox = function () {
+		
+		assignBlockProperties();
+		return curSlice.getBoundingBox();
 	};
 	
 	block.isRectInside = function (rect) {
