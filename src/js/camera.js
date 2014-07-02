@@ -28,14 +28,5 @@ BLOCKS.camera = function (options) {
 	camera.width = (options && options.width) || 1024;
 	camera.height = (options && options.height) || 768;
 	
-	// Public Methods
-	camera.update = function () {
-
-	};
-	
-	camera.render = function () {
-
-	};
-	
 	return camera;
 };
