@@ -16,7 +16,7 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.container = function (game) {
+BLOCKS.container = function () {
 	
 	"use strict";
 	
@@ -43,33 +43,6 @@ BLOCKS.container = function (game) {
 	// Public Properties
 	container.visible = true;
 	container.dirty = true;
-	
-	// Public Methods
-	/*container.assignLayer = function (name) {
-	
-		var i, key, found;
-		
-		if (container.layers[name]) {
-			BLOCKS.error("Layer with this name already assigned to this container: " + name);
-		} else {
-			
-			for (i = 0; i < game.layers.length; i += 1) {
-				found = false;
-				for (key in container.layers) {
-					if (container.layers.hasOwnProperty(key)) {
-						if (game.layers[i] === container.layers[key]) {
-							found = true;
-							break;
-						}
-					}
-				}
-				if (!found) {
-					container.layers[name] = game.layers[i];
-					return container.layers[name];
-				}
-			}
-		}
-	};*/
 	
 	container.addLayer = function (layer) {
 	
