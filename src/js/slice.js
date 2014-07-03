@@ -23,7 +23,8 @@ BLOCKS.slice = function (options) {
 	var slice = BLOCKS.view(options),
 	
 		// Properties
-		imageResource, paused, texture, centerRegistrationPoint, drawBounds, tmpCtx, x, y,
+		imageResource, paused, texture, centerRegistrationPoint, drawBounds, tmpCtx, 
+		//x, y,
 		frameCnt = 0,
 		loopIndex = 0,
 		curFrameIndex = 0,
@@ -185,7 +186,7 @@ BLOCKS.slice = function (options) {
 	
 	slice.render = function (e) {
 	
-		var i, bounds, restoreNeeded, context, cameraOffset;
+		var i, bounds, restoreNeeded, context, cameraOffset, x, y;
 		
 		// Prevent alpha from being negative
 		if (slice.alpha < 0) {
@@ -200,6 +201,9 @@ BLOCKS.slice = function (options) {
 				x: (e && e.camera && e.camera.x) || 0,
 				y: (e && e.camera && e.camera.y) || 0
 			};
+			
+			x = slice.x;
+			y = slice.y;
 
 			// If the slice has an image associated with it
 			if (imageResource) {
@@ -494,7 +498,7 @@ BLOCKS.slice = function (options) {
 		slice = null;
 	};
 	
-	Object.defineProperty(slice, "x", {
+	/*Object.defineProperty(slice, "x", {
 		get: function () {
 			return slice.stack ? slice.stack.x + x : x;
 		},
@@ -510,7 +514,7 @@ BLOCKS.slice = function (options) {
 		set: function (value) {
 			y = value;
 		}
-	});
+	});*/
 	
 	(function () {
 		
@@ -522,8 +526,8 @@ BLOCKS.slice = function (options) {
 		
 		centerRegistrationPoint = options.centerRegistrationPoint;
 		
-		x = options.x || 0;
-		y = options.y || 0;
+		//x = options.x || 0;
+		//y = options.y || 0;
 			
 		// Pause the slice if autoPlay property is set to false
 		if (!slice.autoPlay) {
