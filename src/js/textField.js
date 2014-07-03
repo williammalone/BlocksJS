@@ -38,31 +38,19 @@ BLOCKS.textField = function (options) {
 		};
 	
 	// Public Properties
-	textField.name = (options && options.name !== undefined) ? options.name : undefined;
-	textField.width = options.width || 0;
-	textField.height = options.height || 0;
-	textField.x = options.x || 0;
-	textField.y = options.y || 0;
-	textField.fontColor = options.fontColor || "#000000";
-	textField.fontFamily = options.fontFamily || "Arial,sans";
-	textField.fontSize = (options.fontSize && Number(options.fontSize.toString().replace("px", ""))) || 24;
-	textField.fontWeight = options.fontWeight || "bold";
-	textField.textAlign = options.textAlign || "center";
-	textField.prependText = options.prependText || "";
-	textField.textBaseline = (options && options.top) || "top";
-	textField.layer = options && options.layer;
-	textField.angle = (options && options.angle);
-	textField.alpha = (options && options.alpha);
-	textField.scale = (options && options.scale) || 1;
-	textField.text = (options && options.text) || "";
-	textField.visible = true;
-	textField.dirty = true;
+	//textField.name = (options && options.name !== undefined) ? options.name : undefined;
+	//textField.width = options.width || 0;
+	//textField.height = options.height || 0;
+	//textField.x = options.x || 0;
+	//textField.y = options.y || 0;
+	//textField.layer = options && options.layer;
+	//textField.angle = (options && options.angle);
+	//textField.alpha = (options && options.alpha);
+	//textField.scale = (options && options.scale) || 1;
+	//textField.visible = true;
+	//textField.dirty = true;
 	
 	// Public Methods
-	textField.update = function () {
-		
-	};
-	
 	textField.render = function () {
 	
 		var i, bounds, restoreNeeded, wordArr, curLine, tempLine, xLoc, yLoc,
@@ -156,6 +144,15 @@ BLOCKS.textField = function (options) {
 	(function () {
 		
 		options = options || {};
+		
+		textField.fontColor = options.fontColor || "#000000";
+		textField.fontFamily = options.fontFamily || "Arial,sans";
+		textField.fontSize = (options.fontSize && Number(options.fontSize.toString().replace("px", ""))) || 24;
+		textField.fontWeight = options.fontWeight || "bold";
+		textField.textAlign = options.textAlign || "center";
+		textField.prependText = options.prependText || "";
+		textField.textBaseline = options.textBaseline || "top";
+		textField.text = options.text || "";
 
 	}());
 	
