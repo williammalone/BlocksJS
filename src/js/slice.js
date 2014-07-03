@@ -20,20 +20,13 @@ BLOCKS.slice = function (options) {
 	
 	"use strict";
 	
-	var slice = BLOCKS.eventDispatcher(),
+	var slice = BLOCKS.view(options),
 	
-		// Private Properties
-		curFrameIndex = 0,
-		imageResource,
-		paused = false,
+		// Properties
+		imageResource, paused, texture, centerRegistrationPoint, drawBounds, tmpCtx, x, y,
 		frameCnt = 0,
 		loopIndex = 0,
-		texture,
-		centerRegistrationPoint = options && options.centerRegistrationPoint,
-		drawBounds = false, // This is used for debug only
-		tmpCtx, // Used when colorizing
-		x = (options && options.x) || 0,
-		y = (options && options.y) || 0,
+		curFrameIndex = 0,
 		
 		// Private Methods
 		onResourceLoaded = function () {
@@ -59,30 +52,28 @@ BLOCKS.slice = function (options) {
 		};
 	
 	// Public Properties
-	slice.name = (options && options.name !== undefined) ? options.name : undefined;
-	slice.width = (options && options.width) || 0;
-	slice.height = (options && options.height) || 0;
+	//slice.name = (options && options.name !== undefined) ? options.name : undefined;
+	//slice.width = (options && options.width) || 0;
+	//slice.height = (options && options.height) || 0;
 	//slice.x = 0;
 	//slice.y = 0;
-	slice.offsetX = (options && options.offsetX) || 0;
-	slice.offsetY = (options && options.offsetY) || 0;
+	//slice.offsetX = (options && options.offsetX) || 0;
+	//slice.offsetY = (options && options.offsetY) || 0;
+	//slice.angle = (options && options.angle);
+	//slice.alpha = (options && options.alpha) || 1;
+	//slice.scale = (options && options.scale) || 1;
+	
 	slice.frameOffsetX = (options && options.frameOffsetX) || 0;
 	slice.frameOffsetY = (options && options.frameOffsetY) || 0;
 	slice.loop = options && options.loop;
-	slice.visible = true;
-	slice.dirty = true;
-	slice.hotspots = options && options.hotspots;
-	slice.minHotspot = options && options.minHotspot;
-	slice.layer = options && options.layer;
+	
 	slice.cropWidth = (options && options.cropWidth);
 	slice.cropHeight = (options && options.cropHeight);
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
 	slice.resetOnComplete = (options && options.resetOnComplete !== undefined) ? options.resetOnComplete : true;
-	slice.angle = (options && options.angle);
-	slice.alpha = (options && options.alpha) || 1;
-	slice.scale = (options && options.scale) || 1;
+	
 	
 	// Public Methods
 	slice.update = function () {
@@ -347,7 +338,7 @@ BLOCKS.slice = function (options) {
 		slice.dirty = false;
 	};
 	
-	slice.isPointInside = function (point) {
+	/*slice.isPointInside = function (point) {
 	
 		var i,
 			bounds = slice.getBounds(),
@@ -454,7 +445,7 @@ BLOCKS.slice = function (options) {
 		}
 			
 		return result;
-	};
+	};*/
 	
 	slice.gotoLastFrame = function () {
 	
@@ -476,7 +467,7 @@ BLOCKS.slice = function (options) {
 		}
 	};
 	
-	slice.show = function () {
+	/*slice.show = function () {
 	
 		if (!slice.visible) {
 			slice.dirty = true;
@@ -491,7 +482,7 @@ BLOCKS.slice = function (options) {
 		}
 		slice.visible = false;
 		
-	};
+	};*/
 	
 	slice.destroy = function () {
 	
@@ -526,6 +517,13 @@ BLOCKS.slice = function (options) {
 		var image = options.image,
 			imageSrc = options.imageSrc || (options.image && options.src),
 			imagePreloaded = image ? true : false;
+			
+		options = options || {};
+		
+		centerRegistrationPoint = options.centerRegistrationPoint;
+		
+		x = options.x || 0;
+		y = options.y || 0;
 			
 		// Pause the slice if autoPlay property is set to false
 		if (!slice.autoPlay) {

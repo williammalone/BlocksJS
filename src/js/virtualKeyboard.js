@@ -12,57 +12,47 @@ BLOCKS.key = function (spec) {
 	
 	"use strict";
 	
-	var key = BLOCKS.eventDispatcher(),
-		layer = spec.layer,
+	var key = BLOCKS.eventDispatcher();
 	
-		init = function () {
-		
-
-		};
-	
+	key.name = spec.name;
+	key.keyCode = spec.keyCode;
+	key.layer = spec.layer;
 	key.x = spec.x || 0;
 	key.y = spec.y || 0;
 	key.width = spec.width || 80;
 	key.height = spec.height || 80;
 	key.scale = spec.scale || 1;
-	key.visible = false;
-	key.dirty = true;
-	key.name = spec.name;
-	key.alpha = 1;
+	key.visible = spec.visible || false;
+	key.alpha = spec.alpha || 1;
 	key.color = spec.color || "#333";
 	key.textColor = spec.textColor || "#eee";
-	key.keyCode = spec.keyCode;
-		
-	key.update = function () {
-		
-	},
+	key.dirty = true;
 	
 	key.render = function () {
 	
 		if (key.dirty && key.visible) {
 		
-			layer.ctx.save();
+			key.layer.ctx.save();
 			
 			// Draw key background
-			layer.ctx.globalAlpha = key.alpha;
-			layer.ctx.fillStyle = key.color;
-			layer.ctx.fillRect(key.x, key.y, key.width, key.height);
+			key.layer.ctx.globalAlpha = key.alpha;
+			key.layer.ctx.fillStyle = key.color;
+			key.layer.ctx.fillRect(key.x, key.y, key.width, key.height);
 			
 			// Draw key name
-			layer.ctx.fillStyle = key.textColor;
-			layer.ctx.font = "bold 24px sans-serif";
-			layer.ctx.textAlign = "center";
-			layer.ctx.fillText(key.name, key.x + key.width / 2, key.y + key.height / 2 + 7);
+			key.layer.ctx.fillStyle = key.textColor;
+			key.layer.ctx.font = "bold 24px sans-serif";
+			key.layer.ctx.textAlign = "center";
+			key.layer.ctx.fillText(key.name, key.x + key.width / 2, key.y + key.height / 2 + 7);
 				
-			layer.ctx.restore();
+			key.layer.ctx.restore();
 		}
 	};
 	
 	key.destroy = function () {
-		
-	};
 	
-	init();
+		key = null;
+	};
 		
 	return key;
 };
@@ -131,7 +121,7 @@ BLOCKS.virtualKeyboard = function (controller, spec) {
 					
 					key.width = (key.width * key.scale);
 					if (key.scale < 1) {
-						key.width += (key.scale - 1) * (padding * j)
+						key.width += (key.scale - 1) * (padding * j);
 					}
 					
 					key.x = keyboard.x + margin + key.width * j;

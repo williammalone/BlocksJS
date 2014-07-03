@@ -72,6 +72,7 @@ BLOCKS.block = function (options) {
 	block.scale = (options && options.scale !== undefined) ? options.scale : 1;
 	block.alpha = (options && options.alpha !== undefined) ? options.alpha : 1;
 	block.visible = (options && options.visible !== undefined) ? options.visible : true;
+	block.dirty = false;
 	
 	// Public Methods
 	block.update = function () {

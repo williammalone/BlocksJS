@@ -20,10 +20,9 @@ BLOCKS.textField = function (options) {
 	
 	"use strict";
 	
-	var textField = BLOCKS.eventDispatcher(),
-		drawBounds = false,
-		context = options.layer.ctx,
-		motors = [],
+	var textField = BLOCKS.view(options),
+	
+		drawBounds = false, motors = [],
 		
 		// Private Method
 		motorDestroyed = function (motor) {
@@ -40,8 +39,8 @@ BLOCKS.textField = function (options) {
 	
 	// Public Properties
 	textField.name = (options && options.name !== undefined) ? options.name : undefined;
-	textField.width = 0;
-	textField.height = 0;
+	textField.width = options.width || 0;
+	textField.height = options.height || 0;
 	textField.x = options.x || 0;
 	textField.y = options.y || 0;
 	textField.fontColor = options.fontColor || "#000000";
@@ -51,13 +50,13 @@ BLOCKS.textField = function (options) {
 	textField.textAlign = options.textAlign || "center";
 	textField.prependText = options.prependText || "";
 	textField.textBaseline = (options && options.top) || "top";
-	textField.visible = true;
-	textField.dirty = true;
 	textField.layer = options && options.layer;
 	textField.angle = (options && options.angle);
 	textField.alpha = (options && options.alpha);
 	textField.scale = (options && options.scale) || 1;
 	textField.text = (options && options.text) || "";
+	textField.visible = true;
+	textField.dirty = true;
 	
 	// Public Methods
 	textField.update = function () {
@@ -66,9 +65,12 @@ BLOCKS.textField = function (options) {
 	
 	textField.render = function () {
 	
-		var i, bounds, restoreNeeded, wordArr, curLine, tempLine, xLoc, yLoc;
+		var i, bounds, restoreNeeded, wordArr, curLine, tempLine, xLoc, yLoc,
+			context;
 		
-		if (textField.dirty && textField.visible) {
+		if (textField.dirty && textField.visible && textField.layer) {
+		
+			context = textField.layer.ctx;
 		
 			if (textField.angle || textField.alpha !== 1) {
 				context.save();
@@ -124,8 +126,8 @@ BLOCKS.textField = function (options) {
 	};
 		
 	textField.destroy = function () {
-
-		context = null;
+		
+		textField.stopMotors();
 		options = null;
 		textField = null;
 	};
@@ -150,6 +152,12 @@ BLOCKS.textField = function (options) {
 			}
 		}
 	};
+	
+	(function () {
+		
+		options = options || {};
+
+	}());
 	
 	return textField;
 };

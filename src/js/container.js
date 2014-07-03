@@ -43,15 +43,7 @@ BLOCKS.container = function () {
 	// Public Properties
 	container.visible = true;
 	container.dirty = true;
-	
-	container.addLayer = function (layer) {
-	
-	};
-	
-	container.removeLayer = function (layer) {
-	
-	};
-	
+
 	container.addView = function (view) {
 	
 		var i, layerInArray;

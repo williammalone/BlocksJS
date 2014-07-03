@@ -16,7 +16,7 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.eventDispatcher = function (options) {
+BLOCKS.eventDispatcher = function () {
 	
 	"use strict";
 	
