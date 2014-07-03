@@ -201,6 +201,7 @@ BLOCKS.slice = function (options) {
 				y: (e && e.camera && e.camera.y) || 0
 			};
 			
+			// Increases performance when slice is associated to a stack 
 			x = slice.x;
 			y = slice.y;
 
@@ -305,34 +306,34 @@ BLOCKS.slice = function (options) {
 						if (slice.dragging) {
 							context.beginPath();
 							context.fillStyle = "rgba(10, 255, 50, 0.4)";
-							context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
+							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
 							context.closePath();
 						} else if (slice.justTapped) {
 							context.beginPath();
 							context.fillStyle = "rgba(255, 10, 50, 0.4)";
-							context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
+							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
 							context.closePath();
 						} else if (slice.justNotTapped) {
 							context.beginPath();
 							context.fillStyle = "rgba(255, 10, 255, 0.4)";
-							context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
+							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
 							context.closePath();
 						} else if (slice.justReleased) {
 							context.beginPath();
 							context.fillStyle = "rgba(125, 10, 255, 0.4)";
-							context.fillRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
+							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
 							context.closePath();
 							slice.justReleased = false;
 						}
 					
 						context.beginPath();
 						context.strokeStyle = "rgba(96, 255, 0, 0.5)";
-						context.strokeRect(bounds[i].x, bounds[i].y, bounds[i].width, bounds[i].height);
+						context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
 						context.closePath();
 					}
 					
 					context.beginPath();
-					context.arc(x, y, 7, 0, 2 * Math.PI, false);
+					context.arc(x - cameraOffset.x, y - cameraOffset.y, 7, 0, 2 * Math.PI, false);
 					context.fillStyle = "rgba(96, 255, 0, 0.5)";
 					context.fill();
 				}

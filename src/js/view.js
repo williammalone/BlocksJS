@@ -146,7 +146,10 @@ BLOCKS.view = function (options) {
 	
 	view.getBounds = function () {
 		
-		var i, bounds, extraWidth, extraHeight;
+		var i, bounds, extraWidth, extraHeight, x, y;
+		
+		x = view.x;
+		y = view.y;
 
 		if (!view.hotspots && !view.minHotspot) {
 			bounds =  {
