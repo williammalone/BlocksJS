@@ -24,7 +24,6 @@ BLOCKS.slice = function (options) {
 	
 		// Properties
 		imageResource, paused, texture, centerRegistrationPoint, drawBounds, tmpCtx, 
-		//x, y,
 		frameCnt = 0,
 		loopIndex = 0,
 		curFrameIndex = 0,
@@ -525,9 +524,6 @@ BLOCKS.slice = function (options) {
 		options = options || {};
 		
 		centerRegistrationPoint = options.centerRegistrationPoint;
-		
-		//x = options.x || 0;
-		//y = options.y || 0;
 			
 		// Pause the slice if autoPlay property is set to false
 		if (!slice.autoPlay) {
