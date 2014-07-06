@@ -90,7 +90,7 @@ BLOCKS.stack = function (options) {
 		var i;
 		
 		for (i = 0; i < blocks.length; i += 1) {
-			if (blocks[i].isPointInside(pos)) {
+			if (blocks[i].visible && blocks[i].isPointInside(pos)) {
 				return true;
 			}
 		}
@@ -147,7 +147,7 @@ BLOCKS.stack = function (options) {
 				largestWidth = 0;
 				
 			for (i = 0; i < blocks.length; i += 1) {
-				if (blocks[i].width > largestWidth) {
+				if (blocks[i].visible && blocks[i].width > largestWidth) {
 					largestWidth = blocks[i].width;
 				}
 			}
@@ -163,7 +163,7 @@ BLOCKS.stack = function (options) {
 				largestHeight = 0;
 				
 			for (i = 0; i < blocks.length; i += 1) {
-				if (blocks[i].height > largestHeight) {
+				if (blocks[i].visible && blocks[i].height > largestHeight) {
 					largestHeight = blocks[i].height;
 				}
 			}
