@@ -193,8 +193,8 @@ BLOCKS.view = function (options) {
 	view.getBoundingBox = function () {
 	
 		return {
-			x: x + view.offsetX,
-			y: y + view.offsetY,
+			x: view.x + view.offsetX,
+			y: view.y + view.offsetY,
 			width: view.width,
 			height: view.height
 		};

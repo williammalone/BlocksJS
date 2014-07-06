@@ -428,7 +428,7 @@ BLOCKS.game = function (spec, element) {
 			gameContainer.style.height = (viewport.height - Math.max(newGameY, 0) * 2)+ "px";
 					
 			// Set the new padding of the game so it will be centered
-			gameContainer.style.margin = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
+			gameContainer.style.padding = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
 			
 			// Tell the controller the game dimensions
 			game.controller.scaleX = game.width / newGameWidth;

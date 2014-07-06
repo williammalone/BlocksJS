@@ -32,7 +32,9 @@ BLOCKS.block = function (options) {
 		stack,
 		x = (options && options.x) || 0,
 		y = (options && options.y) || 0,
-		
+		width = (options && options.width) || 0,
+		height = (options && options.height) || 0,
+	
 		assignBlockProperties = function () {
 		
 			curSlice.scale = block.scale;
@@ -311,7 +313,7 @@ BLOCKS.block = function (options) {
 	
 	Object.defineProperty(block, "x", {
 		get: function () {
-			return block.stack ? block.stack.x + x : x;
+			return x;
 		},
 		set: function (value) {
 			x = block.stack ? value - block.stack.x : value;
@@ -320,10 +322,36 @@ BLOCKS.block = function (options) {
 	
 	Object.defineProperty(block, "y", {
 		get: function () {
-			return block.stack ? block.stack.y + y : y;
+			return y;
 		},
 		set: function (value) {
 			y = block.stack ? value - block.stack.y : value;
+		}
+	});
+	
+	Object.defineProperty(block, "width", {
+		get: function () {
+			return curSlice.width;
+		},
+		set: function (value) {
+			if (curSlice) {
+				curSlice.width = value;
+			} else {
+				width = value;
+			}
+		}
+	});
+	
+	Object.defineProperty(block, "height", {
+		get: function () {
+			return curSlice.height;
+		},
+		set: function (value) {
+			if (curSlice) {
+				curSlice.height = value;
+			} else {
+				height = value;
+			}
 		}
 	});
 	
