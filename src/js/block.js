@@ -313,7 +313,7 @@ BLOCKS.block = function (options) {
 	
 	Object.defineProperty(block, "x", {
 		get: function () {
-			return x;
+			return block.stack ? block.stack.x + x : x;
 		},
 		set: function (value) {
 			x = block.stack ? value - block.stack.x : value;
@@ -322,10 +322,50 @@ BLOCKS.block = function (options) {
 	
 	Object.defineProperty(block, "y", {
 		get: function () {
-			return y;
+			return block.stack ? block.stack.y + y : y;
 		},
 		set: function (value) {
 			y = block.stack ? value - block.stack.y : value;
+		}
+	});
+	
+	/*Object.defineProperty(block, "x", {
+		get: function () {
+			return x;
+		},
+		set: function (value) {
+			x = value;
+			curSlice.x = x;
+		}
+	});
+	
+	Object.defineProperty(block, "y", {
+		get: function () {
+			return y;
+		},
+		set: function (value) {
+			y = value;
+			curSlice.y = y;
+		}
+	});*/
+	
+	Object.defineProperty(block, "localX", {
+		get: function () {
+			return curSlice.localX;
+		},
+		set: function (value) {
+			x = value;
+			curSlice.localX = x;
+		}
+	});
+	
+	Object.defineProperty(block, "localY", {
+		get: function () {
+			return curSlice.localY;
+		},
+		set: function (value) {
+			y = value;
+			curSlice.localY = y;
 		}
 	});
 	

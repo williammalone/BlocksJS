@@ -257,7 +257,7 @@ BLOCKS.view = function (options) {
 			set: function (value) {
 				if (x !== value) {
 					view.dirty = true;
-					x = value;
+					x = view.stack ? value - view.stack.x : value;
 				}
 			}
 		});
@@ -270,7 +270,7 @@ BLOCKS.view = function (options) {
 			set: function (value) {
 				if (y !== value) {
 					view.dirty = true;
-					y = value;
+					y = view.stack ? value - view.stack.y : value;
 				}
 			}
 		});
