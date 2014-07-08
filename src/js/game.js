@@ -462,6 +462,43 @@ BLOCKS.game = function (spec, element) {
 	});
 	game.state = "intro";
 	
+	// The element in which the game markup will be injected will be the element with
+	//   the "BlockGame" id unless specified via a parameter of the game
+	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
+	
+	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
+	
+	if (spec && spec.loading) {
+		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
+	}
+	
+	if (spec && spec.intro) {
+		game.introScreen = BLOCKS.introScreen(spec.intro, game);
+	}
+	
+	// Create sound player
+	game.speaker = BLOCKS.speaker({
+		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
+		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : ""
+	});
+	
+	game.speaker.addEventListener("update", function (e) {
+		var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
+
+		if (game.loadingScreen) {
+			game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
+		}
+	});
+	
+	game.speaker.addEventListener("ready", function () {
+		checkLoadProgress();
+	}, true);
+	
+	Object.defineProperty(game, "paused", {
+		get: function () {
+			return paused;
+		}
+	});
 	
 	game.pause = function () {
 	
@@ -649,12 +686,9 @@ BLOCKS.game = function (spec, element) {
 	
 		tickers = [];
 	};
-		
-	// The element in which the game markup will be injected will be the element with
-	//   the "BlockGame" id unless specified via a parameter of the game
-	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
 	
 	game.load = function () {
+	
 		var i;
 
 		game.imageLoader.loadFromTree(spec);
@@ -722,37 +756,6 @@ BLOCKS.game = function (spec, element) {
 			game.removeLayer(game.layers[i]);
 		}
 	};
-	
-	game.isPaused = function () {
-
-		return paused;
-	};
-	
-	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
-	if (spec && spec.loading) {
-		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
-	}
-	if (spec && spec.intro) {
-		game.introScreen = BLOCKS.introScreen(spec.intro, game);
-	}
-	
-	// Create sound player
-	game.speaker = BLOCKS.speaker({
-		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
-		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : ""
-	});
-	game.speaker.addEventListener("update", function (e) {
-		
-		var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
-
-		if (game.loadingScreen) {
-			game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
-		}
-	});
-	game.speaker.addEventListener("ready", function () {
-//BLOCKS.debug("Speaker load complete");
-		checkLoadProgress();
-	}, true);
 	
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/	
 	(function() {
