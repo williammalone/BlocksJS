@@ -88,7 +88,7 @@ BLOCKS.toolbox.vector = function (x, y) {
 	
 	var vector = {
 		x: x,
-		y: x
+		y: y
 	};
 	
 	vector.scale = function(factor) {

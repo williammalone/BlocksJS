@@ -38,6 +38,7 @@ BLOCKS.game = function (spec, element) {
 		gameTappedOnce,
 		loaded,
 		tickerIndex = 0,
+		prepared,
 		
 		handleTickers = function () {
 			
@@ -611,20 +612,20 @@ BLOCKS.game = function (spec, element) {
 	
 		var key,
 			motor,
-			spec = arguments[1];
+			options = arguments[1];
 
 		if (type === "drag") {
-			spec.controller = game.controller;
+			options.controller = game.controller;
 		} else {
-			spec.clock = game;
+			options.clock = game;
 		}
 
 		if (BLOCKS.motors && BLOCKS.motors[type]) {
 	
-			motor = BLOCKS.motors[type](spec);
+			motor = BLOCKS.motors[type](options);
 			motor.type = type;
-			if (spec.object) {
-				spec.object.motorize(motor);
+			if (options.object) {
+				options.object.motorize(motor);
 			}
 			motor.addEventListener("destroyed", game.removeMotor);
 			motors.push(motor);
@@ -642,7 +643,7 @@ BLOCKS.game = function (spec, element) {
 		for (i = 0; i < motors.length; i += 1)  {
 			if (motors[i] === motor) {
 				motors.splice(i, 1);
-				break;
+				return true;
 			}
 		}
 	};
@@ -729,12 +730,12 @@ BLOCKS.game = function (spec, element) {
 		lastUpdateTime = + new Date();
 		remainingUpdate = 0;
 		
-		//for (i = 0; i < 10; i += 1) {
-		//	game.addLayer("blocksGameLayer" + (i + 1));
-		//}
+		if (!prepared) {
+			prepared = true;
 
-		if (game.prepare) {
-			game.prepare();
+			if (game.prepare) {
+				game.prepare();
+			}
 		}
 		
 		clock.removeEventListener("tick", onClockTick);	

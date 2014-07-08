@@ -126,20 +126,61 @@ BLOCKS.motor = function () {
 	
 	// Public Methods
 	motor.destroy = function () {
-		destroyed = true;	
+		if (!destroyed) {
+			destroyed = true;	
+			motor.dispatchEvent("destroyed", motor);
+			motor = null;	
+		}
 	};
 	
 	motor.tick = function () {
-	
-		if (!destroyed) {
-			
-		}
+
 	};
 	
 	return motor;
 };
 
 BLOCKS.motors = {};
+
+// Animations the rotate an object
+//   -clock
+//   -object
+//   -amount
+//   -speed (optional)
+BLOCKS.motors.rotate = function (spec) {
+	
+	"use strict";
+	
+	if (spec.angle) {
+		spec.amount = spec.angle;
+	}
+	
+	return BLOCKS.motorTween("angle", spec);
+};
+
+// Animations the scale an object
+//   -clock
+//   -object
+//   -amount
+//   -speed (optional)
+BLOCKS.motors.scale = function (spec) {
+	
+	"use strict";
+	
+	return BLOCKS.motorTween("scale", spec);
+};
+
+// Animations the transparency an object
+//   -clock
+//   -object
+//   -amount
+//   -speed (optional)
+BLOCKS.motors.alpha = function (spec) {
+	
+	"use strict";
+	
+	return BLOCKS.motorTween("alpha", spec);
+};
 
 // Moves an object to a point
 //   -clock
@@ -333,46 +374,6 @@ BLOCKS.motors.move = function (spec) {
 	}());
 	
 	return motor;
-};
-
-// Animations the rotate an object
-//   -clock
-//   -object
-//   -amount
-//   -speed (optional)
-BLOCKS.motors.rotate = function (spec) {
-	
-	"use strict";
-	
-	if (spec.angle) {
-		spec.amount = spec.angle;
-	}
-	
-	return BLOCKS.motorTween("angle", spec);
-};
-
-// Animations the scale an object
-//   -clock
-//   -object
-//   -amount
-//   -speed (optional)
-BLOCKS.motors.scale = function (spec) {
-	
-	"use strict";
-	
-	return BLOCKS.motorTween("scale", spec);
-};
-
-// Animations the transparency an object
-//   -clock
-//   -object
-//   -amount
-//   -speed (optional)
-BLOCKS.motors.alpha = function (spec) {
-	
-	"use strict";
-	
-	return BLOCKS.motorTween("alpha", spec);
 };
 
 // Moves an object to follow the drag
