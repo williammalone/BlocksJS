@@ -21,7 +21,7 @@ BLOCKS.stack = function (options) {
 	"use strict";
 	
 	var stack = BLOCKS.eventDispatcher(),
-		blocks = [],
+		views = [],
 		dirty,
 		alpha;
 	
@@ -31,30 +31,30 @@ BLOCKS.stack = function (options) {
 	stack.visible = true;
 	
 	// Public Methods
-	stack.addBlock = function (block) {
+	stack.addView = function (view) {
 	
-		block.stack = stack;
-		blocks.push(block);
+		view.stack = stack;
+		views.push(view);
 	};
 	
-	stack.getBlock = function (name) {
+	stack.getView = function (name) {
 	
 		var i;
 		
-		for (i = 0; i < blocks.length; i += 1) {
-			if (blocks[i].name === name) {
-				return blocks[i];
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i].name === name) {
+				return views[i];
 			}
 		}
 	};
 	
-	stack.removeBlock = function (block) {
+	stack.removeView = function (view) {
 	
 		var i;
 		
-		for (i = 0; i < blocks.length; i += 1) {
-			if (blocks[i] === block) {
-				blocks[i].splice(i, 1);
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i] === view) {
+				views[i].splice(i, 1);
 				break;
 			}
 		}
@@ -67,8 +67,8 @@ BLOCKS.stack = function (options) {
 		if (!stack.visible) {
 			stack.visible = true;
 
-			for (i = 0; i < blocks.length; i += 1) {
-				blocks[i].show();
+			for (i = 0; i < views.length; i += 1) {
+				views[i].show();
 			}
 		}
 	};
@@ -81,7 +81,7 @@ BLOCKS.stack = function (options) {
 			stack.visible = false;
 			stack.dirty = true;
 			
-			blocks[i].hide();
+			views[i].hide();
 		}
 	};
 	
@@ -89,8 +89,8 @@ BLOCKS.stack = function (options) {
 	
 		var i;
 		
-		for (i = 0; i < blocks.length; i += 1) {
-			if (blocks[i].visible && blocks[i].isPointInside(pos)) {
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i].visible && views[i].isPointInside(pos)) {
 				return true;
 			}
 		}
@@ -102,13 +102,13 @@ BLOCKS.stack = function (options) {
 	
 		var i;
 		
-		for (i = 0; i < blocks.length; i += 1) {
-			if (blocks[i].layer && blocks[i].layer.container) {
-				blocks[i].layer.container.removeView(blocks[i]);
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i].layer && views[i].layer.container) {
+				views[i].layer.container.removeView(views[i]);
 			}
-			blocks[i].destroy();
+			views[i].destroy();
 		}
-		blocks = [];
+		views = [];
 		stack = null;
 	};
 	
@@ -119,8 +119,8 @@ BLOCKS.stack = function (options) {
 		set: function (value) {
 			var i;
 				
-			for (i = 0; i < blocks.length; i += 1) {
-				blocks[i].dirty = value;
+			for (i = 0; i < views.length; i += 1) {
+				views[i].dirty = value;
 			}
 		}
 	});
@@ -134,8 +134,8 @@ BLOCKS.stack = function (options) {
 			
 			alpha = value;
 				
-			for (i = 0; i < blocks.length; i += 1) {
-				blocks[i].alpha = value;
+			for (i = 0; i < views.length; i += 1) {
+				views[i].alpha = value;
 			}
 		}
 	});
@@ -146,9 +146,9 @@ BLOCKS.stack = function (options) {
 			var i, 
 				largestWidth = 0;
 				
-			for (i = 0; i < blocks.length; i += 1) {
-				if (blocks[i].visible && blocks[i].width > largestWidth) {
-					largestWidth = blocks[i].width;
+			for (i = 0; i < views.length; i += 1) {
+				if (views[i].visible && views[i].width > largestWidth) {
+					largestWidth = views[i].width;
 				}
 			}
 		
@@ -162,9 +162,9 @@ BLOCKS.stack = function (options) {
 			var i, 
 				largestHeight = 0;
 				
-			for (i = 0; i < blocks.length; i += 1) {
-				if (blocks[i].visible && blocks[i].height > largestHeight) {
-					largestHeight = blocks[i].height;
+			for (i = 0; i < views.length; i += 1) {
+				if (views[i].visible && views[i].height > largestHeight) {
+					largestHeight = views[i].height;
 				}
 			}
 		
