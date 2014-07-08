@@ -182,6 +182,8 @@ BLOCKS.motors.alpha = function (spec) {
 	return BLOCKS.motorTween("alpha", spec);
 };
 
+/* -- Deprecated
+
 // Moves an object to a point
 //   -clock
 //   -object
@@ -254,6 +256,7 @@ BLOCKS.motors.moveTo = function (spec) {
 	
 	return motor;
 };
+*/
 
 // Moves an object to a point
 //   -clock
