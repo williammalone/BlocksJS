@@ -132,11 +132,13 @@ BLOCKS.motor = function (spec) {
 				destroyed = false,
 				clock = spec.clock,
 				object = spec.object,
+				callback = spec.callback,
+				speed = spec.speed,
+				easing = spec.easing,
 				offset = {
 					x: spec.x || 0,
 					y: spec.y || 0
 				},
-				callback = spec.callback,
 				curOffset = {
 					x: 0,
 					y: 0
@@ -145,9 +147,8 @@ BLOCKS.motor = function (spec) {
 				angle = BLOCKS.toolbox.angle(curOffset, offset),
 				curTick,
 				totalTicks,
-				speed = spec.speed,
+				
 				duration,
-				easing = spec.easing,
 				deltaX,
 				deltaY;
 			
@@ -243,13 +244,13 @@ BLOCKS.motor = function (spec) {
 
 			// Private Properties
 			var motor = BLOCKS.eventListener(),
-				destroyed = false,
-				controller = spec.controller,
 				object = spec.object,
+				controller = spec.controller,
 				bounds = spec.bounds,
 				horizontalOnly = spec.horizontalOnly,
 				verticalOnly = spec.verticalOnly,
 				draggingObject,
+				destroyed = false,
 				
 				convertToBoundedPos = function (point) {
 					
@@ -373,7 +374,6 @@ BLOCKS.motor = function (spec) {
 				spec.amount = spec.angle;
 			}
 			spec.property = "angle";
-		
 		}
 		
 		motor = BLOCKS.tween(spec);
