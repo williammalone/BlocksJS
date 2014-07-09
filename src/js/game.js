@@ -612,28 +612,28 @@ BLOCKS.game = function (spec, element) {
 	
 		var key,
 			motor,
-			options = arguments[1];
-
-		if (type === "drag") {
-			options.controller = game.controller;
+			spec = arguments[1] || {};
+			
+		spec.type = type;
+		
+		if (spec.type === "drag") {
+			spec.controller = game.controller;
 		} else {
-			options.clock = game;
+			spec.clock = game;
 		}
 
-		if (BLOCKS.motors && BLOCKS.motors[type]) {
-	
-			motor = BLOCKS.motors[type](options);
+		motor = BLOCKS.motors(spec);
+		
+		if (motor) {
 			motor.type = type;
-			if (options.object) {
-				options.object.motorize(motor);
+			if (spec.object) {
+				spec.object.motorize(motor);
 			}
 			motor.addEventListener("destroyed", game.removeMotor);
-			motors.push(motor);
-			
-			return motor;
-		} else {
-			BLOCKS.warn("Cannot add motor of type '" + type + "' because its definition cannot be found.");
+			motors.push(motor);	
 		}
+		
+		return motor;
 	};
 	
 	game.removeMotor = function (motor) {
