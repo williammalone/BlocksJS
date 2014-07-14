@@ -320,6 +320,13 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		};
 	};
 	
+	speaker.getSoundDuration = function (name) {
+	
+		if (sounds && sounds[name] && sounds[name].start >= 0 && sounds[name].end > 0) {
+			return sounds[name].end - sounds[name].start;
+		}
+	};
+	
 	// Deprecated
 	speaker.getActiveSounds = function () {
 	
