@@ -23,12 +23,12 @@ BLOCKS.stack = function (options) {
 	var stack = BLOCKS.eventDispatcher(),
 		views = [],
 		dirty,
-		alpha;
+		alpha,
+		visible;
 	
 	// Public Properties
 	stack.x = (options && options.x) || 0;
 	stack.y = (options && options.y) || 0;
-	stack.visible = true;
 	
 	// Public Methods
 	stack.addView = function (view) {
@@ -111,6 +111,19 @@ BLOCKS.stack = function (options) {
 		views = [];
 		stack = null;
 	};
+	
+	Object.defineProperty(stack, "visible", {
+		get: function () {
+			return visible;
+		},
+		set: function (value) {
+			var i;
+				
+			for (i = 0; i < views.length; i += 1) {
+				views[i].visible = value;
+			}
+		}
+	});
 	
 	Object.defineProperty(stack, "dirty", {
 		get: function () {
