@@ -210,6 +210,8 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				if (!soundCompleteTimer) {
 					soundCompleteTimer = window.setInterval(soundCompleteChecker, 100);
 				}
+				
+				return true;
 	
 			} else {
 				BLOCKS.warn("Sound parameters not specified.");
@@ -245,7 +247,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	speaker.play = function (name, callback) {
 	
 		if (sounds[name]) {
-			playSound(name, callback);
+			return playSound(name, callback);
 		} else {
 			BLOCKS.warn("Cannot play sound '" + name + "' because it was not defined");
 		}
@@ -316,6 +318,14 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			end: spec.end,
 			loop: spec.loop
 		};
+	};
+	
+	// Deprecated
+	speaker.getActiveSounds = function () {
+	
+		BLOCKS.warn("getActiveSounds method has been deprecated. Use getActiveSoundInstances instead.");
+	
+		return [curSoundInst];
 	};
 	
 	speaker.getActiveSoundInstances = function () {
