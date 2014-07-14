@@ -323,7 +323,8 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	speaker.getSoundDuration = function (name) {
 	
 		if (sounds && sounds[name] && sounds[name].start >= 0 && sounds[name].end > 0) {
-			return sounds[name].end - sounds[name].start;
+			// Return the duration in seconds
+			return (sounds[name].end - sounds[name].start) * 1000;
 		}
 	};
 	
@@ -746,6 +747,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	speaker.getSoundDuration = function (name) {
 	
+		// The duration is in seconds
 		return sounds[name].file.buffer.duration;
 	};
 	
