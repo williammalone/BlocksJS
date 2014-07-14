@@ -22,20 +22,7 @@ BLOCKS.textField = function (options) {
 	
 	var textField = BLOCKS.view(options),
 	
-		drawBounds = false, motors = [],
-		
-		// Private Method
-		motorDestroyed = function (motor) {
-			
-			var i;
-			
-			motor.removeEventListener("destroyed", motorDestroyed);
-			
-			for (i = 0 ; i < motors.length; i += 1)  {
-				motors.splice(i, 1);
-				break;
-			}
-		};
+		drawBounds = false, motors = [];
 	
 	// Public Properties
 	//textField.name = (options && options.name !== undefined) ? options.name : undefined;
@@ -118,27 +105,6 @@ BLOCKS.textField = function (options) {
 		textField.stopMotors();
 		options = null;
 		textField = null;
-	};
-	
-	textField.motorize = function (motor) {
-	
-		motor.addEventListener("destroyed", motorDestroyed);
-		motors.push(motor);
-	};
-	
-	textField.stopMotors = function (type) {
-		
-		var i, motorArr = motors.slice(0);
-		
-		for (i = 0 ; i < motorArr.length; i += 1)  {
-			if (type) {
-				if (motorArr[i].type === type) {
-					motorArr[i].destroy();
-				}
-			} else {
-				motorArr[i].destroy();
-			}
-		}
 	};
 	
 	(function () {
