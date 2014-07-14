@@ -351,6 +351,11 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		return ready ? 1 : 0;
 	};
 	
+	speaker.getCurrentTime = function () {
+		
+		return audioElement.currentTime;
+	};
+	
 	Object.defineProperty(speaker, "multipleTracksSupported", {
 		get: function () {
 			return multipleTracksSupported;
