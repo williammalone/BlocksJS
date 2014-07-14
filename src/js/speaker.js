@@ -318,7 +318,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		};
 	};
 	
-	speaker.getActiveSounds = function () {
+	speaker.getActiveSoundInstances = function () {
 	
 		return [curSoundInst];
 	};
