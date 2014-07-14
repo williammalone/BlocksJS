@@ -49,6 +49,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		sounds = {},
 		muted = false,
 		maybeReady = false,
+		multipleTracksSupported = false,
 		
 		testSoundComplete = function () {
 		
@@ -331,6 +332,12 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	
 		return ready ? 1 : 0;
 	};
+	
+	Object.defineProperty(speaker, "multipleTracksSupported", {
+		get: function () {
+			return multipleTracksSupported;
+		}
+	});
 
 	// Create audio element
 	(function () {
@@ -389,6 +396,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		maxLoadTime = spec.maxLoadTime || 60000, // The maximum amount of time for all sounds to load
 		loadTries = 0,
 		maxLoadTries = 5,
+		multipleTracksSupported = true,
 		
 		createTrack = function (name) {
 		
@@ -959,7 +967,11 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		return ctx.currentTime;
 	};
 	
-	speaker.multipleTracksSupported = true;
+	Object.defineProperty(speaker, "multipleTracksSupported", {
+		get: function () {
+			return multipleTracksSupported;
+		}
+	});
 
 	(function () {
 	
