@@ -21,7 +21,7 @@ BLOCKS.tween = function (spec) {
 	"use strict";
 	
 	// Private Properties
-	var tween = BLOCKS.eventListener(),
+	var tween = BLOCKS.eventDispatcher(),
 		property = spec.property,
 		clock = spec.clock,
 		object = spec.object,

@@ -622,7 +622,7 @@ BLOCKS.game = function (spec, element) {
 			spec.clock = game;
 		}
 
-		motor = BLOCKS.motors(spec);
+		motor = BLOCKS.motor(spec);
 		
 		if (motor) {
 			motor.type = type;
