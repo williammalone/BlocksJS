@@ -374,6 +374,8 @@ BLOCKS.motor = function (spec) {
 				spec.amount = spec.angle;
 			}
 			spec.property = "angle";
+		} else {
+			spec.property = spec.type;
 		}
 		
 		motor = BLOCKS.tween(spec);
