@@ -125,10 +125,10 @@ BLOCKS.motor = function (spec) {
 		
 	if (spec.type === "move") {
 	
-		motor = function (spec) {
+		motor = (function (spec) {
 
 			// Private Properties
-			var motor = BLOCKS.eventListener(),
+			var motor = BLOCKS.eventDispatcher(),
 				destroyed = false,
 				clock = spec.clock,
 				object = spec.object,
@@ -236,14 +236,14 @@ BLOCKS.motor = function (spec) {
 			}());
 			
 			return motor;
-		};
+		}(spec));
 		
 	} else if (spec.type === "drag") {
 	
-		motor = function (spec) {
+		motor = (function (spec) {
 
 			// Private Properties
-			var motor = BLOCKS.eventListener(),
+			var motor = BLOCKS.eventDispatcher(),
 				object = spec.object,
 				controller = spec.controller,
 				bounds = spec.bounds,
@@ -364,8 +364,8 @@ BLOCKS.motor = function (spec) {
 			}());
 			
 			return motor;
-		};
-		
+		}(spec));
+			
 	} else {
 	
 		if (spec.type === "rotate") {
