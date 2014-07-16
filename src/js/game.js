@@ -31,7 +31,10 @@ BLOCKS.game = function (spec, element) {
 		debugPressTimeout,
 		lastUpdateTime,
 		remainingUpdate,
+		minWidth,
 		minHeight,
+		maxHeight,
+		maxWidth,
 		scaleLandscape,
 		scalePortrait,
 		debugLayer,
@@ -104,10 +107,25 @@ BLOCKS.game = function (spec, element) {
 		
 			gameContainer = document.createElement("article");
 			gameContainer.id = "BlocksGameContainer";
+			
+			if (spec && spec.minWidth) {
+				minWidth = spec.minWidth;
+				gameContainer.style.minWidth = minWidth + "px";
+			}
 			if (spec && spec.minHeight) {
 				minHeight = spec.minHeight;
 				gameContainer.style.minHeight = minHeight + "px";
 			}
+			
+			if (spec && spec.maxWidth) {
+				maxWidth = spec.maxWidth;
+				gameContainer.style.maxWidth = maxWidth + "px";
+			}
+			if (spec && spec.maxHeight) {
+				maxHeight = spec.maxHeight;
+				gameContainer.style.maxHeight = maxHeight + "px";
+			}
+			
 			if (spec && spec.scaleLandscape !== undefined) {
 				scaleLandscape = spec.scaleLandscape;
 			} else {
@@ -375,9 +393,18 @@ BLOCKS.game = function (spec, element) {
 			};
 			
 			
-			// If the viewport is greater than the minimum game height use the minimum instead
+			// If the viewport is greater than a minimum or maximum game dimension use that instead
+			if (minWidth && viewport.width < minWidth) {
+				viewport.width = minWidth;
+			}
 			if (minHeight && viewport.height < minHeight) {
 				viewport.height = minHeight;
+			}
+			if (maxWidth && viewport.width > maxWidth) {
+				viewport.width = maxWidth;
+			}
+			if (maxHeight && viewport.height > maxHeight) {
+				viewport.height = maxHeight;
 			}
 		
 			// If the game should not be scaled
