@@ -38,6 +38,8 @@ BLOCKS.tween = function (spec) {
 	tween.tick = function () {
 	
 		if (!destroyed) {
+		
+			tween.dispatchEvent("tick");
 
 			if (Math.abs(total - current) < Math.abs(speed)) {
 			
@@ -160,12 +162,13 @@ BLOCKS.motor = function (spec) {
 			
 				if (!destroyed) {
 				
+					motor.dispatchEvent("tick");
+				
 					distLeft = BLOCKS.toolbox.dist(curOffset, offset);
 					
 					curTick += 1;
 					
 					object.dirty = true;
-					object.layer.dirty = true;
 					
 					if (distLeft <= speed) {
 					
