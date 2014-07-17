@@ -158,9 +158,9 @@ BLOCKS.controller = function (element) {
 				// Make a copy of the touch event
 				event = {};
 				for (key in firstFinger) {
-					if (firstFinger.hasOwnProperty(key)) {
+					//if (firstFinger.hasOwnProperty(key)) { // Don't use due to Firefox and IE9
 						event[key] = firstFinger[key];
-					}
+					//}
 				}
 				
 				event.x = (firstFinger.pageX - elementPos.x - controller.offsetX) * controller.scaleX;
@@ -243,9 +243,9 @@ BLOCKS.controller = function (element) {
 				
 				event = {};
 				for (key in e) {
-					if (e.hasOwnProperty(key)) {
+					//if (e.hasOwnProperty(key)) { Don't use due to Firefox and IE9
 						event[key] = e[key];
-					}
+					//}
 				}
 				
 				// TODO: ElementPos does not have to be calculated every time?
