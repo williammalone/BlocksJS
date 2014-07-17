@@ -404,9 +404,6 @@ BLOCKS.block = function (options) {
 			if (scale !== value) {
 				scale = value;
 				curSlice.scale = scale;
-				block.width = curSlice.width;
-				block.height = curSlice.height;
-				curSlice.dirty = true;
 			}
 		}
 	});
