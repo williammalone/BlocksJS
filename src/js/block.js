@@ -34,6 +34,7 @@ BLOCKS.block = function (options) {
 		y = (options && options.y) || 0,
 		width = (options && options.width) || 0,
 		height = (options && options.height) || 0,
+		scale = (options && options.scale !== undefined) ? options.scale : 1,
 	
 		assignBlockProperties = function () {
 		
@@ -71,7 +72,7 @@ BLOCKS.block = function (options) {
 	// Public Properties
 	block.name = (options && options.name !== undefined) ? options.name : undefined;
 	block.angle = (options && options.angle) || 0;
-	block.scale = (options && options.scale !== undefined) ? options.scale : 1;
+	//block.scale = (options && options.scale !== undefined) ? options.scale : 1;
 	block.alpha = (options && options.alpha !== undefined) ? options.alpha : 1;
 	block.visible = (options && options.visible !== undefined) ? options.visible : true;
 	block.dirty = false;
@@ -394,6 +395,34 @@ BLOCKS.block = function (options) {
 			}
 		}
 	});
+	
+	Object.defineProperty(block, "scale", {
+		get: function () {
+			return scale;
+		},
+		set: function (value) {
+			if (scale !== value) {
+				scale = value;
+				curSlice.scale = scale;
+				block.width = curSlice.width;
+				block.height = curSlice.height;
+				curSlice.dirty = true;
+			}
+		}
+	});
+	
+	/*Object.defineProperty(block, "layer", {
+		get: function () {
+			return layer;
+		},
+		set: function (value) {
+			layer = value;
+			if (curSlice.layer !== layer) {
+				curSlice.layer = layer;
+				curSlice.dirty = true;
+			}
+		}
+	});*/
 	
 	(function () {
 		var i, spec = options && options.spec;
