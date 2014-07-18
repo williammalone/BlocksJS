@@ -23,7 +23,8 @@ BLOCKS.slice = function (options) {
 	var slice = BLOCKS.view(options),
 	
 		// Properties
-		imageResource, paused, texture, drawBounds = true, tmpCtx, 
+		imageResource, paused, texture, tmpCtx,
+		drawBounds = false,
 		frameCnt = 0,
 		loopIndex = 0,
 		curFrameIndex = 0,
