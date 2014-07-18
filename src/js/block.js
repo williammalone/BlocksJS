@@ -23,18 +23,18 @@ BLOCKS.block = function (options) {
 	var block = BLOCKS.eventDispatcher(),
 	
 		// Private Properties
+		spec = options && options.spec,
 		slicesArr = [],
 		slicesObj = {},
 		curSlice,
-		name = options && options.name,
 		layer = options && options.layer,
 		motors = [],
 		stack,
-		x = (options && options.x) || 0,
-		y = (options && options.y) || 0,
-		width = (options && options.width) || 0,
-		height = (options && options.height) || 0,
-		scale = (options && options.scale !== undefined) ? options.scale : 1,
+		x = (spec && spec.x) || 0,
+		y = (spec && spec.y) || 0,
+		width = (spec && spec.width) || 0,
+		height = (spec && spec.height) || 0,
+		scale = (spec && spec.scale !== undefined) ? spec.scale : 1,
 	
 		assignBlockProperties = function () {
 		
@@ -68,13 +68,13 @@ BLOCKS.block = function (options) {
 				break;
 			}
 		};
-	
+
 	// Public Properties
-	block.name = (options && options.name !== undefined) ? options.name : undefined;
-	block.angle = (options && options.angle) || 0;
+	block.name = (spec && spec.name !== undefined) ? spec.name : undefined;
+	block.angle = (spec && spec.angle) || 0;
 	//block.scale = (options && options.scale !== undefined) ? options.scale : 1;
-	block.alpha = (options && options.alpha !== undefined) ? options.alpha : 1;
-	block.visible = (options && options.visible !== undefined) ? options.visible : true;
+	block.alpha = (spec && spec.alpha !== undefined) ? spec.alpha : 1;
+	block.visible = (spec && spec.visible !== undefined) ? spec.visible : true;
 	block.dirty = false;
 	
 	// Public Methods
@@ -422,7 +422,7 @@ BLOCKS.block = function (options) {
 	});*/
 	
 	(function () {
-		var i, spec = options && options.spec;
+		var i;
 		
 		if (spec) {
 			// If slices defined in the options
