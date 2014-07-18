@@ -94,7 +94,9 @@ BLOCKS.stack = function (options) {
 			stack.visible = false;
 			stack.dirty = true;
 			
-			views[i].hide();
+			for (i = 0; i < views.length; i += 1) {
+				views[i].hide();
+			}
 		}
 	};
 	
