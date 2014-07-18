@@ -46,9 +46,9 @@ BLOCKS.block = function (options) {
 			curSlice.x = block.x;
 			curSlice.y = block.y;
 			curSlice.visible = block.visible;
-			if (block.alpha < 0) {
+			if (block.alpha < 0.01) {
 				block.alpha = 0;
-			} else if (block.alpha > 1) {
+			} else if (block.alpha > 0.99) {
 				block.alpha = 1;
 			}
 			curSlice.alpha = block.alpha;

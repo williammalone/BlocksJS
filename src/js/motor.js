@@ -45,14 +45,18 @@ BLOCKS.tween = function (spec) {
 			curTick += 1;
 		
 			tween.dispatchEvent("tick");
+			
+			if (easing === "easeIn") {
+				easeAmt = Math.pow(curTick / duration, 4) * total;
+			} else if (easing === "easeOut") {
+				easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
+			} else {
+				easeAmt = total;
+			}
+			object[property] += easeAmt - current;
 
 			if (curTick === duration) {
-			
-				if (speed > 0) {
-					object[property] -= Math.abs(total - current);
-				} else {
-					object[property] += Math.abs(total - current);
-				}
+
 				object.dirty = true;
 				
 				tween.dispatchEvent("complete", tween);
@@ -64,14 +68,7 @@ BLOCKS.tween = function (spec) {
 					tween.destroy();
 				}
 			} else {
-			
-				if (easing === "easeIn") {
-					easeAmt = Math.pow(curTick / duration, 4) * total;
-				} else if (easing === "easeOut") {
-					easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
-				}
-						
-				object[property] += easeAmt - current;
+	
 				current = easeAmt;
 				if (Math.abs(lastDirtyValue - current) > dirtyTolerance) {
 					lastDirtyValue = current;
