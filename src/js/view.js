@@ -23,13 +23,13 @@ BLOCKS.view = function (options) {
 	var view = BLOCKS.eventDispatcher(),
 	
 		// Properties
-		motors, x, y, width, height, offsetX, offsetY, angle, scale, alpha, visible, layer, hotspots, minHotspot, stack,
+		motors, x, y, width, height, offsetX, offsetY, angle, scale, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
 		
 		// Helper function for initializing public properties
 		createPublicProperty = function (propertyName, propertyVariable, defaultValue, markDirty) {
-		
+	
 			propertyVariable = options[propertyName] || defaultValue;
-		
+			
 			if (markDirty) {
 				Object.defineProperty(view, propertyName, {
 					get: function () {
@@ -275,10 +275,58 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
-		createPublicProperty("width", width, 0, true);
-		createPublicProperty("height", height, 0, true);
-		createPublicProperty("offsetX", offsetX, 0, true);
-		createPublicProperty("offsetY", offsetY, 0, true);
+		width = options.width || 0;
+		Object.defineProperty(view, "width", {
+			get: function () {
+				return width * view.scale;
+			},
+			set: function (value) {
+				if (width !== value) {
+					view.dirty = true;
+					width = value;
+				}
+			}
+		});
+		
+		height = options.height || 0;
+		Object.defineProperty(view, "height", {
+			get: function () {
+				return height * view.scale;
+			},
+			set: function (value) {
+				if (height !== value) {
+					view.dirty = true;
+					height = value;
+				}
+			}
+		});
+		
+		offsetX = options.offsetX || 0;
+		Object.defineProperty(view, "offsetX", {
+			get: function () {
+				return view.centerRegistrationPoint ? -view.width / 2 : offsetX;
+			},
+			set: function (value) {
+				if (offsetX !== value) {
+					view.dirty = true;
+					offsetX = value;
+				}
+			}
+		});
+		
+		offsetY = options.offsetY || 0;
+		Object.defineProperty(view, "offsetY", {
+			get: function () {
+				return view.centerRegistrationPoint ? -view.height / 2 : offsetY;
+			},
+			set: function (value) {
+				if (offsetY !== value) {
+					view.dirty = true;
+					offsetY = value;
+				}
+			}
+		});
+		
 		createPublicProperty("angle", angle, 0, true);
 		createPublicProperty("scale", scale, 1, true);
 		createPublicProperty("alpha", alpha, 1, true);
@@ -287,6 +335,7 @@ BLOCKS.view = function (options) {
 		createPublicProperty("hotspots", hotspots, undefined, true);
 		createPublicProperty("minHotspot", minHotspot, undefined, true);
 		createPublicProperty("stack", stack, undefined, true);
+		createPublicProperty("centerRegistrationPoint", centerRegistrationPoint, false, true);
 
 	}());
 	

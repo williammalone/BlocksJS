@@ -23,7 +23,7 @@ BLOCKS.slice = function (options) {
 	var slice = BLOCKS.view(options),
 	
 		// Properties
-		imageResource, paused, texture, centerRegistrationPoint, drawBounds, tmpCtx, 
+		imageResource, paused, texture, drawBounds = true, tmpCtx, 
 		frameCnt = 0,
 		loopIndex = 0,
 		curFrameIndex = 0,
@@ -42,12 +42,6 @@ BLOCKS.slice = function (options) {
 			if (imageResource) {
 				slice.width = imageResource.image.width / slice.numberOfFrames;
 				slice.height = imageResource.image.height;
-			}
-			
-			// If the registration point should be centered
-			if (centerRegistrationPoint) {
-				slice.offsetX = -slice.width / 2;
-				slice.offsetY = -slice.height / 2;
 			}
 		};
 	
@@ -257,26 +251,26 @@ BLOCKS.slice = function (options) {
 					if (slice.numberOfFrames > 1) {
 						context.drawImage(
 							imageResource.image,
-							curFrameIndex * slice.width + slice.frameOffsetX,
+							curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
 							slice.frameOffsetY,
-							slice.cropWidth || slice.width, 
-							slice.cropHeight || slice.height, 
+							slice.cropWidth || slice.width / slice.scale, 
+							slice.cropHeight || slice.height / slice.scale, 
 							x + slice.offsetX - cameraOffset.x,
 							y + slice.offsetY - cameraOffset.y,
-							slice.cropWidth || slice.width * slice.scale, 
-							slice.cropHeight || slice.height * slice.scale
+							slice.cropWidth || slice.width, 
+							slice.cropHeight || slice.height
 						);
 					// If the sprite is not an animation
 					} else {
 						context.drawImage(imageResource.image, 
 							slice.frameOffsetX, 
 							slice.frameOffsetY,
-							slice.cropWidth || slice.width, 
-							slice.cropHeight || slice.height,
+							slice.cropWidth || slice.width / slice.scale, 
+							slice.cropHeight || slice.height / slice.scale,
 							x + slice.offsetX - cameraOffset.x,
 							y + slice.offsetY - cameraOffset.y, 
-							slice.cropWidth || slice.width * slice.scale,
-							slice.cropHeight || slice.height * slice.scale);
+							slice.cropWidth || slice.width,
+							slice.cropHeight || slice.height);
 					}
 					
 					if (slice.colorize) {
@@ -342,115 +336,6 @@ BLOCKS.slice = function (options) {
 		slice.dirty = false;
 	};
 	
-	/*slice.isPointInside = function (point) {
-	
-		var i,
-			bounds = slice.getBounds(),
-			collision = false;
-	
-		if (!point) {
-			BLOCKS.warn("slice.isPointInside point is falsy: " + point);
-			return;
-		}
-		
-		if (!bounds.length) {
-			bounds = [bounds];
-		}
-		
-		for (i = 0; i < bounds.length; i += 1) {
-			
-			if (point.x >= bounds[i].x && point.x <= bounds[i].x + bounds[i].width && point.y >= bounds[i].y && point.y <= bounds[i].y + bounds[i].height) {
-				
-				collision = true;
-				break;
-			}
-		}
-		
-		return collision;
-	};
-	
-	slice.getBounds = function () {
-		
-		var i, bounds, extraWidth, extraHeight;
-
-		if (!slice.hotspots && !slice.minHotspot) {
-			bounds =  {
-				x: x + slice.offsetX,
-				y: y + slice.offsetY,
-				width: slice.width,
-				height: slice.height
-			};
-		} else {
-			bounds = [];
-			if (slice.hotspots) {
-				for (i = 0; i < slice.hotspots.length; i += 1) {
-					bounds.push({
-						x: x + slice.offsetX + slice.hotspots[i].x,
-						y: y + slice.offsetY + slice.hotspots[i].y,
-						width: slice.hotspots[i].width,
-						height: slice.hotspots[i].height
-					});
-				}
-			}
-			if (slice.minHotspot) {
-			
-				extraWidth = slice.width < slice.minHotspot ? slice.minHotspot - slice.width : 0;
-				extraHeight = slice.height < slice.minHotspot ? slice.minHotspot - slice.height : 0;
-
-				bounds.push({
-					x: x + slice.offsetX - extraWidth / 2,
-					y: y + slice.offsetY - extraHeight / 2,
-					width: slice.width + extraWidth,
-					height: slice.height + extraHeight
-				});
-			}
-			if (bounds.length === 1) {
-				bounds = bounds[0];
-			}
-		}
-
-		return bounds;
-	};
-	
-	slice.getBoundingBox = function () {
-	
-		return {
-			x: x + slice.offsetX,
-			y: y + slice.offsetY,
-			width: slice.width,
-			height: slice.height
-		};
-	};
-	
-	slice.isRectInside = function (rect) {
-	
-		var i, result, bounds;
-			
-		if (!rect) {
-			BLOCKS.warn("slice.isRectangleInside rect is falsy: " + rect);
-			return false;
-		}
-
-		bounds = slice.getBounds();	
-		if (!bounds.length) {
-			bounds = [bounds];
-		}
-
-		for (i = 0; i < bounds.length; i += 1) {
-
-			if (rect.x + rect.width > bounds[i].x && 
-				rect.x < bounds[i].x + bounds[i].width && 
-				rect.y + rect.height > bounds[i].y && 
-				rect.y < bounds[i].y + bounds[i].height) {
-			
-				result = true;
-				break;
-			}
-		}
-			
-		return result;
-	};*/
-	
 	slice.gotoLastFrame = function () {
 	
 		if (curFrameIndex !== slice.numberOfFrames - 1) {
@@ -471,23 +356,6 @@ BLOCKS.slice = function (options) {
 		}
 	};
 	
-	/*slice.show = function () {
-	
-		if (!slice.visible) {
-			slice.dirty = true;
-		}
-		slice.visible = true;
-	};
-	
-	slice.hide = function () {
-	
-		if (slice.visible) {
-			slice.dirty = true;
-		}
-		slice.visible = false;
-		
-	};*/
-	
 	slice.destroy = function () {
 	
 		if (slice) {
@@ -498,24 +366,6 @@ BLOCKS.slice = function (options) {
 		slice = null;
 	};
 	
-	/*Object.defineProperty(slice, "x", {
-		get: function () {
-			return slice.stack ? slice.stack.x + x : x;
-		},
-		set: function (value) {
-			x = value;
-		}
-	});
-	
-	Object.defineProperty(slice, "y", {
-		get: function () {
-			return slice.stack ? slice.stack.y + y : y;
-		},
-		set: function (value) {
-			y = value;
-		}
-	});*/
-	
 	(function () {
 		
 		var image = options.image,
@@ -523,8 +373,6 @@ BLOCKS.slice = function (options) {
 			imagePreloaded = image ? true : false;
 			
 		options = options || {};
-		
-		centerRegistrationPoint = options.centerRegistrationPoint;
 			
 		// Pause the slice if autoPlay property is set to false
 		if (!slice.autoPlay) {
