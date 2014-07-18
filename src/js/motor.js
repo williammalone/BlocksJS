@@ -28,10 +28,13 @@ BLOCKS.tween = function (spec) {
 		total = spec.amount,
 		duration = spec.duration / 1000 * 60, // Convert milliseconds to number of frames
 		callback = spec.callback,
+		easing = spec.easing,
 		dirtyTolerance = spec.dirtyTolerance || 0,
 		current = 0,
 		lastDirtyValue = current,
 		speed,
+		easeAmt,
+		curTick,
 		destroyed;
 	
 	// Public Methods
@@ -39,9 +42,11 @@ BLOCKS.tween = function (spec) {
 	
 		if (!destroyed) {
 		
+			curTick += 1;
+		
 			tween.dispatchEvent("tick");
 
-			if (Math.abs(total - current) < Math.abs(speed)) {
+			if (curTick === duration) {
 			
 				if (speed > 0) {
 					object[property] -= Math.abs(total - current);
@@ -59,8 +64,15 @@ BLOCKS.tween = function (spec) {
 					tween.destroy();
 				}
 			} else {
-				object[property] += speed;
-				current += speed;
+			
+				if (easing === "easeIn") {
+					easeAmt = Math.pow(curTick / duration, 4) * total;
+				} else if (easing === "easeOut") {
+					easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
+				}
+						
+				object[property] += easeAmt - current;
+				current = easeAmt;
 				if (Math.abs(lastDirtyValue - current) > dirtyTolerance) {
 					lastDirtyValue = current;
 					object.dirty = true;
@@ -113,6 +125,8 @@ BLOCKS.tween = function (spec) {
 		}
 		
 		speed = total / duration;
+		
+		curTick = 0;
 	}());
 	
 	return tween;
@@ -149,7 +163,6 @@ BLOCKS.motor = function (spec) {
 				angle = BLOCKS.toolbox.angle(curOffset, offset),
 				curTick,
 				totalTicks,
-				
 				duration,
 				deltaX,
 				deltaY;
@@ -170,7 +183,7 @@ BLOCKS.motor = function (spec) {
 					
 					object.dirty = true;
 					
-					if (distLeft <= speed) {
+					if (curTick >= totalTicks) {
 					
 						object.x += distLeft * Math.cos(angle);
 						object.y += distLeft * Math.sin(angle);
