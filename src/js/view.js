@@ -327,7 +327,26 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
-		createPublicProperty("angle", angle, 0, true);
+		angle = options.angle || 0;
+		Object.defineProperty(view, "angle", {
+			get: function () {
+				return angle;
+			},
+			set: function (value) {
+			
+				value = value % 360;
+				
+				if (value < 0) {
+					value = 360 + value;
+				}
+			
+				if (angle !== value) {
+					view.dirty = true;
+					angle = value;
+				}
+			}
+		});
+		
 		createPublicProperty("scale", scale, 1, true);
 		createPublicProperty("alpha", alpha, 1, true);
 		createPublicProperty("visible", visible, 1, true);

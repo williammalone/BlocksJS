@@ -35,11 +35,16 @@ BLOCKS.block = function (options) {
 		width = (spec && spec.width) || 0,
 		height = (spec && spec.height) || 0,
 		scale = (spec && spec.scale !== undefined) ? spec.scale : 1,
+		mirrorX = spec.mirrorX,
+		mirrorY = spec.mirrorY,
+		angle = spec.angle || 0,
 	
 		assignBlockProperties = function () {
 		
-			curSlice.scale = block.scale;
-			curSlice.angle = block.angle;
+			curSlice.mirrorY = block.mirrorY;
+			curSlice.mirrorX = block.mirrorX;
+			curSlice.scale = scale;
+			curSlice.angle = angle;
 			if (block.minHotspot >= 0) {
 				curSlice.minHotspot = block.minHotspot;
 			}
@@ -404,6 +409,48 @@ BLOCKS.block = function (options) {
 			if (scale !== value) {
 				scale = value;
 				curSlice.scale = scale;
+			}
+		}
+	});
+	
+	Object.defineProperty(block, "mirrorX", {
+		get: function () {
+			return curSlice.mirrorX;
+		},
+		set: function (value) {
+			if (curSlice) {
+				curSlice.mirrorX = value;
+				mirrorX = curSlice.mirrorX;
+			} else {
+				mirrorX = value;
+			}
+		}
+	});
+	
+	Object.defineProperty(block, "mirrorY", {
+		get: function () {
+			return curSlice.mirrorY;
+		},
+		set: function (value) {
+			if (curSlice) {
+				curSlice.mirrorY = value;
+				mirrorY = curSlice.mirrorY;
+			} else {
+				mirrorY = value;
+			}
+		}
+	});
+	
+	Object.defineProperty(block, "angle", {
+		get: function () {
+			return angle;
+		},
+		set: function (value) {
+			if (curSlice) {
+				curSlice.angle = value;
+				angle = curSlice.angle;
+			} else {
+				angle = value;
 			}
 		}
 	});
