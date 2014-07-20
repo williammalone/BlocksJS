@@ -29,7 +29,7 @@ BLOCKS.block = function (options) {
 		slicesObj = {},
 		curSlice,
 		motors = [],
-		properties = [],
+		properties = ["stack", "worldX", "worldY", "x", "y", "width", "height", "scale", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos"],
 		
 		motorDestroyed = function (motor) {
 			
@@ -240,208 +240,29 @@ BLOCKS.block = function (options) {
 		curSlice.gotoFrame(frameIndex);
 	};
 	
-	properties.push("stack");
-	Object.defineProperty(block, "stack", {
-		get: function () {
-			return curSlice.stack;
-		},
-		set: function (value) {
-			curSlice.stack = value;
-		}
-	});
-	
-	properties.push("worldX");
-	Object.defineProperty(block, "worldX", {
-		get: function () {
-			return curSlice.worldX;
-		},
-		set: function (value) {
-			curSlice.worldX = value;
-		}
-	});
-	
-	properties.push("worldY");
-	Object.defineProperty(block, "worldY", {
-		get: function () {
-			return curSlice.worldY;
-		},
-		set: function (value) {
-			curSlice.worldY = value;
-		}
-	});
-	
-	properties.push("x");
-	Object.defineProperty(block, "x", {
-		get: function () {
-			return curSlice.x;
-		},
-		set: function (value) {
-			curSlice.x = value;
-		}
-	});
-	
-	properties.push("y");
-	Object.defineProperty(block, "y", {
-		get: function () {
-			return curSlice.y;
-		},
-		set: function (value) {
-			curSlice.y = value;
-		}
-	});
-	
-	properties.push("width");
-	Object.defineProperty(block, "width", {
-		get: function () {
-			return curSlice.width;
-		},
-		set: function (value) {
-			curSlice.width = value;
-		}
-	});
-	
-	properties.push("height");
-	Object.defineProperty(block, "height", {
-		get: function () {
-			return curSlice.height;
-		},
-		set: function (value) {
-			curSlice.height = value;
-		}
-	});
-	
-	properties.push("scale");
-	Object.defineProperty(block, "scale", {
-		get: function () {
-			return curSlice.scale;
-		},
-		set: function (value) {
-			curSlice.scale = value;
-		}
-	});
-	
-	properties.push("mirrorX");
-	Object.defineProperty(block, "mirrorX", {
-		get: function () {
-			return curSlice.mirrorX;
-		},
-		set: function (value) {
-			curSlice.mirrorX = value;
-		}
-	});
-	
-	properties.push("mirrorY");
-	Object.defineProperty(block, "mirrorY", {
-		get: function () {
-			return curSlice.mirrorY;
-		},
-		set: function (value) {
-			curSlice.mirrorY = value;
-		}
-	});
-	
-	properties.push("angle");
-	Object.defineProperty(block, "angle", {
-		get: function () {
-			return curSlice.angle;
-		},
-		set: function (value) {
-			curSlice.angle = value;
-		}
-	});
-	
-	properties.push("alpha");
-	Object.defineProperty(block, "alpha", {
-		get: function () {
-			return curSlice.alpha;
-		},
-		set: function (value) {
-			curSlice.alpha = value;
-		}
-	});
-	
-	properties.push("layer");
-	Object.defineProperty(block, "layer", {
-		get: function () {
-			return curSlice.layer;
-		},
-		set: function (value) {
-			curSlice.layer = value;
-		}
-	});
-	
-	properties.push("visible");
-	Object.defineProperty(block, "visible", {
-		get: function () {
-			return curSlice.visible;
-		},
-		set: function (value) {
-			curSlice.visible = value;
-		}
-	});
-	
-	properties.push("dirty");
-	Object.defineProperty(block, "dirty", {
-		get: function () {
-			return curSlice.dirty;
-		},
-		set: function (value) {
-			curSlice.dirty = value;
-		}
-	});
-	
-	properties.push("justTapped");
-	Object.defineProperty(block, "justTapped", {
-		get: function () {
-			return curSlice.justTapped;
-		},
-		set: function (value) {
-			curSlice.justTapped = value;
-		}
-	});
-	
-	properties.push("justNotTapped");
-	Object.defineProperty(block, "justNotTapped", {
-		get: function () {
-			return curSlice.justNotTapped;
-		},
-		set: function (value) {
-			curSlice.justNotTapped = value;
-		}
-	});
-	
-	properties.push("dragging");
-	Object.defineProperty(block, "dragging", {
-		get: function () {
-			return curSlice.dragging;
-		},
-		set: function (value) {
-			curSlice.dragging = value;
-		}
-	});
-	
-	properties.push("justReleased");
-	Object.defineProperty(block, "justReleased", {
-		get: function () {
-			return curSlice.justReleased;
-		},
-		set: function (value) {
-			curSlice.justReleased = value;
-		}
-	});
-	
-	properties.push("tapPos");
-	Object.defineProperty(block, "tapPos", {
-		get: function () {
-			return curSlice.tapPos;
-		},
-		set: function (value) {
-			curSlice.tapPos = value;
-		}
-	});
-	
 	(function () {
-		var i;
+		var i,
+		
+			createPublicProperty = function (propertyName) {
+			
+				Object.defineProperty(block, propertyName, {
+					get: function () {
+						if (curSlice) {
+							return curSlice[propertyName];
+						}
+					},
+					set: function (value) {
+						if (curSlice) {
+							curSlice[propertyName] = value;
+						}
+					}
+				});
+			};
+		
+		for (i = 0; i < properties.length; i += 1) {
+		
+			createPublicProperty(properties[i]);
+		}
 
 		// If slices defined in the options
 		if (spec &&spec.slices) {
