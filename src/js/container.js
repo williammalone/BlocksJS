@@ -50,7 +50,7 @@ BLOCKS.container = function () {
 	
 		view.addEventListener("destroyed", container.removeView);
 		views.push(view);
-		
+
 		for (i = 0; i < layers.length; i += 1) {
 			if (view.layer === layers[i]) {
 				layerInArray = true;

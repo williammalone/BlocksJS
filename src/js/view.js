@@ -29,6 +29,7 @@ BLOCKS.view = function (options) {
 		createPublicProperty = function (propertyName, propertyVariable, defaultValue, markDirty) {
 	
 			propertyVariable = options[propertyName] || defaultValue;
+BLOCKS.debug("Create '" + propertyName + "' with default value: " + (options[propertyName] || defaultValue));
 			
 			if (markDirty) {
 				Object.defineProperty(view, propertyName, {
@@ -52,6 +53,8 @@ BLOCKS.view = function (options) {
 					}
 				});
 			}
+			
+			return propertyVariable;
 		},
 			
 		motorDestroyed = function (motor) {
@@ -148,8 +151,8 @@ BLOCKS.view = function (options) {
 		
 		var i, bounds, extraWidth, extraHeight, x, y;
 		
-		x = view.x;
-		y = view.y;
+		x = view.worldX;
+		y = view.worldY;
 
 		if (!view.hotspots && !view.minHotspot) {
 			bounds =  {
@@ -193,8 +196,8 @@ BLOCKS.view = function (options) {
 	view.getBoundingBox = function () {
 	
 		return {
-			x: view.x + view.offsetX,
-			y: view.y + view.offsetY,
+			x: view.worldX + view.offsetX,
+			y: view.worldY + view.offsetY,
 			width: view.width,
 			height: view.height
 		};
@@ -248,29 +251,27 @@ BLOCKS.view = function (options) {
 		view.name = options.name;
 		
 		view.dirty = true;
-
-		x = options.x || 0;
-		Object.defineProperty(view, "x", {
+		
+		Object.defineProperty(view, "worldX", {
 			get: function () {
-				return view.stack ? view.stack.x + x : x;
+				return view.stack ? view.stack.x + view.x : view.x;
 			},
 			set: function (value) {
-				if (x !== value) {
+				if (view.x !== value) {
 					view.dirty = true;
-					x = view.stack ? value - view.stack.x : value;
+					view.x = view.stack ? value - view.stack.x : value;
 				}
 			}
 		});
 		
-		y = options.y || 0;
-		Object.defineProperty(view, "y", {
+		Object.defineProperty(view, "worldY", {
 			get: function () {
-				return view.stack ? view.stack.y + y : y;
+				return view.stack ? view.stack.y + view.y : view.y;
 			},
 			set: function (value) {
-				if (y !== value) {
+				if (view.y !== value) {
 					view.dirty = true;
-					y = view.stack ? value - view.stack.y : value;
+					view.y = view.stack ? value - view.stack.y : value;
 				}
 			}
 		});
@@ -347,15 +348,142 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
-		createPublicProperty("scale", scale, 1, true);
-		createPublicProperty("alpha", alpha, 1, true);
-		createPublicProperty("visible", visible, 1, true);
-		createPublicProperty("layer", layer, undefined, true);
-		createPublicProperty("hotspots", hotspots, undefined, true);
-		createPublicProperty("minHotspot", minHotspot, undefined, true);
-		createPublicProperty("stack", stack, undefined, true);
-		createPublicProperty("centerRegistrationPoint", centerRegistrationPoint, false, true);
+		x = options.x || 0;
+		Object.defineProperty(view, "x", {
+			get: function () {
+				return x;
+			},
+			set: function (value) {
+				if (x !== value) {
+					view.dirty = true;
+					x = value;
+				}
+			}
+		});
+		
+		y = options.y || 0;
+		Object.defineProperty(view, "y", {
+			get: function () {
+				return y;
+			},
+			set: function (value) {
+				if (y !== value) {
+					view.dirty = true;
+					y = value;
+				}
+			}
+		});
+		
+		scale = options.scale !== undefined ? options.scale : 1;
+		Object.defineProperty(view, "scale", {
+			get: function () {
+				return scale;
+			},
+			set: function (value) {
+				if (scale !== value) {
+					view.dirty = true;
+					scale = value;
+				}
+			}
+		});
+		
+		alpha = options.alpha !== undefined ? options.alpha : 1;
+		Object.defineProperty(view, "alpha", {
+			get: function () {
+				return alpha;
+			},
+			set: function (value) {
+				if (alpha !== value) {
+				
+					// Round the alpha value if it is really close
+					if (alpha < 0.0001) {
+						alpha = 0;
+					} else if (alpha > 0.9999) {
+						alpha = 1;
+					}
+					view.dirty = true;
+					alpha = value;
+				}
+			}
+		});
+		
+		visible = options.visible !== undefined ? options.visible : true;
+		Object.defineProperty(view, "visible", {
+			get: function () {
+				return visible;
+			},
+			set: function (value) {
+				if (visible !== value) {
+					view.dirty = true;
+					visible = value;
+				}
+			}
+		});
+		
+		layer = options.layer;
+		Object.defineProperty(view, "layer", {
+			get: function () {
+				return layer;
+			},
+			set: function (value) {
+				if (layer !== value) {
+					view.dirty = true;
+					layer = value;
+				}
+			}
+		});
+		
+		hotspots = options.hotspots;
+		Object.defineProperty(view, "hotspots", {
+			get: function () {
+				return hotspots;
+			},
+			set: function (value) {
+				if (hotspots !== value) {
+					view.dirty = true;
+					hotspots = value;
+				}
+			}
+		});
 
+		minHotspot = options.minHotspot;
+		Object.defineProperty(view, "minHotspot", {
+			get: function () {
+				return minHotspot;
+			},
+			set: function (value) {
+				if (minHotspot !== value) {
+					view.dirty = true;
+					minHotspot = value;
+				}
+			}
+		});
+		
+		stack = options.stack;
+		Object.defineProperty(view, "stack", {
+			get: function () {
+				return stack;
+			},
+			set: function (value) {
+				if (stack !== value) {
+					view.dirty = true;
+					stack = value;
+				}
+			}
+		});
+		
+		centerRegistrationPoint = options.centerRegistrationPoint || false;
+		Object.defineProperty(view, "centerRegistrationPoint", {
+			get: function () {
+				return centerRegistrationPoint;
+			},
+			set: function (value) {
+				if (centerRegistrationPoint !== value) {
+					view.dirty = true;
+					centerRegistrationPoint = value;
+				}
+			}
+		});
 	}());
 	
 	return view;

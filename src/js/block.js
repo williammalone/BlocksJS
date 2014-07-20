@@ -24,43 +24,12 @@ BLOCKS.block = function (options) {
 	
 		// Private Properties
 		spec = options && options.spec,
+		layer = options && options.layer,
 		slicesArr = [],
 		slicesObj = {},
 		curSlice,
-		layer = options && options.layer,
 		motors = [],
-		stack,
-		x = (spec && spec.x) || 0,
-		y = (spec && spec.y) || 0,
-		width = (spec && spec.width) || 0,
-		height = (spec && spec.height) || 0,
-		scale = (spec && spec.scale !== undefined) ? spec.scale : 1,
-		mirrorX = spec.mirrorX,
-		mirrorY = spec.mirrorY,
-		angle = spec.angle || 0,
-	
-		assignBlockProperties = function () {
-		
-			curSlice.mirrorY = block.mirrorY;
-			curSlice.mirrorX = block.mirrorX;
-			curSlice.scale = scale;
-			curSlice.angle = angle;
-			if (block.minHotspot >= 0) {
-				curSlice.minHotspot = block.minHotspot;
-			}
-			curSlice.x = block.x;
-			curSlice.y = block.y;
-			curSlice.visible = block.visible;
-			if (block.alpha < 0.01) {
-				block.alpha = 0;
-			} else if (block.alpha > 0.99) {
-				block.alpha = 1;
-			}
-			curSlice.alpha = block.alpha;
-			curSlice.cropWidth = block.cropWidth;
-			curSlice.cropHeight = block.cropHeight;
-			curSlice.colorize = block.colorize;
-		},
+		properties = [],
 		
 		motorDestroyed = function (motor) {
 			
@@ -76,51 +45,12 @@ BLOCKS.block = function (options) {
 
 	// Public Properties
 	block.name = (spec && spec.name !== undefined) ? spec.name : undefined;
-	block.angle = (spec && spec.angle) || 0;
-	//block.scale = (options && options.scale !== undefined) ? options.scale : 1;
-	block.alpha = (spec && spec.alpha !== undefined) ? spec.alpha : 1;
-	block.visible = (spec && spec.visible !== undefined) ? spec.visible : true;
-	block.dirty = false;
 	
 	// Public Methods
-	block.update = function () {
-	
-		if (block && curSlice) {
-		
-			assignBlockProperties();
-			curSlice.update();
-			// The slice could have been deleted after updating and firing a complete event
-			if (curSlice && curSlice.dirty) {
-				block.dirty = curSlice.dirty;
-			}
-		}
-	};
-	
-	block.render = function (e) {
-		
-		if (block && (block.dirty || curSlice.dirty)) {
-		
-			curSlice.justTapped = block.justTapped;
-			curSlice.justNotTapped = block.justNotTapped;
-			curSlice.dragging = block.dragging;
-			curSlice.justReleased = block.justReleased;
-			curSlice.tapPos = block.tapPos;
-		
-			assignBlockProperties();
-			curSlice.dirty = true;
-			curSlice.render(e);
-			
-			block.dirty = false;
-		}
-	};
 	
 	block.addSlice = function (options) {
 	
-		var slice;
-		
-		if (layer) {
-			options.layer = layer;
-		}
+		var i, slice;
 		
 		slice = BLOCKS.slice(options);
 
@@ -137,6 +67,15 @@ BLOCKS.block = function (options) {
 		
 		// If first slice then set the block to this slice
 		if (slicesArr.length === 1) {
+			if (layer) {
+				slice.layer = layer;
+			}
+			// Assign the properties of the spec to the new slice
+			for (i = 0; i < properties.length; i += 1) {
+				if (spec[properties[i]] !== undefined) {
+					slice[properties[i]] = spec[properties[i]];
+				}
+			}
 			block.setSlice(options.name);
 		}
 		
@@ -154,46 +93,34 @@ BLOCKS.block = function (options) {
 	
 	block.setSlice = function (name, callback) {
 	
-		var i, slice;
+		var i, newSlice;
 		
-		slice = slicesObj[name];
+		newSlice = slicesObj[name];
 
-		if (slice && slice !== curSlice) {
+		if (newSlice && newSlice !== curSlice) {
 
-			block.layer = slice.layer;
-			block.width = slice.width;
-			block.height = slice.height;
-			block.dirty = true;
+			// If there is a current slice
 			if (curSlice) {
-				curSlice.layer.dirty = true;
+				// Assign the properties of the current slice to the new slice
+				for (i = 0; i < properties.length; i += 1) {
+					newSlice[properties[i]] = curSlice[properties[i]];
+				}
 			}
-			curSlice = slice;
-			assignBlockProperties();
+			// Make the new slice the block's current slice
+			curSlice = newSlice;
+
+			// If the current slice is an animation then reset and autoplay it
 			curSlice.reset();
 			if (curSlice.autoPlay) {
 				curSlice.play(callback);
 			}
+
+			curSlice.dirty = true;
 			
 			return true;
 		} else {
-			// If slice does not exist then do nothing
+			// If slice does not exist or it is already set then do nothing
 			return false;
-		}
-	};
-	
-	block.show = function () {
-	
-		if (!block.visible) {
-			block.visible = true;
-			block.dirty = true;
-		}
-	};
-	
-	block.hide = function () {
-		
-		if (block.visible) {
-			block.visible = false;
-			block.dirty = true;
 		}
 	};
 	
@@ -219,6 +146,43 @@ BLOCKS.block = function (options) {
 			}
 		}
 		motors = motorArr;
+	};
+	
+	block.destroy = function () {
+	
+		var i;
+		
+		if (block) {
+			block.removeMotors();
+			
+			for (i = 0; i < slicesArr.length; i += 1) {
+				slicesArr[i].destroy();
+			}
+			slicesArr = null;
+			slicesObj = null;
+			curSlice = null;
+			block = null;
+		}
+	};
+	
+	block.update = function () {
+	
+		curSlice.update();
+	};
+	
+	block.render = function (e) {
+	
+		curSlice.render(e);
+	};
+	
+	block.show = function () {
+	
+		curSlice.show();
+	};
+	
+	block.hide = function () {
+		
+		curSlice.hide();
 	};
 	
 	block.pause = function () {
@@ -248,25 +212,21 @@ BLOCKS.block = function (options) {
 	
 	block.isPointInside = function (point) {
 	
-		assignBlockProperties();
 		return curSlice.isPointInside(point);
 	};
 	
 	block.getBounds = function () {
-		
-		assignBlockProperties();
+
 		return curSlice.getBounds();
 	};
 	
 	block.getBoundingBox = function () {
 		
-		assignBlockProperties();
 		return curSlice.getBoundingBox();
 	};
 	
 	block.isRectInside = function (rect) {
 	
-		assignBlockProperties();
 		return curSlice.isRectInside(rect);
 	};
 	
@@ -276,212 +236,218 @@ BLOCKS.block = function (options) {
 	};
 	
 	block.gotoFrame = function (frameIndex) {
+	
 		curSlice.gotoFrame(frameIndex);
 	};
 	
-	block.destroy = function () {
-	
-		var i;
-		
-		if (block) {
-			block.removeMotors();
-			
-			for (i = 0; i < slicesArr.length; i += 1) {
-				if (slicesArr[i].layer && slicesArr[i].layer.container) {
-					slicesArr[i].layer.container.removeView(slicesArr[i]);
-				}
-				slicesArr[i].destroy();
-			}
-			slicesArr = null;
-			slicesObj = null;
-			curSlice = null;
-			
-			block = null;
-		}
-	};
-	
+	properties.push("stack");
 	Object.defineProperty(block, "stack", {
 		get: function () {
-		
-			return stack;
+			return curSlice.stack;
 		},
 		set: function (value) {
-		
-			var i;
-			
-			stack = value;
-			
-			for (i = 0; i < slicesArr.length; i += 1) {
-				slicesArr[i].stack = stack;
-			}
+			curSlice.stack = value;
 		}
 	});
 	
+	properties.push("worldX");
+	Object.defineProperty(block, "worldX", {
+		get: function () {
+			return curSlice.worldX;
+		},
+		set: function (value) {
+			curSlice.worldX = value;
+		}
+	});
+	
+	properties.push("worldY");
+	Object.defineProperty(block, "worldY", {
+		get: function () {
+			return curSlice.worldY;
+		},
+		set: function (value) {
+			curSlice.worldY = value;
+		}
+	});
+	
+	properties.push("x");
 	Object.defineProperty(block, "x", {
 		get: function () {
-			return block.stack ? block.stack.x + x : x;
+			return curSlice.x;
 		},
 		set: function (value) {
-			x = block.stack ? value - block.stack.x : value;
+			curSlice.x = value;
 		}
 	});
 	
+	properties.push("y");
 	Object.defineProperty(block, "y", {
 		get: function () {
-			return block.stack ? block.stack.y + y : y;
+			return curSlice.y;
 		},
 		set: function (value) {
-			y = block.stack ? value - block.stack.y : value;
+			curSlice.y = value;
 		}
 	});
 	
-	/*Object.defineProperty(block, "x", {
-		get: function () {
-			return x;
-		},
-		set: function (value) {
-			x = value;
-			curSlice.x = x;
-		}
-	});
-	
-	Object.defineProperty(block, "y", {
-		get: function () {
-			return y;
-		},
-		set: function (value) {
-			y = value;
-			curSlice.y = y;
-		}
-	});*/
-	
-	Object.defineProperty(block, "localX", {
-		get: function () {
-			return curSlice.localX;
-		},
-		set: function (value) {
-			x = value;
-			curSlice.localX = x;
-		}
-	});
-	
-	Object.defineProperty(block, "localY", {
-		get: function () {
-			return curSlice.localY;
-		},
-		set: function (value) {
-			y = value;
-			curSlice.localY = y;
-		}
-	});
-	
+	properties.push("width");
 	Object.defineProperty(block, "width", {
 		get: function () {
 			return curSlice.width;
 		},
 		set: function (value) {
-			if (curSlice) {
-				curSlice.width = value;
-			} else {
-				width = value;
-			}
+			curSlice.width = value;
 		}
 	});
 	
+	properties.push("height");
 	Object.defineProperty(block, "height", {
 		get: function () {
 			return curSlice.height;
 		},
 		set: function (value) {
-			if (curSlice) {
-				curSlice.height = value;
-			} else {
-				height = value;
-			}
+			curSlice.height = value;
 		}
 	});
 	
+	properties.push("scale");
 	Object.defineProperty(block, "scale", {
 		get: function () {
-			return scale;
+			return curSlice.scale;
 		},
 		set: function (value) {
-			if (scale !== value) {
-				scale = value;
-				curSlice.scale = scale;
-			}
+			curSlice.scale = value;
 		}
 	});
 	
+	properties.push("mirrorX");
 	Object.defineProperty(block, "mirrorX", {
 		get: function () {
 			return curSlice.mirrorX;
 		},
 		set: function (value) {
-			if (curSlice) {
-				curSlice.mirrorX = value;
-				mirrorX = curSlice.mirrorX;
-			} else {
-				mirrorX = value;
-			}
+			curSlice.mirrorX = value;
 		}
 	});
 	
+	properties.push("mirrorY");
 	Object.defineProperty(block, "mirrorY", {
 		get: function () {
 			return curSlice.mirrorY;
 		},
 		set: function (value) {
-			if (curSlice) {
-				curSlice.mirrorY = value;
-				mirrorY = curSlice.mirrorY;
-			} else {
-				mirrorY = value;
-			}
+			curSlice.mirrorY = value;
 		}
 	});
 	
+	properties.push("angle");
 	Object.defineProperty(block, "angle", {
 		get: function () {
-			return angle;
+			return curSlice.angle;
 		},
 		set: function (value) {
-			if (curSlice) {
-				curSlice.angle = value;
-				angle = curSlice.angle;
-			} else {
-				angle = value;
-			}
+			curSlice.angle = value;
 		}
 	});
 	
-	/*Object.defineProperty(block, "layer", {
+	properties.push("alpha");
+	Object.defineProperty(block, "alpha", {
 		get: function () {
-			return layer;
+			return curSlice.alpha;
 		},
 		set: function (value) {
-			layer = value;
-			if (curSlice.layer !== layer) {
-				curSlice.layer = layer;
-				curSlice.dirty = true;
-			}
+			curSlice.alpha = value;
 		}
-	});*/
+	});
+	
+	properties.push("layer");
+	Object.defineProperty(block, "layer", {
+		get: function () {
+			return curSlice.layer;
+		},
+		set: function (value) {
+			curSlice.layer = value;
+		}
+	});
+	
+	properties.push("visible");
+	Object.defineProperty(block, "visible", {
+		get: function () {
+			return curSlice.visible;
+		},
+		set: function (value) {
+			curSlice.visible = value;
+		}
+	});
+	
+	properties.push("dirty");
+	Object.defineProperty(block, "dirty", {
+		get: function () {
+			return curSlice.dirty;
+		},
+		set: function (value) {
+			curSlice.dirty = value;
+		}
+	});
+	
+	properties.push("justTapped");
+	Object.defineProperty(block, "justTapped", {
+		get: function () {
+			return curSlice.justTapped;
+		},
+		set: function (value) {
+			curSlice.justTapped = value;
+		}
+	});
+	
+	properties.push("justNotTapped");
+	Object.defineProperty(block, "justNotTapped", {
+		get: function () {
+			return curSlice.justNotTapped;
+		},
+		set: function (value) {
+			curSlice.justNotTapped = value;
+		}
+	});
+	
+	properties.push("dragging");
+	Object.defineProperty(block, "dragging", {
+		get: function () {
+			return curSlice.dragging;
+		},
+		set: function (value) {
+			curSlice.dragging = value;
+		}
+	});
+	
+	properties.push("justReleased");
+	Object.defineProperty(block, "justReleased", {
+		get: function () {
+			return curSlice.justReleased;
+		},
+		set: function (value) {
+			curSlice.justReleased = value;
+		}
+	});
+	
+	properties.push("tapPos");
+	Object.defineProperty(block, "tapPos", {
+		get: function () {
+			return curSlice.tapPos;
+		},
+		set: function (value) {
+			curSlice.tapPos = value;
+		}
+	});
 	
 	(function () {
 		var i;
-		
-		if (spec) {
-			// If slices defined in the options
-			if (spec.slices) {
-				for (i = 0; i < spec.slices.length; i += 1) {
-					block.addSlice(spec.slices[i]);
-				}
+
+		// If slices defined in the options
+		if (spec &&spec.slices) {
+			for (i = 0; i < spec.slices.length; i += 1) {
+				block.addSlice(spec.slices[i]);
 			}
-			
-			// Set the position of the block if specified in the spec
-			block.x = spec.x || 0;
-			block.y = spec.y || 0;
 		}
 	}());
 	

@@ -25,6 +25,9 @@ BLOCKS.stack = function (options) {
 		dirty,
 		alpha,
 		motors = [],
+		x,
+		y,
+		visible,
 		
 		motorDestroyed = function (motor) {
 			
@@ -36,12 +39,17 @@ BLOCKS.stack = function (options) {
 				motors.splice(i, 1);
 				break;
 			}
+		},
+		
+		setViewsDirty = function (value) {
+			var i;
+				
+			for (i = 0; i < views.length; i += 1) {
+				views[i].dirty = value;
+			}
 		};
-	
-	// Public Properties
-	stack.x = (options && options.x) || 0;
-	stack.y = (options && options.y) || 0;
-	stack.visible = true;
+		
+	options = options || {};
 	
 	// Public Methods
 	stack.addView = function (view) {
@@ -77,8 +85,8 @@ BLOCKS.stack = function (options) {
 	
 		var i;
 	
-		if (!stack.visible) {
-			stack.visible = true;
+		if (!visible) {
+			visible = true;
 
 			for (i = 0; i < views.length; i += 1) {
 				views[i].show();
@@ -90,9 +98,9 @@ BLOCKS.stack = function (options) {
 	
 		var i;
 		
-		if (stack.visible) {
-			stack.visible = false;
-			stack.dirty = true;
+		if (visible) {
+			visible = false;
+			dirty = true;
 			
 			for (i = 0; i < views.length; i += 1) {
 				views[i].hide();
@@ -156,11 +164,7 @@ BLOCKS.stack = function (options) {
 			return dirty;
 		},
 		set: function (value) {
-			var i;
-				
-			for (i = 0; i < views.length; i += 1) {
-				views[i].dirty = value;
-			}
+			setViewsDirty(value);
 		}
 	});
 	
@@ -208,6 +212,46 @@ BLOCKS.stack = function (options) {
 			}
 		
 			return largestHeight;
+		}
+	});
+	
+	x = options.x || 0;
+	Object.defineProperty(stack, "x", {
+		get: function () {
+			return x;
+		},
+		set: function (value) {
+			if (x !== value) {
+				x = value;
+				setViewsDirty(true);
+			}
+		}
+	});
+	
+	y = options.y || 0;
+	Object.defineProperty(stack, "y", {
+		get: function () {
+			return y;
+		},
+		set: function (value) {
+			if (y !== value) {
+				y = value;
+				setViewsDirty(true);
+			}
+		}
+	});
+	
+	visible = options.visible || true;
+	Object.defineProperty(stack, "visible", {
+		get: function () {
+			return visible;
+		},
+		set: function (value) {
+			if (value) {
+				stack.show();
+			} else {
+				stack.hide();
+			}
 		}
 	});
 	

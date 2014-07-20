@@ -49,7 +49,6 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		sounds = {},
 		muted = false,
 		maybeReady = false,
-		multipleTracksSupported = false,
 		
 		testSoundComplete = function () {
 		
@@ -210,8 +209,6 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				if (!soundCompleteTimer) {
 					soundCompleteTimer = window.setInterval(soundCompleteChecker, 100);
 				}
-				
-				return true;
 	
 			} else {
 				BLOCKS.warn("Sound parameters not specified.");
@@ -247,7 +244,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	speaker.play = function (name, callback) {
 	
 		if (sounds[name]) {
-			return playSound(name, callback);
+			playSound(name, callback);
 		} else {
 			BLOCKS.warn("Cannot play sound '" + name + "' because it was not defined");
 		}
@@ -320,23 +317,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		};
 	};
 	
-	speaker.getSoundDuration = function (name) {
-	
-		if (sounds && sounds[name] && sounds[name].start >= 0 && sounds[name].end > 0) {
-			// Return the duration in seconds
-			return (sounds[name].end - sounds[name].start) * 1000;
-		}
-	};
-	
-	// Deprecated
 	speaker.getActiveSounds = function () {
-	
-		BLOCKS.warn("getActiveSounds method has been deprecated. Use getActiveSoundInstances instead.");
-	
-		return [curSoundInst];
-	};
-	
-	speaker.getActiveSoundInstances = function () {
 	
 		return [curSoundInst];
 	};
@@ -350,17 +331,6 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	
 		return ready ? 1 : 0;
 	};
-	
-	speaker.getCurrentTime = function () {
-		
-		return audioElement.currentTime;
-	};
-	
-	Object.defineProperty(speaker, "multipleTracksSupported", {
-		get: function () {
-			return multipleTracksSupported;
-		}
-	});
 
 	// Create audio element
 	(function () {
@@ -419,7 +389,6 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		maxLoadTime = spec.maxLoadTime || 60000, // The maximum amount of time for all sounds to load
 		loadTries = 0,
 		maxLoadTries = 5,
-		multipleTracksSupported = true,
 		
 		createTrack = function (name) {
 		
@@ -752,7 +721,6 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	speaker.getSoundDuration = function (name) {
 	
-		// The duration is in seconds
 		return sounds[name].file.buffer.duration;
 	};
 	
@@ -991,11 +959,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		return ctx.currentTime;
 	};
 	
-	Object.defineProperty(speaker, "multipleTracksSupported", {
-		get: function () {
-			return multipleTracksSupported;
-		}
-	});
+	speaker.multipleTracksSupported = true;
 
 	(function () {
 	

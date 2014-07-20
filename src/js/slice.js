@@ -46,24 +46,14 @@ BLOCKS.slice = function (options) {
 			}
 		};
 	
-	// Public Properties
-	//slice.name = (options && options.name !== undefined) ? options.name : undefined;
-	//slice.width = (options && options.width) || 0;
-	//slice.height = (options && options.height) || 0;
-	//slice.x = 0;
-	//slice.y = 0;
-	//slice.offsetX = (options && options.offsetX) || 0;
-	//slice.offsetY = (options && options.offsetY) || 0;
-	//slice.angle = (options && options.angle);
-	//slice.alpha = (options && options.alpha) || 1;
-	//slice.scale = (options && options.scale) || 1;
-	
 	slice.frameOffsetX = (options && options.frameOffsetX) || 0;
 	slice.frameOffsetY = (options && options.frameOffsetY) || 0;
 	slice.loop = options && options.loop;
 	
 	slice.cropWidth = (options && options.cropWidth);
 	slice.cropHeight = (options && options.cropHeight);
+	slice.mirrorX = (options && options.mirrorX);
+	slice.mirrorY = (options && options.mirrorY);
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
@@ -196,9 +186,9 @@ BLOCKS.slice = function (options) {
 				y: (e && e.camera && e.camera.y) || 0
 			};
 			
-			// Increases performance when slice is associated to a stack 
-			x = slice.x;
-			y = slice.y;
+			// Set local x and y to increases performance when slice is associated to a stack 
+			x = slice.worldX;
+			y = slice.worldY;
 
 			// If the slice has an image associated with it
 			if (imageResource) {
@@ -223,7 +213,7 @@ BLOCKS.slice = function (options) {
 				// Using 2d Canvas
 				} else {
 			
-					if (slice.angle || slice.alpha !== 1 || slice.colorize) {
+					if (slice.angle || slice.alpha !== 1 || slice.colorize || slice.mirrorX || slice.mirrorY) {
 						context.save();
 						restoreNeeded = true;
 					}
@@ -235,6 +225,19 @@ BLOCKS.slice = function (options) {
 					if (slice.angle) {
 						context.translate(x, y);
 						context.rotate(slice.angle * Math.PI / 180);
+						context.translate(-x, -y);
+					}
+					
+					// Careful about performance when using mirroring
+					if (slice.mirrorX || slice.mirrorY) {
+						context.translate(x, y);
+						if (slice.mirrorX && slice.mirrorY) {
+							context.scale(-1, -1);
+						} else if (slice.mirrorX) {
+							context.scale(-1, 1);
+						} else {
+							context.scale(1, -1);
+						}
 						context.translate(-x, -y);
 					}
 					
