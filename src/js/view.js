@@ -26,38 +26,6 @@ BLOCKS.view = function (options) {
 		x, y, width, height, offsetX, offsetY, angle, scale, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
 		
 		motors = [],
-		
-		// Helper function for initializing public properties
-		createPublicProperty = function (propertyName, propertyVariable, defaultValue, markDirty) {
-	
-			propertyVariable = options[propertyName] || defaultValue;
-BLOCKS.debug("Create '" + propertyName + "' with default value: " + (options[propertyName] || defaultValue));
-			
-			if (markDirty) {
-				Object.defineProperty(view, propertyName, {
-					get: function () {
-						return propertyVariable;
-					},
-					set: function (value) {
-						if (propertyVariable !== value) {
-							view.dirty = true;
-							propertyVariable = value;
-						}
-					}
-				});
-			} else {
-				Object.defineProperty(view, propertyName, {
-					get: function () {
-						return propertyVariable;
-					},
-					set: function (value) {
-						propertyVariable = value;
-					}
-				});
-			}
-			
-			return propertyVariable;
-		},
 			
 		motorDestroyed = function (motor) {
 			

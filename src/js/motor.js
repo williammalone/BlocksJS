@@ -51,7 +51,7 @@ BLOCKS.tween = function (spec) {
 			} else if (easing === "easeOut") {
 				easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
 			} else {
-				easeAmt = total;
+				easeAmt = current + speed;
 			}
 			object[property] += easeAmt - current;
 
