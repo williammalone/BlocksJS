@@ -23,7 +23,9 @@ BLOCKS.view = function (options) {
 	var view = BLOCKS.eventDispatcher(),
 	
 		// Properties
-		motors, x, y, width, height, offsetX, offsetY, angle, scale, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
+		x, y, width, height, offsetX, offsetY, angle, scale, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
+		
+		motors = [],
 		
 		// Helper function for initializing public properties
 		createPublicProperty = function (propertyName, propertyVariable, defaultValue, markDirty) {
