@@ -119,17 +119,19 @@ BLOCKS.view = function (options) {
 	
 	view.getBounds = function () {
 		
-		var i, bounds, extraWidth, extraHeight, x, y;
+		var i, bounds, extraWidth, extraHeight, x, y, width, height;
 		
 		x = view.worldX;
 		y = view.worldY;
+		width = view.cropWidth !== undefined ? view.cropWidth : view.width;
+		height = view.cropHeight !== undefined ? view.cropHeight : view.height;
 
 		if (!view.hotspots && !view.minHotspot) {
 			bounds =  {
 				x: x + view.offsetX,
 				y: y + view.offsetY,
-				width: view.width,
-				height: view.height
+				width: width,
+				height: height
 			};
 		} else {
 			bounds = [];
@@ -145,14 +147,14 @@ BLOCKS.view = function (options) {
 			}
 			if (view.minHotspot) {
 			
-				extraWidth = view.width < view.minHotspot ? view.minHotspot - view.width : 0;
-				extraHeight = view.height < view.minHotspot ? view.minHotspot - view.height : 0;
+				extraWidth = width < view.minHotspot ? view.minHotspot - width : 0;
+				extraHeight = height < view.minHotspot ? view.minHotspot - height : 0;
 
 				bounds.push({
 					x: x + view.offsetX - extraWidth / 2,
 					y: y + view.offsetY - extraHeight / 2,
-					width: view.width + extraWidth,
-					height: view.height + extraHeight
+					width: width + extraWidth,
+					height: height + extraHeight
 				});
 			}
 			if (bounds.length === 1) {
@@ -168,8 +170,8 @@ BLOCKS.view = function (options) {
 		return {
 			x: view.worldX + view.offsetX,
 			y: view.worldY + view.offsetY,
-			width: view.width,
-			height: view.height
+			width: view.cropWidth !== undefined ? view.cropWidth : view.width,
+			height: view.cropHeight !== undefined ? view.cropHeight : view.height
 		};
 	};
 	
