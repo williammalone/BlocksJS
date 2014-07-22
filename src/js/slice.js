@@ -23,7 +23,7 @@ BLOCKS.slice = function (options) {
 	var slice = BLOCKS.view(options),
 	
 		// Properties
-		imageResource, paused, texture, tmpCtx,
+		imageResource, paused, texture, tmpCtx, cropWidth, cropHeight, frameOffsetX, frameOffsetY, mirrorX, mirrorY,
 		drawBounds = false,
 		frameCnt = 0,
 		loopIndex = 0,
@@ -46,14 +46,8 @@ BLOCKS.slice = function (options) {
 			}
 		};
 	
-	slice.frameOffsetX = (options && options.frameOffsetX) || 0;
-	slice.frameOffsetY = (options && options.frameOffsetY) || 0;
 	slice.loop = options && options.loop;
 	
-	slice.cropWidth = (options && options.cropWidth);
-	slice.cropHeight = (options && options.cropHeight);
-	slice.mirrorX = (options && options.mirrorX);
-	slice.mirrorY = (options && options.mirrorY);
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
@@ -218,9 +212,7 @@ BLOCKS.slice = function (options) {
 						restoreNeeded = true;
 					}
 					
-					if (slice.alpha !== 1) {
-						context.globalAlpha = slice.alpha;
-					}
+					context.globalAlpha = slice.alpha;
 					
 					if (slice.angle) {
 						context.translate(x, y);
@@ -369,6 +361,86 @@ BLOCKS.slice = function (options) {
 		options = null;
 		slice = null;
 	};
+	
+	options = options || {};
+	
+	cropWidth = options.cropWidth;
+	Object.defineProperty(slice, "cropWidth", {
+		get: function () {
+			return cropWidth;
+		},
+		set: function (value) {
+			if (cropWidth !== value) {
+				slice.dirty = true;
+				cropWidth = value;
+			}
+		}
+	});
+	
+	cropHeight = options.cropHeight;
+	Object.defineProperty(slice, "cropHeight", {
+		get: function () {
+			return cropHeight;
+		},
+		set: function (value) {
+			if (cropHeight !== value) {
+				slice.dirty = true;
+				cropHeight = value;
+			}
+		}
+	});
+	
+	frameOffsetX = options.frameOffsetX || 0;
+	Object.defineProperty(slice, "frameOffsetX", {
+		get: function () {
+			return frameOffsetX;
+		},
+		set: function (value) {
+			if (frameOffsetX !== value) {
+				slice.dirty = true;
+				frameOffsetX = value;
+			}
+		}
+	});
+	
+	frameOffsetY = options.frameOffsetY || 0;
+	Object.defineProperty(slice, "frameOffsetY", {
+		get: function () {
+			return frameOffsetY;
+		},
+		set: function (value) {
+			if (frameOffsetY !== value) {
+				slice.dirty = true;
+				frameOffsetY = value;
+			}
+		}
+	});
+	
+	mirrorX = options.mirrorX;
+	Object.defineProperty(slice, "mirrorX", {
+		get: function () {
+			return mirrorX;
+		},
+		set: function (value) {
+			if (mirrorX !== value) {
+				slice.dirty = true;
+				mirrorX = value;
+			}
+		}
+	});
+	
+	mirrorY = options.mirrorY;
+	Object.defineProperty(slice, "mirrorY", {
+		get: function () {
+			return mirrorY;
+		},
+		set: function (value) {
+			if (mirrorY !== value) {
+				slice.dirty = true;
+				mirrorY = value;
+			}
+		}
+	});
 	
 	(function () {
 		
