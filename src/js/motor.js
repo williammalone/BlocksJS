@@ -50,6 +50,12 @@ BLOCKS.tween = function (spec) {
 				easeAmt = Math.pow(curTick / duration, 4) * total;
 			} else if (easing === "easeOut") {
 				easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
+			} else if (easing === "easeInOut") {
+				if (curTick / (duration / 2) < 1) {
+					easeAmt = Math.pow(curTick / (duration / 2), 4) * total / 2;
+				} else {
+					easeAmt = -(Math.pow(curTick / (duration / 2) - 2, 4) - 2) * total / 2;
+				}
 			} else {
 				easeAmt = current + speed;
 			}
@@ -201,6 +207,14 @@ BLOCKS.motor = function (spec) {
 							deltaY = easeAmt * Math.sin(angle) - curOffset.y;
 						} else if (easing === "easeOut") {
 							easeAmt = -(Math.pow(curTick / totalTicks - 1, 4) - 1) * totalDist;
+							deltaX = easeAmt * Math.cos(angle) - curOffset.x;
+							deltaY = easeAmt * Math.sin(angle) - curOffset.y;
+						} else if (easing === "easeInOut") {
+							if (curTick / (duration / 2) < 1) {
+								easeAmt = Math.pow(curTick / (duration / 2), 4) * totalDist / 2;
+							} else {
+								easeAmt = -(Math.pow(curTick / (duration / 2) - 2, 4) - 2) * totalDist / 2;
+							}
 							deltaX = easeAmt * Math.cos(angle) - curOffset.x;
 							deltaY = easeAmt * Math.sin(angle) - curOffset.y;
 						}
