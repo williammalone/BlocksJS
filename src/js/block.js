@@ -29,7 +29,7 @@ BLOCKS.block = function (options) {
 		slicesObj = {},
 		curSlice,
 		motors = [],
-		properties = ["stack", "worldX", "worldY", "x", "y", "width", "height", "scale", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos", "cropWidth", "cropHeight"],
+		properties = ["stack", "worldX", "worldY", "x", "y", "width", "height", "scale", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos", "cropWidth", "cropHeight", "frameOffsetX", "frameOffsetY"],
 		
 		motorDestroyed = function (motor) {
 			
