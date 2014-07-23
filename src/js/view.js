@@ -224,6 +224,19 @@ BLOCKS.view = function (options) {
 		
 		view.dirty = true;
 		
+		stack = options.stack;
+		Object.defineProperty(view, "stack", {
+			get: function () {
+				return stack;
+			},
+			set: function (value) {
+				if (stack !== value) {
+					view.dirty = true;
+					stack = value;
+				}
+			}
+		});
+		
 		Object.defineProperty(view, "worldX", {
 			get: function () {
 				return view.stack ? view.stack.x + view.x : view.x;
@@ -248,15 +261,28 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
+		scale = options.scale !== undefined ? options.scale : 1;
+		Object.defineProperty(view, "scale", {
+			get: function () {
+				return scale;
+			},
+			set: function (value) {
+				if (scale !== value) {
+					view.dirty = true;
+					scale = value;
+				}
+			}
+		});
+		
 		width = options.width || 0;
 		Object.defineProperty(view, "width", {
 			get: function () {
 				return width * view.scale;
 			},
 			set: function (value) {
-				if (width !== value) {
+				if (width !== view.scale ? value / view.scale : value) {
 					view.dirty = true;
-					width = value;
+					width = view.scale ? value / view.scale : value;
 				}
 			}
 		});
@@ -267,9 +293,9 @@ BLOCKS.view = function (options) {
 				return height * view.scale;
 			},
 			set: function (value) {
-				if (height !== value) {
+				if (height !== view.scale ? value / view.scale : value) {
 					view.dirty = true;
-					height = value;
+					height = view.scale ? value / view.scale : value;
 				}
 			}
 		});
@@ -346,19 +372,6 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
-		scale = options.scale !== undefined ? options.scale : 1;
-		Object.defineProperty(view, "scale", {
-			get: function () {
-				return scale;
-			},
-			set: function (value) {
-				if (scale !== value) {
-					view.dirty = true;
-					scale = value;
-				}
-			}
-		});
-		
 		alpha = options.alpha !== undefined ? options.alpha : 1;
 		Object.defineProperty(view, "alpha", {
 			get: function () {
@@ -427,19 +440,6 @@ BLOCKS.view = function (options) {
 				if (minHotspot !== value) {
 					view.dirty = true;
 					minHotspot = value;
-				}
-			}
-		});
-		
-		stack = options.stack;
-		Object.defineProperty(view, "stack", {
-			get: function () {
-				return stack;
-			},
-			set: function (value) {
-				if (stack !== value) {
-					view.dirty = true;
-					stack = value;
 				}
 			}
 		});
