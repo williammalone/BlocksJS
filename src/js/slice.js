@@ -23,7 +23,7 @@ BLOCKS.slice = function (options) {
 	var slice = BLOCKS.view(options),
 	
 		// Properties
-		imageResource, paused, texture, tmpCtx, cropWidth, cropHeight, frameOffsetX, frameOffsetY, mirrorX, mirrorY,
+		imageResource, frameWidth, frameHeight, paused, texture, tmpCtx, cropWidth, cropHeight, frameOffsetX, frameOffsetY, mirrorX, mirrorY,
 		drawBounds = false,
 		frameCnt = 0,
 		loopIndex = 0,
@@ -41,6 +41,8 @@ BLOCKS.slice = function (options) {
 			// Note: Divide the width by the number of frames in the sprite sheet if an animation. If the sprite is only an image then the number of frames will be 1.
 			
 			if (imageResource) {
+				frameWidth = imageResource.image.width / slice.numberOfFrames;
+				frameHeight = imageResource.image.height;
 				slice.width = imageResource.image.width / slice.numberOfFrames;
 				slice.height = imageResource.image.height;
 			}
@@ -52,6 +54,7 @@ BLOCKS.slice = function (options) {
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
 	slice.resetOnComplete = (options && options.resetOnComplete !== undefined) ? options.resetOnComplete : true;
+	
 	
 	// Public Methods
 	slice.update = function () {
@@ -248,8 +251,8 @@ BLOCKS.slice = function (options) {
 							imageResource.image,
 							curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
 							slice.frameOffsetY,
-							slice.cropWidth || slice.width / slice.scale, 
-							slice.cropHeight || slice.height / slice.scale, 
+							slice.cropWidth || frameWidth, 
+							slice.cropHeight || frameHeight, 
 							x + slice.offsetX - cameraOffset.x,
 							y + slice.offsetY - cameraOffset.y,
 							slice.cropWidth || slice.width, 
@@ -257,11 +260,12 @@ BLOCKS.slice = function (options) {
 						);
 					// If the sprite is not an animation
 					} else {
+
 						context.drawImage(imageResource.image, 
 							slice.frameOffsetX, 
 							slice.frameOffsetY,
-							slice.cropWidth || slice.width / slice.scale, 
-							slice.cropHeight || slice.height / slice.scale,
+							slice.cropWidth || frameWidth, 
+							slice.cropHeight || frameHeight,
 							x + slice.offsetX - cameraOffset.x,
 							y + slice.offsetY - cameraOffset.y, 
 							slice.cropWidth || slice.width,
