@@ -162,82 +162,7 @@ BLOCKS.block = function (options) {
 			block = null;
 		}
 	};
-	
-	block.update = function () {
-	
-		curSlice.update();
-	};
-	
-	block.render = function (e) {
-	
-		curSlice.render(e);
-	};
-	
-	block.show = function () {
-	
-		curSlice.show();
-	};
-	
-	block.hide = function () {
-		
-		curSlice.hide();
-	};
-	
-	block.pause = function () {
-		
-		curSlice.pause();
-	};
-	
-	block.unpause = function () {
-		
-		curSlice.unpause();
-	};
-	
-	block.reset = function () {
-		
-		curSlice.reset();
-	};
-	
-	block.stop = function () {
-		
-		curSlice.stop();
-	};
-	
-	block.play = function (callback) {
-		
-		curSlice.play(callback);
-	};
-	
-	block.isPointInside = function (point) {
-	
-		return curSlice.isPointInside(point);
-	};
-	
-	block.getBounds = function () {
 
-		return curSlice.getBounds();
-	};
-	
-	block.getBoundingBox = function () {
-		
-		return curSlice.getBoundingBox();
-	};
-	
-	block.isRectInside = function (rect) {
-	
-		return curSlice.isRectInside(rect);
-	};
-	
-	block.gotoLastFrame = function () {
-	
-		curSlice.gotoLastFrame();
-	};
-	
-	block.gotoFrame = function (frameIndex) {
-	
-		curSlice.gotoFrame(frameIndex);
-	};
-	
 	(function () {
 		var i,
 		
@@ -258,10 +183,10 @@ BLOCKS.block = function (options) {
 			},
 			
 			createPublicMethod = function (methodName) {
-			
-				block[methodName] = function (parameters) {
-					
-					curSlice[methodName](parameters);
+		
+				block[methodName] = function (parameter) {
+				
+					return curSlice[methodName](parameter);
 				};
 			};
 		
@@ -270,7 +195,7 @@ BLOCKS.block = function (options) {
 		}
 		
 		for (i = 0; i < methods.length; i += 1) {
-			//createPublicMethod(methods[i]);
+			createPublicMethod(methods[i]);
 		}
 
 		// If slices defined in the options
