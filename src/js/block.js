@@ -49,19 +49,18 @@ BLOCKS.block = function (options) {
 	block.name = options.name;
 	
 	// BLock Specific Public Methods
-	
-	block.addSlice = function (options) {
+	block.addSlice = function (spec) {
 	
 		var i, slice;
 		
-		slice = BLOCKS.slice(options);
+		slice = BLOCKS.slice(spec);
 
-		if (!options.name) {
+		if (!spec.name) {
 			slice.name = "unnamedSlice" + slicesArr.length;
 		}
 
 		slicesArr.push(slice);	
-		slicesObj[options.name] = slice;
+		slicesObj[spec.name] = slice;
 		
 		slice.addEventListener("complete", function () {
 			block.dispatchEvent("complete");
@@ -75,7 +74,7 @@ BLOCKS.block = function (options) {
 					slice[properties[i]] = options[properties[i]];
 				}
 			}
-			block.setSlice(options.name);
+			block.setSlice(spec.name);
 		}
 		
 		return slice;
@@ -164,7 +163,7 @@ BLOCKS.block = function (options) {
 		}
 	};
 	
-	/*block.update = function () {
+	block.update = function () {
 	
 		curSlice.update();
 	};
@@ -237,7 +236,7 @@ BLOCKS.block = function (options) {
 	block.gotoFrame = function (frameIndex) {
 	
 		curSlice.gotoFrame(frameIndex);
-	};*/
+	};
 	
 	(function () {
 		var i,
@@ -271,7 +270,7 @@ BLOCKS.block = function (options) {
 		}
 		
 		for (i = 0; i < methods.length; i += 1) {
-			createPublicMethod(methods[i]);
+			//createPublicMethod(methods[i]);
 		}
 
 		// If slices defined in the options

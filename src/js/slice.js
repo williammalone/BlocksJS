@@ -53,7 +53,6 @@ BLOCKS.slice = function (options) {
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
 	slice.resetOnComplete = (options && options.resetOnComplete !== undefined) ? options.resetOnComplete : true;
 	
-	
 	// Public Methods
 	slice.update = function () {
 			
