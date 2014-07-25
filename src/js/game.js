@@ -469,6 +469,9 @@ BLOCKS.game = function (spec, element) {
 				game.layers[i].height = game.camera.height;
 			}
 			
+			if (!loaded && game.loadingScreen) {
+				game.loadingScreen.dirty = true;
+			}
 			game.dispatchEvent("resize");
 		};
 	

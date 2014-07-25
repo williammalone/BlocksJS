@@ -16,7 +16,6 @@ BLOCKS.loadingScreen = function (spec, game) {
 		bg,
 		layers,
 		progressBar,
-		dirty,
 		curPercentage = 0,
 		fontFamily = "Arial,sans",
 		animation,
@@ -38,7 +37,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 				animation.x = spec.animation.x;
 				animation.y = spec.animation.y;
 			
-				dirty = true;
+				loadingScreen.dirty = true;
 			}
 		},
 		
@@ -51,7 +50,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 				progressBar.x = spec.progressBar.x;
 				progressBar.y = spec.progressBar.y;
 			
-				dirty = true;
+				loadingScreen.dirty = true;
 			}
 		},
 		
@@ -129,12 +128,11 @@ BLOCKS.loadingScreen = function (spec, game) {
 		
 		render = function () {
 			
-			if (dirty || (animation && animation.dirty) || (progressBar && progressBar.dirty)) {
-			
-				dirty = false;
+			if (loadingScreen.dirty || bg.dirty || (animation && animation.dirty) || (progressBar && progressBar.dirty)) {
 			
 				layers.loading.clear();
 				
+				bg.dirty = true;
 				if (progressBar) {
 					progressBar.cropWidth = progressBar.width * curPercentage;
 					progressBar.dirty = true;
@@ -142,6 +140,8 @@ BLOCKS.loadingScreen = function (spec, game) {
 				if (animation) {
 					animation.dirty = true;
 				}
+			
+				bg.render(game);
 			
 				layers.loading.ctx.fillStyle = fontColor;
 				layers.loading.ctx.font = fontWeight + " " + fontSize + " " + fontFamily;
@@ -151,17 +151,19 @@ BLOCKS.loadingScreen = function (spec, game) {
 		
 				layers.loading.ctx.textAlign = "left";
 				layers.loading.ctx.fillText(Math.round(curPercentage * 100, 10) + "%", messageX, messageY);
+			
+				if (progressBar) {
+					progressBar.render(game);
+				}
+				if (animation) {
+					animation.render(game);
+				}
 			}
 			
-			bg.render(game);
-			
-			if (progressBar) {
-				progressBar.render(game);
-			}
-			if (animation) {
-				animation.render(game);
-			}
+			loadingScreen.dirty = false;
 		};
+		
+	loadingScreen.dirty = true;
 	
 	loadingScreen.destroy = function () {
 
@@ -196,7 +198,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 		
 		if (curPercentage !== percentage) {
 			curPercentage = percentage;
-			dirty = true;
+			loadingScreen.dirty = true;
 		}
 	};
 	
