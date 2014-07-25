@@ -23,14 +23,13 @@ BLOCKS.block = function (options) {
 	var block = BLOCKS.eventDispatcher(),
 	
 		// Private Properties
-		spec = options && options.spec,
-		layer = options && options.layer,
 		slicesArr = [],
 		slicesObj = {},
 		curSlice,
 		motors = [],
 		// The order of properties matters in cases of dependencies
-		properties = ["stack", "worldX", "worldY", "x", "y", "scale", "width", "height", "centerRegistrationPoint", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos", "cropWidth", "cropHeight", "frameOffsetX", "frameOffsetY", "offsetX", "offsetY", "minHotspot", "hotspots"],
+		properties = ["stack", "worldX", "worldY", "x", "y", "scale", "width", "height", "centerRegistrationPoint", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos", "cropWidth", "cropHeight", "frameOffsetX", "frameOffsetY", "offsetX", "offsetY", "minHotspot", "hotspots"],	
+		methods = ["update", "render", "show", "hide", "pause", "unpause", "reset", "stop", "play", "isPointInside", "getBounds", "getBoundingBox", "isRectInside", "gotoLastFrame", "gotoFrame"],
 		
 		motorDestroyed = function (motor) {
 			
@@ -43,11 +42,13 @@ BLOCKS.block = function (options) {
 				break;
 			}
 		};
+		
+	options = options || {};
 
-	// Public Properties
-	block.name = (spec && spec.name !== undefined) ? spec.name : undefined;
+	// Block Specific Public Properties
+	block.name = options.name;
 	
-	// Public Methods
+	// BLock Specific Public Methods
 	
 	block.addSlice = function (options) {
 	
@@ -68,13 +69,10 @@ BLOCKS.block = function (options) {
 		
 		// If first slice then set the block to this slice
 		if (slicesArr.length === 1) {
-			if (layer) {
-				slice.layer = layer;
-			}
 			// Assign the properties of the spec to the new slice
 			for (i = 0; i < properties.length; i += 1) {
-				if (spec[properties[i]] !== undefined) {
-					slice[properties[i]] = spec[properties[i]];
+				if (options[properties[i]] !== undefined) {
+					slice[properties[i]] = options[properties[i]];
 				}
 			}
 			block.setSlice(options.name);
@@ -166,7 +164,7 @@ BLOCKS.block = function (options) {
 		}
 	};
 	
-	block.update = function () {
+	/*block.update = function () {
 	
 		curSlice.update();
 	};
@@ -239,7 +237,7 @@ BLOCKS.block = function (options) {
 	block.gotoFrame = function (frameIndex) {
 	
 		curSlice.gotoFrame(frameIndex);
-	};
+	};*/
 	
 	(function () {
 		var i,
@@ -258,17 +256,28 @@ BLOCKS.block = function (options) {
 						}
 					}
 				});
+			},
+			
+			createPublicMethod = function (methodName) {
+			
+				block[methodName] = function (parameters) {
+					
+					curSlice[methodName](parameters);
+				};
 			};
 		
 		for (i = 0; i < properties.length; i += 1) {
-		
 			createPublicProperty(properties[i]);
+		}
+		
+		for (i = 0; i < methods.length; i += 1) {
+			createPublicMethod(methods[i]);
 		}
 
 		// If slices defined in the options
-		if (spec &&spec.slices) {
-			for (i = 0; i < spec.slices.length; i += 1) {
-				block.addSlice(spec.slices[i]);
+		if (options.slices) {
+			for (i = 0; i < options.slices.length; i += 1) {
+				block.addSlice(options.slices[i]);
 			}
 		}
 	}());
