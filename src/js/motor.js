@@ -210,10 +210,10 @@ BLOCKS.motor = function (spec) {
 							deltaX = easeAmt * Math.cos(angle) - curOffset.x;
 							deltaY = easeAmt * Math.sin(angle) - curOffset.y;
 						} else if (easing === "easeInOut") {
-							if (curTick / (duration / 2) < 1) {
-								easeAmt = Math.pow(curTick / (duration / 2), 4) * totalDist / 2;
+							if (curTick / (totalTicks / 2) < 1) {
+								easeAmt = Math.pow(curTick / (totalTicks / 2), 4) * totalDist / 2;
 							} else {
-								easeAmt = -(Math.pow(curTick / (duration / 2) - 2, 4) - 2) * totalDist / 2;
+								easeAmt = -(Math.pow(curTick / (totalTicks / 2) - 2, 4) - 2) * totalDist / 2;
 							}
 							deltaX = easeAmt * Math.cos(angle) - curOffset.x;
 							deltaY = easeAmt * Math.sin(angle) - curOffset.y;
