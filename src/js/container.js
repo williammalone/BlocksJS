@@ -93,6 +93,41 @@ BLOCKS.container = function () {
 		}
 	};
 	
+	container.setViewLayerIndex = function (view, newIndex) {
+	
+		var i, oldIndex;
+		
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i] === view) {
+				oldIndex = i;
+				break;
+			}
+		}
+		
+		if (i === undefined) {
+			BLOCKS.warn("Cannot find view to set view's layer index.");
+		} else {
+			views.splice(oldIndex, 1);
+			views.splice(newIndex, 0, view);
+			// Redraw this view next time
+			view.dirty = true;
+		}
+	};
+	
+	container.getViewLayerIndex = function (view) {
+	
+		var i, index;
+		
+		for (i = 0; i < views.length; i += 1) {
+			if (views[i] === view) {
+				index = i;
+				break;
+			}
+		}
+		
+		return index;
+	},
+	
 	container.clear = function () {
 	
 		var i;
