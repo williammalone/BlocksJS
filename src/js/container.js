@@ -47,18 +47,23 @@ BLOCKS.container = function () {
 	container.addView = function (view) {
 	
 		var i, layerInArray;
-	
-		view.addEventListener("destroyed", container.removeView);
-		views.push(view);
+		
+		if (view.layer) {
 
-		for (i = 0; i < layers.length; i += 1) {
-			if (view.layer === layers[i]) {
-				layerInArray = true;
-				break;
+			view.addEventListener("destroyed", container.removeView);
+			views.push(view);
+	
+			for (i = 0; i < layers.length; i += 1) {
+				if (view.layer === layers[i]) {
+					layerInArray = true;
+					break;
+				}
 			}
-		}
-		if (!layerInArray) {
-			layers.push(view.layer);
+			if (!layerInArray) {
+				layers.push(view.layer);
+			}
+		} else {
+			BLOCKS.error("Trying to add a view that does not have a layer");
 		}
 	};
 	
