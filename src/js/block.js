@@ -101,7 +101,9 @@ BLOCKS.block = function (options) {
 			if (curSlice) {
 				// Assign the properties of the current slice to the new slice
 				for (i = 0; i < properties.length; i += 1) {
+					if (properties[i] !== "width" && properties[i] !== "height") {
 					newSlice[properties[i]] = curSlice[properties[i]];
+					}
 				}
 			}
 			// Make the new slice the block's current slice
