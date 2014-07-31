@@ -114,7 +114,9 @@ BLOCKS.tween = function (spec) {
 		} 
 		
 		if (!total) {
-			BLOCKS.error("Amount is required for tween property: " + property);
+			if (total !== 0) {
+				BLOCKS.error("Amount is required for tween property: " + property);
+			}
 			return null;
 		} 
 		
