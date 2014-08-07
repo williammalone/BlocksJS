@@ -49,6 +49,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		sounds = {},
 		muted = false,
 		maybeReady = false,
+		resetGainValue,
 		
 		testSoundComplete = function () {
 		
@@ -188,6 +189,12 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			}
 		
 			if (sounds[name].start >= 0 && sounds[name].end > 0) {
+			
+				// If the previous sound had a different volume set temporarily
+				if (resetGainValue >= 0) {
+					audioElement.volume = resetGainValue;
+					resetGainValue = null;
+				}
 
 				// Save the sound about to play
 				curSoundInst = {
@@ -240,6 +247,15 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	
 			audioElement.volume = 1;
 		};
+		
+	speaker.setSoundGain = function (name, gain) {
+		
+		if (curSoundInst && curSoundInst.name === name) {
+			// Save the current volume to be reset for next sound
+			resetGainValue = audioElement.volume;
+			audioElement.volume = gain;
+		}
+	};
 		
 	speaker.play = function (name, callback) {
 	
