@@ -28,6 +28,10 @@ BLOCKS.key = function (spec) {
 	key.textColor = spec.textColor || "#eee";
 	key.dirty = true;
 	
+	key.update = function () {
+	
+	};
+	
 	key.render = function () {
 	
 		if (key.dirty && key.visible) {
@@ -109,7 +113,9 @@ BLOCKS.virtualKeyboard = function (controller, spec) {
 			
 			// If any custom keys
 			if (spec.customKeys) {
-				keySpec.push(spec.customKeys);
+				for (i = 0; i < spec.customKeys.length; i += 1) {
+					keySpec.push(spec.customKeys[i]);
+				}
 			}
 			
 			for (i = 0; i < keySpec.length; i += 1) {
