@@ -271,7 +271,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	// Mute all sound
 	speaker.mute = function () {
 	
-		if (muted) {
+		if (!muted) {
 			mute();
 		}
 	
