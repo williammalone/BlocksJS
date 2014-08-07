@@ -89,6 +89,8 @@ BLOCKS.game = function (spec, element) {
 			if (!gameTappedOnce) {
 				game.controller.removeEventListener("tap", onFirstTap);
 				
+				game.dispatchEvent("firstTap");
+				
 				gameTappedOnce = true;
 				
 				if (game.introScreen) {
