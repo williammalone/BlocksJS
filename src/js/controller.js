@@ -61,6 +61,7 @@ BLOCKS.controller = function (element) {
 			element.addEventListener("mouseup", onMouseEvent, true);
 			element.addEventListener("mousecancel", onMouseEvent, true);	
 			
+			element.addEventListener("mouseout", onMouseEvent, true);
 		},
         
         onOrientationEvent = function () {
@@ -278,6 +279,11 @@ BLOCKS.controller = function (element) {
 				case "mousecancel":
 					eventType = "cancel";
 					controller.dispatchEvent("mouseCancel", event);
+					break;
+					
+				case "mouseout":
+					eventType = "mouseout";
+					controller.dispatchEvent("mouseOut", event);
 					break;
 					
 				default: 

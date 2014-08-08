@@ -42,6 +42,7 @@ BLOCKS.game = function (spec, element) {
 		loaded,
 		tickerIndex = 0,
 		prepared,
+		wasMutedWhenPaused,
 		
 		handleTickers = function () {
 			
@@ -182,6 +183,7 @@ BLOCKS.game = function (spec, element) {
 			game.controller.addEventListener("mouseMove", onMouseMove);
 			game.controller.addEventListener("mouseUp", onMouseUp);
 			game.controller.addEventListener("mouseCancel", onMouseUp); // Note cancel is retreated as a mouse up
+			game.controller.addEventListener("mouseOut", onMouseOut);
 			
 			game.controller.addEventListener("tap", onFirstTap);
 			
@@ -363,6 +365,13 @@ BLOCKS.game = function (spec, element) {
 			}
 		},
 		
+		onMouseOut = function (pos) {
+		
+			if (game.mouseOut) {
+				game.mouseOut(pos);
+			}
+		},
+		
 		checkLoadProgress = function () {
 		
 //BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
@@ -539,6 +548,7 @@ BLOCKS.game = function (spec, element) {
 			//BLOCKS.debug("Game not visible so pause");
 			paused = true;
 			if (game.speaker) {
+				wasMutedWhenPaused = game.speaker.isMuted();
 				game.speaker.mute();
 				game.speaker.pause();
 				game.dispatchEvent("pause");
@@ -560,7 +570,9 @@ BLOCKS.game = function (spec, element) {
 			lastUpdateTime = + new Date();	
 			
 			if (game.speaker) {
-				game.speaker.unmute();
+				if (!wasMutedWhenPaused) {
+					game.speaker.unmute();
+				}
 				game.speaker.unpause();
 				game.dispatchEvent("unpause");
 			}
