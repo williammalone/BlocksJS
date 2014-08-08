@@ -62,6 +62,12 @@ BLOCKS.controller = function (element) {
 			element.addEventListener("mousecancel", onMouseEvent, true);	
 			
 			element.addEventListener("mouseout", onMouseEvent, true);
+			
+			// Fire a mouseUpOutside event when mouse up detected outside the game
+			document.addEventListener("mouseup", function (event) {
+				onMouseEvent(event, true);
+			}, false);
+			
 		},
         
         onOrientationEvent = function () {
@@ -198,14 +204,13 @@ BLOCKS.controller = function (element) {
 					event.changedTouches[i].x = (event.changedTouches[i].pageX - elementPos.x - controller.offsetX) * controller.scaleX;
 					event.changedTouches[i].y = (event.changedTouches[i].pageY - elementPos.y - controller.offsetY) * controller.scaleY;
 				}
-				
+			
 				switch (event.type) {
 				
 				case "touchstart":
 	
 					eventType = "tap";
 					controller.dispatchEvent("touchStart", event);
-	
 					break;
 					
 				case "touchmove": 
@@ -231,12 +236,15 @@ BLOCKS.controller = function (element) {
 			}
 		},
 		
-		onMouseEvent = function (e) {
+		onMouseEvent = function (e, outsideGameBounds) {
 		
 			var i, key, eventType, event;
 			
 			if (controller.listening) {
 			
+				// Stop the mouse event from going to the any elements behind the game
+				e.stopPropagation();
+
 				// Disable right click
 				//if (e.button === 2) {
 				//	return;
@@ -257,7 +265,11 @@ BLOCKS.controller = function (element) {
 				event.identifier = "mouse";
 				event.touches = [event];
 				event.changedTouches = [event];
-	
+				
+				if (outsideGameBounds) {
+					event.type += "outside";
+				}
+
 				switch (event.type) {
 				
 				case "mousedown":
@@ -284,7 +296,12 @@ BLOCKS.controller = function (element) {
 				case "mouseout":
 					eventType = "mouseout";
 					controller.dispatchEvent("mouseOut", event);
-					break;
+					return; // Don't dispatch tap event
+					
+				case "mouseupoutside":
+					eventType = "mouseupoutside";
+					controller.dispatchEvent("mouseUpOutside", event);
+					return; // Don't dispatch tap event
 					
 				default: 
 					break;

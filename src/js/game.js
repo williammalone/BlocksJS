@@ -184,6 +184,7 @@ BLOCKS.game = function (spec, element) {
 			game.controller.addEventListener("mouseUp", onMouseUp);
 			game.controller.addEventListener("mouseCancel", onMouseUp); // Note cancel is retreated as a mouse up
 			game.controller.addEventListener("mouseOut", onMouseOut);
+			game.controller.addEventListener("mouseUpOutside", mouseUpOutside);
 			
 			game.controller.addEventListener("tap", onFirstTap);
 			
@@ -369,6 +370,13 @@ BLOCKS.game = function (spec, element) {
 		
 			if (game.mouseOut) {
 				game.mouseOut(pos);
+			}
+		},
+		
+		mouseUpOutside = function (pos) {
+		
+			if (game.mouseUpOutside) {
+				game.mouseUpOutside(pos);
 			}
 		},
 		
