@@ -500,8 +500,8 @@ BLOCKS.game = function (spec, element) {
 	game.layers = [];
 	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
 	game.height = (spec && spec.height !== undefined) ? spec.height : 768;
-	game.safeWidth = (spec && spec.safeWidth);
-	game.safeHeight = (spec && spec.safeHeight);
+	game.safeWidth = (spec && spec.safeWidth) || game.width;
+	game.safeHeight = (spec && spec.safeHeight) || game.height;
 	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
 	game.maxLoopDuration = (spec && spec.maxLoopDuration !== undefined) ? spec.maxLoopDuration : 500;
 	game.scale = 1;
