@@ -515,6 +515,12 @@ BLOCKS.game = function (spec, element) {
 	// The element in which the game markup will be injected will be the element with
 	//   the "BlockGame" id unless specified via a parameter of the game
 	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
+	if (!game.element) {
+		game.element = document.getElementByClassName("BlocksGame")[0];
+	}
+	if (!game.element) {
+		BLOCKS.error("Game does not have a game element");
+	}
 	
 	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
 	
