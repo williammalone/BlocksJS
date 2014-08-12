@@ -550,22 +550,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 			
 			destroyInstance(inst);
 		},
-		
-		pauseSound = function (inst) {
-		
-			window.clearTimeout(inst.timeout);
-			
-			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000;
-		
-			if (inst.source.stop) {
-				inst.source.stop(0);
-			} else if (inst.source.noteGrainOff) {
-				inst.source.noteGrainOff(0);
-			} else {					
-				inst.source.noteOff(0);
-			}
-		},
-		
+
 		getSoundGain = function (inst) {
 		
 			return inst.gain.gain.value;
@@ -598,9 +583,32 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 			}
 		},
 		
+		pauseSound = function (inst) {
+
+			window.clearTimeout(inst.timeout);
+			
+			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000;
+		
+			if (inst.source.stop) {
+				inst.source.stop(0);
+			} else if (inst.source.noteGrainOff) {
+				inst.source.noteGrainOff(0);
+			} else {					
+				inst.source.noteOff(0);
+			}
+			
+			//if (speaker.debug) {
+			//	BLOCKS.debug("Pause sound: '" + inst.name + "' at scrubber position of " + inst.currentTime.toFixed(2));
+			//}
+		},
+		
 		unpauseSound = function (inst) {
 		
 			var newInst;
+			
+			//if (speaker.debug) {
+			//	BLOCKS.debug("Unpause sound: '" + inst.name + "'");
+			//}
 		
 			// Play a new instance of the sound
 			newInst = playSound(inst.name, inst.callback, inst.track.name, inst.currentTime);
@@ -622,7 +630,6 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 				instances.push(inst);
 				inst.sound = sounds[name];
 				inst.name = name;
-				inst.startTime = + new Date();
 				
 				// If an offset is set (set when unpausing a sound)
 				if (currentTime) {
@@ -631,6 +638,9 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 					// Start from the beginning of the sound
 					inst.currentTime = 0;
 				}
+				
+				// Save when the sound starts, or would have started if started from the beginning
+				inst.startTime = (+ new Date()) - inst.currentTime * 1000;
 				
 				if (delay) {
 					// Play the sound after a delay
@@ -1031,7 +1041,7 @@ BLOCKS.speaker = function (spec) {
 		}
 	}());
 	
-	speaker.debug = false;
+	speaker.debug = true;
 	
 	return speaker;
 };
