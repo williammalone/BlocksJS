@@ -200,6 +200,11 @@ BLOCKS.game = function (spec, element) {
 			}
 			
 			window.onunload = game.destroy;
+			
+			// If autoLoad is not turned off then load
+			if (game.autoLoad !== false) {
+				game.load();
+			}
 		},
 		
 		gameUpdate = function () {
@@ -389,7 +394,12 @@ BLOCKS.game = function (spec, element) {
 					if (game.imageLoader.isLoaded() && (game.speaker.isReady() || game.speaker.getNumFiles() === 0)) {
 		
 						loaded = true;
-						game.start();
+						
+						// If autoLoad is not turned off then load
+						if (game.autoStart !== false) {
+							game.start();
+						}
+						
 						if (game.loadingScreen) {
 							game.loadingScreen.destroy();
 							game.loadingScreen = null;
@@ -498,18 +508,20 @@ BLOCKS.game = function (spec, element) {
 	spec = spec || {};
 
 	game.layers = [];
-	game.width = (spec && spec.width !== undefined) ? spec.width : 1024;
-	game.height = (spec && spec.height !== undefined) ? spec.height : 768;
-	game.safeWidth = (spec && spec.safeWidth) || game.width;
-	game.safeHeight = (spec && spec.safeHeight) || game.height;
-	game.debug = (spec && spec.debug !== undefined) ? spec.debug : false;
-	game.maxLoopDuration = (spec && spec.maxLoopDuration !== undefined) ? spec.maxLoopDuration : 500;
+	game.width = spec.width !== undefined ? spec.width : 1024;
+	game.height = spec.height !== undefined ? spec.height : 768;
+	game.safeWidth = spec.safeWidth || game.width;
+	game.safeHeight = spec.safeHeight || game.height;
+	game.debug = spec.debug !== undefined ? spec.debug : false;
+	game.maxLoopDuration = spec.maxLoopDuration !== undefined ? spec.maxLoopDuration : 500;
 	game.scale = 1;
 	game.stage = BLOCKS.container(game);
 	game.camera = BLOCKS.camera({
 		width: game.width,
 		height: game.height
 	});
+	game.autoLoad = spec.autoLoad !== undefined ? spec.autoLoad : true;
+	game.autoStart = spec.autoStart !== undefined ? spec.autoStart : true;
 	game.state = "intro";
 	
 	// The element in which the game markup will be injected will be the element with
