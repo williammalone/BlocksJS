@@ -55,7 +55,6 @@ BLOCKS.slice = function (options) {
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
 	slice.resetOnComplete = (options && options.resetOnComplete !== undefined) ? options.resetOnComplete : true;
 	
-	
 	// Public Methods
 	slice.update = function () {
 			
@@ -188,147 +187,150 @@ BLOCKS.slice = function (options) {
 
 			// If the slice has an image associated with it
 			if (imageResource) {
-			
-				context = slice.layer.ctx;
-			
-				// Using webGL
-				if (slice.layer && slice.layer.webGLEnabled) {
 				
-					//context.bindTexture(context.TEXTURE_2D, texture);
+				if (slice.layer) {
+			
+					context = slice.layer.ctx;
 				
-					//setBufferData(
-					//	x, 
-					//	y, 
-					//	slice.cropWidth || slice.width, 
-					//	slice.cropHeight || slice.height);
+					// Using webGL
+					if (slice.layer.webGLEnabled) {
+					
+						//context.bindTexture(context.TEXTURE_2D, texture);
+					
+						//setBufferData(
+						//	x, 
+						//	y, 
+						//	slice.cropWidth || slice.width, 
+						//	slice.cropHeight || slice.height);
+							
+						//context.drawArrays(context.TRIANGLES, 0, 6);
 						
-					//context.drawArrays(context.TRIANGLES, 0, 6);
-					
-					//context.bindTexture(context.TEXTURE_2D, null);
-					
-				// Using 2d Canvas
-				} else {
-			
-					if (slice.angle || slice.alpha !== 1 || slice.colorize || slice.mirrorX || slice.mirrorY) {
-						context.save();
-						restoreNeeded = true;
-					}
-					
-					context.globalAlpha = slice.alpha;
-					
-					if (slice.angle) {
-						context.translate(x, y);
-						context.rotate(slice.angle * Math.PI / 180);
-						context.translate(-x, -y);
-					}
-					
-					// Careful about performance when using mirroring
-					if (slice.mirrorX || slice.mirrorY) {
-						context.translate(x, y);
-						if (slice.mirrorX && slice.mirrorY) {
-							context.scale(-1, -1);
-						} else if (slice.mirrorX) {
-							context.scale(-1, 1);
-						} else {
-							context.scale(1, -1);
-						}
-						context.translate(-x, -y);
-					}
-					
-					if (slice.colorize) {
-						if (!tmpCtx) {
-							tmpCtx = document.createElement("canvas").getContext("2d");
-							tmpCtx.canvas.width = context.canvas.width;
-							tmpCtx.canvas.height = context.canvas.height;
-						}
-						context = tmpCtx;
-						context.globalCompositeOperation = "copy";
-					}
-
-					// If the sprite is an animation
-					if (slice.numberOfFrames > 1) {
-						context.drawImage(
-							imageResource.image,
-							curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
-							slice.frameOffsetY,
-							slice.cropWidth || frameWidth, 
-							slice.cropHeight || frameHeight, 
-							x + slice.offsetX - cameraOffset.x,
-							y + slice.offsetY - cameraOffset.y,
-							slice.cropWidth || slice.width, 
-							slice.cropHeight || slice.height
-						);
-					// If the sprite is not an animation
+						//context.bindTexture(context.TEXTURE_2D, null);
+						
+					// Using 2d Canvas
 					} else {
-
-						context.drawImage(imageResource.image, 
-							slice.frameOffsetX, 
-							slice.frameOffsetY,
-							slice.cropWidth || frameWidth, 
-							slice.cropHeight || frameHeight,
-							x + slice.offsetX - cameraOffset.x,
-							y + slice.offsetY - cameraOffset.y, 
-							slice.cropWidth || slice.width,
-							slice.cropHeight || slice.height);
-					}
-					
-					if (slice.colorize) {
-						// Draw the color that should be overlayed over the image
-						context.fillStyle = slice.colorize;
-						context.globalCompositeOperation = "source-in";
-						context.fillRect(x, y, slice.width, slice.height);
-						context = slice.layer.ctx; // Change back from the temp context
-						context.drawImage(tmpCtx.canvas, 0, 0);
-					}
-					
-					if (restoreNeeded) {
-						context.restore();
-					}
-				}
 				
-				if (drawBounds && context) {
-					bounds = slice.getBounds();
-					if (!bounds.length) {
-						bounds = [bounds];
-					}
-					
-					context.lineWidth = 4;
-	
-					for (i = 0; i < bounds.length; i += 1) {
-					
-						if (slice.dragging) {
-							context.beginPath();
-							context.fillStyle = "rgba(10, 255, 50, 0.4)";
-							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
-							context.closePath();
-						} else if (slice.justTapped) {
-							context.beginPath();
-							context.fillStyle = "rgba(255, 10, 50, 0.4)";
-							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
-							context.closePath();
-						} else if (slice.justNotTapped) {
-							context.beginPath();
-							context.fillStyle = "rgba(255, 10, 255, 0.4)";
-							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
-							context.closePath();
-						} else if (slice.justReleased) {
-							context.beginPath();
-							context.fillStyle = "rgba(125, 10, 255, 0.4)";
-							context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
-							context.closePath();
-							slice.justReleased = false;
+						if (slice.angle || slice.alpha !== 1 || slice.colorize || slice.mirrorX || slice.mirrorY) {
+							context.save();
+							restoreNeeded = true;
 						}
-					
-						context.beginPath();
-						context.strokeStyle = "rgba(96, 255, 0, 0.5)";
-						context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
-						context.closePath();
+						
+						context.globalAlpha = slice.alpha;
+						
+						if (slice.angle) {
+							context.translate(x, y);
+							context.rotate(slice.angle * Math.PI / 180);
+							context.translate(-x, -y);
+						}
+						
+						// Careful about performance when using mirroring
+						if (slice.mirrorX || slice.mirrorY) {
+							context.translate(x, y);
+							if (slice.mirrorX && slice.mirrorY) {
+								context.scale(-1, -1);
+							} else if (slice.mirrorX) {
+								context.scale(-1, 1);
+							} else {
+								context.scale(1, -1);
+							}
+							context.translate(-x, -y);
+						}
+						
+						if (slice.colorize) {
+							if (!tmpCtx) {
+								tmpCtx = document.createElement("canvas").getContext("2d");
+								tmpCtx.canvas.width = context.canvas.width;
+								tmpCtx.canvas.height = context.canvas.height;
+							}
+							context = tmpCtx;
+							context.globalCompositeOperation = "copy";
+						}
+	
+						// If the sprite is an animation
+						if (slice.numberOfFrames > 1) {
+							context.drawImage(
+								imageResource.image,
+								curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
+								slice.frameOffsetY,
+								slice.cropWidth || frameWidth, 
+								slice.cropHeight || frameHeight, 
+								x + slice.offsetX - cameraOffset.x,
+								y + slice.offsetY - cameraOffset.y,
+								slice.cropWidth || slice.width, 
+								slice.cropHeight || slice.height
+							);
+						// If the sprite is not an animation
+						} else {
+	
+							context.drawImage(imageResource.image, 
+								slice.frameOffsetX, 
+								slice.frameOffsetY,
+								slice.cropWidth || frameWidth, 
+								slice.cropHeight || frameHeight,
+								x + slice.offsetX - cameraOffset.x,
+								y + slice.offsetY - cameraOffset.y, 
+								slice.cropWidth || slice.width,
+								slice.cropHeight || slice.height);
+						}
+						
+						if (slice.colorize) {
+							// Draw the color that should be overlayed over the image
+							context.fillStyle = slice.colorize;
+							context.globalCompositeOperation = "source-in";
+							context.fillRect(x, y, slice.width, slice.height);
+							context = slice.layer.ctx; // Change back from the temp context
+							context.drawImage(tmpCtx.canvas, 0, 0);
+						}
+						
+						if (restoreNeeded) {
+							context.restore();
+						}
 					}
 					
-					context.beginPath();
-					context.arc(x - cameraOffset.x, y - cameraOffset.y, 7, 0, 2 * Math.PI, false);
-					context.fillStyle = "rgba(96, 255, 0, 0.5)";
-					context.fill();
+					if (drawBounds && context) {
+						bounds = slice.getBounds();
+						if (!bounds.length) {
+							bounds = [bounds];
+						}
+						
+						context.lineWidth = 4;
+		
+						for (i = 0; i < bounds.length; i += 1) {
+						
+							if (slice.dragging) {
+								context.beginPath();
+								context.fillStyle = "rgba(10, 255, 50, 0.4)";
+								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.closePath();
+							} else if (slice.justTapped) {
+								context.beginPath();
+								context.fillStyle = "rgba(255, 10, 50, 0.4)";
+								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.closePath();
+							} else if (slice.justNotTapped) {
+								context.beginPath();
+								context.fillStyle = "rgba(255, 10, 255, 0.4)";
+								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.closePath();
+							} else if (slice.justReleased) {
+								context.beginPath();
+								context.fillStyle = "rgba(125, 10, 255, 0.4)";
+								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.closePath();
+								slice.justReleased = false;
+							}
+						
+							context.beginPath();
+							context.strokeStyle = "rgba(96, 255, 0, 0.5)";
+							context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+							context.closePath();
+						}
+						
+						context.beginPath();
+						context.arc(x - cameraOffset.x, y - cameraOffset.y, 7, 0, 2 * Math.PI, false);
+						context.fillStyle = "rgba(96, 255, 0, 0.5)";
+						context.fill();
+					}
 				}
 			}
 		}
