@@ -34,7 +34,9 @@ BLOCKS.view = function (options) {
 			motor.removeEventListener("destroyed", motorDestroyed);
 			
 			for (i = 0 ; i < motors.length; i += 1)  {
-				motors.splice(i, 1);
+				if (motors[i] === motor) {
+					motors.splice(i, 1);
+				}
 				break;
 			}
 		};
