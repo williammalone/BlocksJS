@@ -528,7 +528,7 @@ BLOCKS.game = function (spec, element) {
 	//   the "BlockGame" id unless specified via a parameter of the game
 	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
 	if (!game.element) {
-		game.element = document.getElementByClassName("BlocksGame")[0];
+		game.element = document.getElementsByClassName("BlocksGame")[0];
 	}
 	if (!game.element) {
 		BLOCKS.error("Game does not have a game element");
