@@ -56,6 +56,8 @@ BLOCKS.tween = function (spec) {
 				} else {
 					easeAmt = -(Math.pow(curTick / (duration / 2) - 2, 4) - 2) * total / 2;
 				}
+			} else if (easing === "easeOutElastic") {
+				easeAmt = (Math.pow(2, -10 * curTick / duration) * Math.sin((curTick / duration - 0.075) * (2 * Math.PI) / 0.3) + 1) * total;
 			} else {
 				easeAmt = current + speed;
 			}
