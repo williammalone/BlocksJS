@@ -1041,7 +1041,7 @@ BLOCKS.speaker = function (spec) {
 		}
 	}());
 	
-	speaker.debug = true;
+	speaker.debug = false;
 	
 	return speaker;
 };
