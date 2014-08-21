@@ -112,8 +112,8 @@ BLOCKS.preloader = function (path) {
 			};
 			spec.image = obj.image;
 			
-			if (spec.crossOrigin) {
-				spec.image.crossOrigin = "anonymous";
+			if (spec.crossOrigin !== undefined) {
+				spec.image.crossOrigin = spec.crossOrigin;
 			}
 			imageList.push(obj);
 			return obj;
