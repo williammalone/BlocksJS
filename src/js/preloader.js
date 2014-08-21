@@ -38,7 +38,7 @@ BLOCKS.preloader = function (path) {
 				preloader.dispatchEvent("complete");
 			}
 		},
-		
+
 		traverse = function (obj, callback) {
 			
 			var key, i;
@@ -70,11 +70,12 @@ BLOCKS.preloader = function (path) {
 		imagesLoaded = 0;
 		
 		for (i = 0; i < imageList.length; i += 1) {
+		
 			// If image not already loaded
 			if (!imageList[i].loadStarted) {
 				imageList[i].loadStarted = true;
-				imageList[i].image.src = preloader.path + imageList[i].src;
 				imageList[i].image.addEventListener("load", imageLoaded);
+				imageList[i].image.src = preloader.path + imageList[i].src;
 			}
 		}
 	};
@@ -110,6 +111,10 @@ BLOCKS.preloader = function (path) {
 				loadStarted: false
 			};
 			spec.image = obj.image;
+			
+			if (spec.crossOrigin) {
+				spec.image.crossOrigin = "anonymous";
+			}
 			imageList.push(obj);
 			return obj;
 		}
