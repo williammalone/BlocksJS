@@ -212,7 +212,7 @@ BLOCKS.view = function (options) {
 		
 		if (view) {
 			view.removeMotors();
-			
+			view.dispatchEvent("destroyed", view);
 			view = null;
 		}
 	};

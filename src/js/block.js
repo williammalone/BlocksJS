@@ -161,6 +161,8 @@ BLOCKS.block = function (options) {
 			slicesArr = null;
 			slicesObj = null;
 			curSlice = null;
+			
+			block.dispatchEvent("destroyed", block);
 			block = null;
 		}
 	};

@@ -150,9 +150,6 @@ BLOCKS.stack = function (options) {
 		var i;
 		
 		for (i = 0; i < views.length; i += 1) {
-			if (views[i].layer && views[i].layer.container) {
-				views[i].layer.container.removeView(views[i]);
-			}
 			views[i].destroy();
 		}
 		views = [];
