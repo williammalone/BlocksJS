@@ -50,6 +50,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		muted = false,
 		maybeReady = false,
 		resetGainValue,
+		pausedFirstTime,
 		
 		testSoundComplete = function () {
 		
@@ -134,11 +135,14 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 					if (speaker.debug) {
 						BLOCKS.debug("loadComplete");
 					}
+					if (!pausedFirstTime) {
+						pausedFirstTime = true;
+						audioElement.pause(); 
+					}
 				}
 			}, 1000);
 			
 			audioElement.play();
-			audioElement.pause();
 		},
 		
 		endSound = function () {
