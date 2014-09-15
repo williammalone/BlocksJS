@@ -43,6 +43,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		loadComplete = false,
 		ready = false,
 		loadPercentage = 0,
+		prevLoadPercentage,
 		audioElement,
 		loadInterval,
 		soundCompleteTimer,
@@ -111,7 +112,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				//if (speaker.debug) {
 				//	BLOCKS.debug("audioElement.buffered.length: " + audioElement.buffered.length);
 				//}
-				
+		
 				if (!audioElement.buffered.length) {
 					return;
 				}
@@ -119,28 +120,27 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				loadTime = audioElement.buffered.end(audioElement.buffered.length - 1);
 				loadPercentage = loadTime / audioElement.duration * 100;
 
-				if (loadTime && !isNaN(loadPercentage) && loadPercentage !== loadPercentage) {
-					loadPercentage = loadPercentage;
+				if (!isNaN(loadPercentage) && prevLoadPercentage !== loadPercentage) {
+					prevLoadPercentage = loadPercentage;
 					speaker.dispatchEvent("loadUpdate");
 					if (speaker.debug) {
 						BLOCKS.debug("loadUpdate: " + Math.round(loadPercentage) + "%");
-					}
-				}
-                                  
-				if (window.Math.abs(loadTime - audioElement.duration) < 0.1) {
-			
-					window.clearInterval(loadInterval);
-					setReady();
-					speaker.dispatchEvent("loadComplete");
-					if (speaker.debug) {
-						BLOCKS.debug("loadComplete");
 					}
 					if (!pausedFirstTime) {
 						pausedFirstTime = true;
 						audioElement.pause(); 
 					}
 				}
-			}, 1000);
+                                  
+				if (window.Math.abs(loadTime - audioElement.duration) < 0.1) {
+					window.clearInterval(loadInterval);
+					setReady();
+					speaker.dispatchEvent("loadComplete");
+					if (speaker.debug) {
+						BLOCKS.debug("loadComplete");
+					}
+				}
+			}, 100);
 			
 			audioElement.play();
 		},
@@ -161,9 +161,11 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		
 		soundCompleteChecker = function () {
 		
+			var inst;
+	
 			// If a sound is playing
 			if (curSoundInst) {
-			
+		
 				// If the scrubber is past the sound end time then the sound is complete
 				if (audioElement.currentTime >= curSoundInst.end) {
 				
@@ -175,10 +177,12 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 						endSound();
 						speaker.dispatchEvent("played");
 						
-						if (curSoundInst.callback) {
-							curSoundInst.callback(curSoundInst.name);
-						}	
+						inst = curSoundInst;
 						curSoundInst = null;
+						
+						if (inst.callback) {
+							inst.callback(inst.name);
+						}
 					}
 				}
 			} else {
@@ -217,12 +221,15 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				audioElement.play();
 				
 				// Start a listener to check if the sound is complete
-				if (!soundCompleteTimer) {
-					soundCompleteTimer = window.setInterval(soundCompleteChecker, 100);
+				if (soundCompleteTimer) {
+					window.clearInterval(soundCompleteTimer);
 				}
-	
+				soundCompleteTimer = window.setInterval(soundCompleteChecker, 100);
+				
+				return true;
 			} else {
 				BLOCKS.warn("Sound parameters not specified.");
+				return false;
 			}
 		},
 	
@@ -264,7 +271,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	speaker.play = function (name, callback) {
 	
 		if (sounds[name]) {
-			playSound(name, callback);
+			return playSound(name, callback);
 		} else {
 			BLOCKS.warn("Cannot play sound '" + name + "' because it was not defined");
 		}
@@ -320,7 +327,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	};
 	
 	speaker.load = function () {
-	
+
 		if (!loadStarted) {
 			loadStarted = true;
 			load();
@@ -1037,8 +1044,8 @@ BLOCKS.speaker = function (spec) {
 		if (!spec) {
 			spec = {};
 		}
-
-		if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+		
+		if ((typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') && spec.webAudioEnabled !== false) {
 			speaker = BLOCKS.audio.webAudioPlayer(spec);
 		} else {
 			speaker = BLOCKS.audio.audioElementPlayer(spec);
