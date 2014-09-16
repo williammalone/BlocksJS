@@ -464,6 +464,12 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		loadFile = function (file) {
 		
 			file.request = new window.XMLHttpRequest();
+			
+			// For Internet Explorer
+			if (!("withCredentials" in file.request)) {
+				file.request = new window.XDomainRequest();
+			}
+		
 			file.request.open("get", path + file.src + extension, true);
 			file.request.responseType = "arraybuffer";
 
