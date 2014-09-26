@@ -28,7 +28,7 @@ module.exports = function(grunt) {
         }
 	},
 	copy: {
-        /*archive: {
+        archive: {
             files: [
                 {
                     expand: true, 
@@ -38,7 +38,7 @@ module.exports = function(grunt) {
                     filter: 'isFile'
                 }
             ]
-        },*/
+        },
         build: {
             files: [
                 {
