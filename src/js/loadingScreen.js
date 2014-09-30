@@ -112,6 +112,8 @@ BLOCKS.loadingScreen = function (spec, game) {
 				render();
 			});
 			clock.start();
+			
+			loadingScreen.dirty = true;
 		},
 		
 		update = function () {
