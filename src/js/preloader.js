@@ -125,6 +125,9 @@ BLOCKS.preloader = function (path) {
 		var image;
 		
 		image = new Image();
+		if (spec.crossOrigin !== undefined) {
+			image.crossOrigin = spec.crossOrigin;
+		}
 		image.src = preloader.path + spec.src;
 		
 		return image;
