@@ -23,6 +23,12 @@ module.exports = function(grunt) {
             files: [{
 					src: 'src/index.html',
                     dest: 'build/<%= pkg.version %>/index.html'
+				}, {
+					src: 'src/js/*.js',
+                    dest: 'build/<%= pkg.version %>/js/blocksjs-' + grunt.file.readJSON('package.json').version + '.js'
+				}, {
+					src: 'src/css/*.css',
+                    dest: 'build/<%= pkg.version %>/css/blocksjs-' + grunt.file.readJSON('package.json').version + '.css'
 				}
 			]
         }
