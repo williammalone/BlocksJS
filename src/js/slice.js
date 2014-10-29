@@ -256,8 +256,8 @@ BLOCKS.slice = function (options) {
 								slice.cropHeight || frameHeight, 
 								x + slice.offsetX - cameraOffset.x,
 								y + slice.offsetY - cameraOffset.y,
-								slice.cropWidth || slice.width, 
-								slice.cropHeight || slice.height
+								slice.cropWidth * slice.scale || slice.width, 
+								slice.cropHeight * slice.scale || slice.height
 							);
 						// If the sprite is not an animation
 						} else {
@@ -269,8 +269,8 @@ BLOCKS.slice = function (options) {
 								slice.cropHeight || frameHeight,
 								x + slice.offsetX - cameraOffset.x,
 								y + slice.offsetY - cameraOffset.y, 
-								slice.cropWidth || slice.width,
-								slice.cropHeight || slice.height);
+								slice.cropWidth * slice.scale || slice.width,
+								slice.cropHeight * slice.scale || slice.height);
 						}
 						
 						if (slice.colorize) {
