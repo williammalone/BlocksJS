@@ -46,6 +46,34 @@ BLOCKS.slice = function (options) {
 				slice.width = imageResource.image.width / slice.numberOfFrames;
 				slice.height = imageResource.image.height;
 			}
+		},
+		
+		drawImage = function (spec) {
+		
+			if (spec.sourceWidth > frameWidth) {
+				spec.sourceWidth = frameWidth;
+			}
+			if (spec.sourceHeight > frameHeight) {
+				spec.sourceHeight = frameHeight;
+			}
+			if (spec.destWidth > slice.width) {
+				spec.destWidth = slice.width;
+			}
+			if (spec.destHeight > slice.height) {
+				spec.destHeight = slice.height;
+			}
+		
+			spec.ctx.drawImage(
+				spec.image, 
+				spec.sourceX, 
+				spec.sourceY,
+				spec.sourceWidth, 
+				spec.sourceHeight,
+				spec.destX, 
+				spec.destY,
+				spec.destWidth, 
+				spec.destHeight
+			);
 		};
 	
 	slice.loop = options && options.loop;
@@ -165,7 +193,7 @@ BLOCKS.slice = function (options) {
 	
 	slice.render = function (e) {
 	
-		var i, bounds, restoreNeeded, context, cameraOffset, x, y;
+		var i, bounds, restoreNeeded, context, cameraOffset, x, y, destCropWidth, destCropHeight;
 		
 		// Prevent alpha from being negative
 		if (slice.alpha < 0) {
@@ -248,29 +276,32 @@ BLOCKS.slice = function (options) {
 	
 						// If the sprite is an animation
 						if (slice.numberOfFrames > 1) {
-							context.drawImage(
-								imageResource.image,
-								curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
-								slice.frameOffsetY,
-								slice.cropWidth || frameWidth, 
-								slice.cropHeight || frameHeight, 
-								x + slice.offsetX - cameraOffset.x,
-								y + slice.offsetY - cameraOffset.y,
-								slice.cropWidth * slice.scale || slice.width, 
-								slice.cropHeight * slice.scale || slice.height
-							);
+							drawImage({
+									ctx: context,
+									image: imageResource.image,
+									sourceX: curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
+									sourceY: slice.frameOffsetY,
+									sourceWidth: slice.cropWidth || frameWidth, 
+									sourceHeight: slice.cropHeight || frameHeight, 
+									destX: x + slice.offsetX - cameraOffset.x,
+									destY: y + slice.offsetY - cameraOffset.y,
+									destWidth: slice.cropWidth * slice.scale || slice.width, 
+									destHeight: slice.cropHeight * slice.scale || slice.height
+							});
 						// If the sprite is not an animation
 						} else {
-	
-							context.drawImage(imageResource.image, 
-								slice.frameOffsetX, 
-								slice.frameOffsetY,
-								slice.cropWidth || frameWidth, 
-								slice.cropHeight || frameHeight,
-								x + slice.offsetX - cameraOffset.x,
-								y + slice.offsetY - cameraOffset.y, 
-								slice.cropWidth * slice.scale || slice.width,
-								slice.cropHeight * slice.scale || slice.height);
+							drawImage({
+								ctx: context,
+								image: imageResource.image, 
+								sourceX: slice.frameOffsetX, 
+								sourceY: slice.frameOffsetY,
+								sourceWidth: slice.cropWidth || frameWidth, 
+								sourceHeight: slice.cropHeight || frameHeight,
+								destX: x + slice.offsetX - cameraOffset.x,
+								destY: y + slice.offsetY - cameraOffset.y, 
+								destWidth: slice.cropWidth * slice.scale || slice.width,
+								destHeight: slice.cropHeight * slice.scale || slice.height
+							});
 						}
 						
 						if (slice.colorize) {
