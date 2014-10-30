@@ -246,9 +246,9 @@ BLOCKS.slice = function (options) {
 						context.globalAlpha = slice.alpha;
 						
 						if (slice.angle) {
-							context.translate(x, y);
+							context.translate(x - cameraOffset.x, y - cameraOffset.y);
 							context.rotate(slice.angle * Math.PI / 180);
-							context.translate(-x, -y);
+							context.translate(-x + cameraOffset.x, -y + cameraOffset.y);
 						}
 						
 						// Careful about performance when using mirroring
