@@ -75,8 +75,8 @@ BLOCKS.view = function (options) {
 	};
 	
 	view.removeMotors = function (type) {
-		
-		var i, motorArr = [];
+	
+		var i, destroyMotorArr = [], motorArr = [];
 		
 		for (i = 0 ; i < motors.length; i += 1)  {
 			if (type) {
@@ -86,9 +86,16 @@ BLOCKS.view = function (options) {
 					motorArr.push(motors[i]);
 				}
 			} else {
-				motors[i].destroy();
+				// Mark the motor to be destroyed
+				destroyMotorArr.push(motors[i]);
 			}
 		}
+		// Destroy all motors marked for destruction
+		for (i = 0 ; i < destroyMotorArr.length; i += 1)  {
+			destroyMotorArr[i].destroy();
+		}
+		
+		// Update the motors array if only some motors destroyed
 		motors = motorArr;
 	};
 	

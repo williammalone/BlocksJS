@@ -391,6 +391,7 @@ BLOCKS.slice = function (options) {
 	slice.destroy = function () {
 	
 		if (slice) {
+			slice.removeMotors();
 			slice.dispatchEvent("destroyed", slice);
 		}
 		imageResource = null;
