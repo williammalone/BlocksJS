@@ -31,21 +31,25 @@ BLOCKS.layer = function (options) {
 	layer.name = options && options.name;
 	layer.x = options && options.x;
 	layer.y = options && options.y;
+	layer.scale = (options && options.scale) || 1;
 	
 	// Public Methods
 	layer.clear = function () {
 		
-		if (layer.webGLEnabled) {
+		// TODO: Implement webGL for rendering
+		//if (layer.webGLEnabled) {
+		//
+		//	layer.ctx.colorMask(true, true, true, true);
+		//	layer.ctx.clearColor(0, 0, 0, 0);
+		//	layer.ctx.clear(layer.ctx.COLOR_BUFFER_BIT);
+		//	
+		//} else {
 		
-			layer.ctx.colorMask(true, true, true, true);
-			layer.ctx.clearColor(0, 0, 0, 0);
-			layer.ctx.clear(layer.ctx.COLOR_BUFFER_BIT);
-			
-		} else {
 			// Not using clear rect due to Samsung render issues
 			//layer.ctx.clearRect(0, 0, layer.ctx.canvas.width, layer.ctx.canvas.height);
 			canvasElement.width = canvasElement.width;
-		}
+			
+		//}
 		
 		layer.dirty = false;
 	};
@@ -97,43 +101,59 @@ BLOCKS.layer = function (options) {
 		
 		var i, children, layerInserted;
 		
-		canvasElement = document.createElement("canvas");
-		canvasElement.width = width;
-		canvasElement.height = height;
-		canvasElement.className = "BlocksCanvas";
-		canvasElement.style.zIndex = zIndex;
-		if (layer.name) {
-			canvasElement.id = "BlocksCanvas_" + layer.name;
-		}
-		if (options.parentElement) {
-			parentElement = options.parentElement;
-			
-			children = parentElement.children;
-			for (i = 0; i < children.length; i += 1) {
-			
-				if (children[i].style.zIndex > zIndex) {
-					layerInserted = true;
-					parentElement.insertBefore(canvasElement, children[i]);
-					break;
+		// If a canvas element is specified
+		if (options.canvas) {
+		
+			canvasElement = options.canvas;
+		
+		// No canvas element specified so create one	
+		} else {
+		
+			canvasElement = document.createElement("canvas");
+			canvasElement.width = width;
+			canvasElement.height = height;
+			canvasElement.className = "BlocksCanvas";
+			canvasElement.style.zIndex = zIndex;
+			if (layer.name) {
+				canvasElement.id = "BlocksCanvas_" + layer.name;
+			}
+		
+			// If a parent is specified then attach the canvas to it
+			if (options.parentElement) {
+				parentElement = options.parentElement;
+				
+				children = parentElement.children;
+				for (i = 0; i < children.length; i += 1) {
+				
+					if (children[i].style.zIndex > zIndex) {
+						layerInserted = true;
+						parentElement.insertBefore(canvasElement, children[i]);
+						break;
+					}
+				}
+				if (!layerInserted) {
+					parentElement.appendChild(canvasElement);
 				}
 			}
-			if (!layerInserted) {
-				parentElement.appendChild(canvasElement);
-			}
-		}
-
-		if (false && options.enableWebGL) {
-			try {
-				layer.ctx = canvasElement.getContext("webgl") || canvasElement.getContext("experimental-webgl");
-			} catch(e) {}
+			
+			// TODO: Implement webGL for rendering
+			//if (options.enableWebGL) {
+			//	try {
+			//		layer.ctx = canvasElement.getContext("webgl") || canvasElement.getContext("experimental-webgl");
+			//	} catch(e) {}
+			//}
+			//
+			//if (layer.ctx) {
+			//	layer.webGLEnabled = true;
+			//} else {
+			//	layer.webGLEnabled = false;
+			//	
+			//	layer.ctx = canvasElement.getContext("2d");
+			//}
 		}
 		
-		if (layer.ctx) {
-			layer.webGLEnabled = true;
-		} else {
-			layer.webGLEnabled = false;
-			layer.ctx = canvasElement.getContext("2d");
-		}
+		layer.ctx = canvasElement.getContext("2d");
+
 	}());
 
 	return layer;
