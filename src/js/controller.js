@@ -24,44 +24,54 @@ BLOCKS.controller = function (element) {
 		elementPos,
 		
 		getElementPos = function (element) {
-		
-			var parentOffset,
+
+			var parentOffset, pos;
+				
+			if (!element) {
+				pos = {
+					x: 0,
+					y: 0
+				};
+			} else {
+			
 				pos = {
 					x: element.offsetLeft,
 					y: element.offsetTop 
 				};
 
-           if (element.offsetParent) {
-               parentOffset = getElementPos(element.offsetParent);
-               pos.x += parentOffset.x;
-               pos.y += parentOffset.y;
-           }
-           
-           return pos;
+				if (element.offsetParent) {
+					parentOffset = getElementPos(element.offsetParent);
+					pos.x += parentOffset.x;
+					pos.y += parentOffset.y;
+				}
+			}
+
+			return pos;
         },
 	
 		init = function () {
 		
-			if (!element) {
-				element = document.getElementById("BlocksGame");
-			}
-			
-			element.addEventListener("orientationchange", onOrientationEvent, true);
-			
+			var target;
+
 			document.addEventListener("keydown", onKeyDownEvent, true);
 			document.addEventListener("keyup", onKeyUpEvent, true);
 			
-			element.addEventListener("touchstart", onTouchEvent, true);
-			element.addEventListener("touchmove", onTouchEvent, true);
-			element.addEventListener("touchend", onTouchEvent, true);
-			element.addEventListener("touchcancel", onTouchEvent, true);
-
-			element.addEventListener("mousedown", onMouseEvent, true);
-			element.addEventListener("mousemove", onMouseEvent, true);
-			element.addEventListener("mouseup", onMouseEvent, true);
-			element.addEventListener("mousecancel", onMouseEvent, true);	
+			// Listen to the element if it exitst otherwise fall back to the document element
+			target = element || document;
 			
-			element.addEventListener("mouseout", onMouseEvent, true);
+			target.addEventListener("orientationchange", onOrientationEvent, true);
+			
+			target.addEventListener("touchstart", onTouchEvent, true);
+			target.addEventListener("touchmove", onTouchEvent, true);
+			target.addEventListener("touchend", onTouchEvent, true);
+			target.addEventListener("touchcancel", onTouchEvent, true);
+
+			target.addEventListener("mousedown", onMouseEvent, true);
+			target.addEventListener("mousemove", onMouseEvent, true);
+			target.addEventListener("mouseup", onMouseEvent, true);
+			target.addEventListener("mousecancel", onMouseEvent, true);	
+			
+			target.addEventListener("mouseout", onMouseEvent, true);
 			
 			// Fire a mouseUpOutside event when mouse up detected outside the game
 			document.addEventListener("mouseup", function (event) {
@@ -169,11 +179,11 @@ BLOCKS.controller = function (element) {
 						event[key] = firstFinger[key];
 					//}
 				}
-				
+			
 				event.x = (firstFinger.pageX - elementPos.x - controller.offsetX) * controller.scaleX;
 				event.y = (firstFinger.pageY - elementPos.y - controller.offsetY) * controller.scaleY;
 				event.type = e.type;
-				
+
 				event.touches = [];
 				// For each touch currently on the screen
 				for (i = 0; i < e.touches.length; i += 1) {
@@ -231,7 +241,7 @@ BLOCKS.controller = function (element) {
 				default: 
 					break;
 				}
-	
+
 				dispatchTapEvent(event, eventType);
 			}
 		},
