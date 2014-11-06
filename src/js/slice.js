@@ -62,6 +62,8 @@ BLOCKS.slice = function (options) {
 			if (spec.destHeight > slice.height) {
 				spec.destHeight = slice.height;
 			}
+			
+//BLOCKS.debug("render: " + spec.image + ", " + spec.sourceX + ", " + spec.sourceY + ", " + spec.sourceWidth + ", " + spec.sourceHeight + ", " + spec.destX + ", " + spec.destY + ", " + spec.destWidth + ", " + spec.destHeight);	
 		
 			spec.ctx.drawImage(
 				spec.image, 
@@ -219,9 +221,9 @@ BLOCKS.slice = function (options) {
 				if (slice.layer) {
 			
 					context = slice.layer.ctx;
-				
+					
 					// Using webGL
-					if (slice.layer.webGLEnabled) {
+					//if (slice.layer.webGLEnabled) {
 					
 						//context.bindTexture(context.TEXTURE_2D, texture);
 					
@@ -236,7 +238,7 @@ BLOCKS.slice = function (options) {
 						//context.bindTexture(context.TEXTURE_2D, null);
 						
 					// Using 2d Canvas
-					} else {
+					//} else {
 				
 						if (slice.angle || slice.alpha !== 1 || slice.colorize || slice.mirrorX || slice.mirrorY) {
 							context.save();
@@ -246,9 +248,9 @@ BLOCKS.slice = function (options) {
 						context.globalAlpha = slice.alpha;
 						
 						if (slice.angle) {
-							context.translate(x - cameraOffset.x, y - cameraOffset.y);
-							context.rotate(slice.angle * Math.PI / 180);
-							context.translate(-x + cameraOffset.x, -y + cameraOffset.y);
+							context.translate((x - cameraOffset.x) / slice.layer.scale, (y - cameraOffset.y) / slice.layer.scale);
+														context.rotate(slice.angle * Math.PI / 180);
+							context.translate((-x + cameraOffset.x) / slice.layer.scale, (-y + cameraOffset.y) / slice.layer.scale);
 						}
 						
 						// Careful about performance when using mirroring
@@ -277,16 +279,16 @@ BLOCKS.slice = function (options) {
 						// If the sprite is an animation
 						if (slice.numberOfFrames > 1) {
 							drawImage({
-									ctx: context,
-									image: imageResource.image,
-									sourceX: curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
-									sourceY: slice.frameOffsetY,
-									sourceWidth: slice.cropWidth || frameWidth, 
-									sourceHeight: slice.cropHeight || frameHeight, 
-									destX: x + slice.offsetX - cameraOffset.x,
-									destY: y + slice.offsetY - cameraOffset.y,
-									destWidth: slice.cropWidth * slice.scale || slice.width, 
-									destHeight: slice.cropHeight * slice.scale || slice.height
+								ctx: context,
+								image: imageResource.image,
+								sourceX: curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
+								sourceY: slice.frameOffsetY,
+								sourceWidth: slice.cropWidth || frameWidth, 
+								sourceHeight: slice.cropHeight || frameHeight, 
+								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,
+								destY: (y + slice.offsetY - cameraOffset.y) / slice.layer.scale, 
+								destWidth: (slice.cropWidth * slice.scale || slice.width) / slice.layer.scale,
+								destHeight: (slice.cropHeight * slice.scale || slice.height) / slice.layer.scale
 							});
 						// If the sprite is not an animation
 						} else {
@@ -297,10 +299,10 @@ BLOCKS.slice = function (options) {
 								sourceY: slice.frameOffsetY,
 								sourceWidth: slice.cropWidth || frameWidth, 
 								sourceHeight: slice.cropHeight || frameHeight,
-								destX: x + slice.offsetX - cameraOffset.x,
-								destY: y + slice.offsetY - cameraOffset.y, 
-								destWidth: slice.cropWidth * slice.scale || slice.width,
-								destHeight: slice.cropHeight * slice.scale || slice.height
+								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,
+								destY: (y + slice.offsetY - cameraOffset.y) / slice.layer.scale, 
+								destWidth: (slice.cropWidth * slice.scale || slice.width) / slice.layer.scale,
+								destHeight: (slice.cropHeight * slice.scale || slice.height) / slice.layer.scale
 							});
 						}
 						
@@ -331,38 +333,38 @@ BLOCKS.slice = function (options) {
 							if (slice.dragging) {
 								context.beginPath();
 								context.fillStyle = "rgba(10, 255, 50, 0.4)";
-								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.fillRect((bounds[i].x - cameraOffset.x) / slice.layer.scale, (bounds[i].y - cameraOffset.y) / slice.layer.scale, bounds[i].width / slice.layer.scale, bounds[i].height / slice.layer.scale);
 								context.closePath();
 							} else if (slice.justTapped) {
 								context.beginPath();
 								context.fillStyle = "rgba(255, 10, 50, 0.4)";
-								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.fillRect((bounds[i].x - cameraOffset.x) / slice.layer.scale, (bounds[i].y - cameraOffset.y) / slice.layer.scale, bounds[i].width / slice.layer.scale, bounds[i].height / slice.layer.scale);
 								context.closePath();
 							} else if (slice.justNotTapped) {
 								context.beginPath();
 								context.fillStyle = "rgba(255, 10, 255, 0.4)";
-								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.fillRect((bounds[i].x - cameraOffset.x) / slice.layer.scale, (bounds[i].y - cameraOffset.y) / slice.layer.scale, bounds[i].width / slice.layer.scale, bounds[i].height / slice.layer.scale);
 								context.closePath();
 							} else if (slice.justReleased) {
 								context.beginPath();
 								context.fillStyle = "rgba(125, 10, 255, 0.4)";
-								context.fillRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+								context.fillRect((bounds[i].x - cameraOffset.x) / slice.layer.scale, (bounds[i].y - cameraOffset.y) / slice.layer.scale, bounds[i].width / slice.layer.scale, bounds[i].height / slice.layer.scale);
 								context.closePath();
 								slice.justReleased = false;
 							}
 						
 							context.beginPath();
 							context.strokeStyle = "rgba(96, 255, 0, 0.5)";
-							context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, bounds[i].width, bounds[i].height);
+							context.strokeRect((bounds[i].x - cameraOffset.x) / slice.layer.scale, (bounds[i].y - cameraOffset.y) / slice.layer.scale, bounds[i].width / slice.layer.scale, bounds[i].height / slice.layer.scale);
 							context.closePath();
 						}
 						
 						context.beginPath();
-						context.arc(x - cameraOffset.x, y - cameraOffset.y, 7, 0, 2 * Math.PI, false);
+						context.arc((x - cameraOffset.x) / slice.layer.scale, (y - cameraOffset.y) / slice.layer.scale, 7, 0, 2 * Math.PI, false);
 						context.fillStyle = "rgba(96, 255, 0, 0.5)";
 						context.fill();
 					}
-				}
+				//}
 			}
 		}
 		slice.dirty = false;
