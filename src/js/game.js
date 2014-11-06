@@ -540,10 +540,6 @@ BLOCKS.game = function (spec, element) {
 		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
 	}
 	
-	if (spec && spec.intro) {
-		game.introScreen = BLOCKS.introScreen(spec.intro, game);
-	}
-	
 	// Create sound player
 	game.speaker = BLOCKS.speaker({
 		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
@@ -854,6 +850,12 @@ BLOCKS.game = function (spec, element) {
 	}());
 	
 	init();
+	
+	if (spec && spec.intro) {
+		game.introScreen = BLOCKS.introScreen(spec.intro, game);
+	} else {
+		onFirstTap();
+	}
 	
 	return game;
 };
