@@ -23,6 +23,7 @@ BLOCKS.game = function (spec, element) {
 	var game = BLOCKS.eventDispatcher(),
 		clock = BLOCKS.clock(),
 		gameContainer,
+		gameCanvas,
 		interactionContainer,
 		paused = false,
 		virtualKeyboard,
@@ -157,20 +158,10 @@ BLOCKS.game = function (spec, element) {
 			// Resize the game the first time to initialize the game scale propetries
 			resizeGame();
 			
-			// Create the single layer. Note this must be down after calling resizeGame
-			if (game.singleLayer) {
-				game.singleLayer = game.createLayer("FrameworkRenderCanvas", { 
-					canvas: spec.canvas,
-					scale: game.pixelMultiplier / game.scale
-				});
-			}
-			
 			// Create virtual keyboard
 			if (game.debug && game.virtualKeyboardEnabled) {
 				virtualKeyboard = BLOCKS.virtualKeyboard(game.controller, {
-					layer: game.addLayer("FrameworkDebugCanvas", {
-						zIndex: 999999
-					}, false),
+					layer: game.getLayer(),
 					customKeys: spec.customVirtualKeys
 				});
 			}
@@ -526,9 +517,7 @@ BLOCKS.game = function (spec, element) {
 	
 	// Define spec as empty object if it was specified as a parameter
 	spec = spec || {};
-	
-	maxLayers = spec.maxLayers !== undefined ? spec.maxLayers : 10;
-	
+
 	// The element in which the game markup will be injected will be the element with
 	//   the "BlockGame" id unless specified via a parameter of the game
 	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
@@ -561,6 +550,15 @@ BLOCKS.game = function (spec, element) {
 	game.autoLoad = spec.autoLoad !== undefined ? spec.autoLoad : true;
 	game.autoStart = spec.autoStart !== undefined ? spec.autoStart : true;
 	game.state = "intro";
+	
+	// A canvas can be specified to be used for all rendering
+	gameCanvas = spec.canvas;
+	// If a canvas is specifed then only one layer will be allowed
+	if (gameCanvas) {
+		maxLayers = 1;
+	} else {
+		maxLayers = spec.maxLayers !== undefined ? spec.maxLayers : 10;
+	}
 	
 	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
 	
@@ -654,35 +652,37 @@ BLOCKS.game = function (spec, element) {
 		
 		var i, layer, index;
 		
-		// If using one layer then return that
-		if (game.singleLayer) {
-			layer = game.singleLayer;	
-		} else {
+		if (label === undefined) {
+			label = 0;	
+		}
+		
+		if (typeof label === "number") {
 			
-			if (typeof label === "number") {
-				
-				index = label;
-				// If the index is larger than the number of layers
-				if (index > game.layers.length - 1) {
-					if (index > maxLayers - 1) {
-						layer = game.layers[game.layers.length - 1];
+			index = label;
+			// If the index is larger than the number of layers
+			if (index > game.layers.length - 1) {
+				if (index > maxLayers - 1) {
+					layer = game.layers[game.layers.length - 1];
+					
+					if (!gameCanvas) {
 						BLOCKS.warn("Layer index larger than maximum layers, using the top layer instead.");
-					} else {
-						// Create a new layer
-						layer = game.addLayer("FrameworkGameLayer" + index);
 					}
 				} else {
-					layer = game.layers[index];	
+					// Create a new layer
+					layer = game.addLayer("FrameworkGameLayer" + index);
 				}
 			} else {
-				// Return the layer with the layer with the matching name
-				for (i = 0; i < game.layers.length; i += 1) {
-					if (game.layers[i].name === label || game.layers[i].id === label) {
-						layer = game.layers[i];
-					}
+				layer = game.layers[index];	
+			}
+		} else {
+			// Return the layer with the layer with the matching name
+			for (i = 0; i < game.layers.length; i += 1) {
+				if (game.layers[i].name === label || game.layers[i].id === label) {
+					layer = game.layers[i];
 				}
 			}
 		}
+
 		return layer;
 	};
 	
@@ -692,6 +692,10 @@ BLOCKS.game = function (spec, element) {
 		options.name = name;
 		options.id = (+ new Date()).toString() + tickerIndex;
 		
+		options.canvas = gameCanvas;
+		if (!game.element) {
+			options.scale = game.pixelMultiplier / game.scale;
+		}
 		if (interactionContainer) {
 			options.parentElement = interactionContainer;
 		}
@@ -710,8 +714,8 @@ BLOCKS.game = function (spec, element) {
 		var layer;
 		
 		// If using one layer then return that
-		if (game.singleLayer) {
-			return game.singleLayer;
+		if (gameCanvas && game.layers.length) {
+			return game.getLayer();
 		} else {
 			layer = game.createLayer(name, options);
 			game.layers.push(layer);
@@ -887,11 +891,6 @@ BLOCKS.game = function (spec, element) {
 		
 		for (i = 0; i < game.layers; i += 1) {
 			game.removeLayer(game.layers[i]);
-		}
-		
-		if (game.singleLayer) {
-			game.singleLayer.destroy();
-			game.singleLayer = null;
 		}
 	};
 	
