@@ -33,9 +33,7 @@ BLOCKS.introScreen = function (spec, game) {
 		
 			if (!destroyed) {
 		
-				layer = game.addLayer("intro", {
-					zIndex: 1
-				});
+				layer = game.getLayer(0);
 			
 				bg = BLOCKS.slice({
 					layer: layer,

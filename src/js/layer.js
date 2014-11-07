@@ -29,6 +29,7 @@ BLOCKS.layer = function (options) {
 	
 	// Public Properties
 	layer.name = options && options.name;
+	layer.id = options && options.id;
 	layer.x = options && options.x;
 	layer.y = options && options.y;
 	layer.scale = (options && options.scale) || 1;

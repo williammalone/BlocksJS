@@ -41,6 +41,8 @@ BLOCKS.game = function (spec, element) {
 		gameTappedOnce,
 		loaded,
 		tickerIndex = 0,
+		layerIndex = 0,
+		maxLayers,
 		prepared,
 		wasMutedWhenPaused,
 		
@@ -107,27 +109,6 @@ BLOCKS.game = function (spec, element) {
 		init = function () {
 		
 			var i;
-		
-			gameContainer = document.createElement("article");
-			gameContainer.id = "BlocksGameContainer";
-			
-			if (spec && spec.minWidth) {
-				minWidth = spec.minWidth;
-				gameContainer.style.minWidth = minWidth + "px";
-			}
-			if (spec && spec.minHeight) {
-				minHeight = spec.minHeight;
-				gameContainer.style.minHeight = minHeight + "px";
-			}
-			
-			if (spec && spec.maxWidth) {
-				maxWidth = spec.maxWidth;
-				gameContainer.style.maxWidth = maxWidth + "px";
-			}
-			if (spec && spec.maxHeight) {
-				maxHeight = spec.maxHeight;
-				gameContainer.style.maxHeight = maxHeight + "px";
-			}
 			
 			if (spec && spec.scaleLandscape !== undefined) {
 				scaleLandscape = spec.scaleLandscape;
@@ -139,32 +120,63 @@ BLOCKS.game = function (spec, element) {
 			} else {
 				scalePortrait = true;
 			}
-			game.element.appendChild(gameContainer);
 			
-			interactionContainer = document.createElement("article");
-			interactionContainer.id = "BlocksInteractionContainer";
-			gameContainer.appendChild(interactionContainer);
+			if (game.element) {
+		
+				gameContainer = document.createElement("article");
+				gameContainer.id = "BlocksGameContainer";
+				
+				if (spec && spec.minWidth) {
+					minWidth = spec.minWidth;
+					gameContainer.style.minWidth = minWidth + "px";
+				}
+				if (spec && spec.minHeight) {
+					minHeight = spec.minHeight;
+					gameContainer.style.minHeight = minHeight + "px";
+				}
+				
+				if (spec && spec.maxWidth) {
+					maxWidth = spec.maxWidth;
+					gameContainer.style.maxWidth = maxWidth + "px";
+				}
+				if (spec && spec.maxHeight) {
+					maxHeight = spec.maxHeight;
+					gameContainer.style.maxHeight = maxHeight + "px";
+				}
+	
+				game.element.appendChild(gameContainer);
+				
+				interactionContainer = document.createElement("article");
+				interactionContainer.id = "BlocksInteractionContainer";
+				gameContainer.appendChild(interactionContainer);
+
+			}
 			
 			game.controller = BLOCKS.controller(interactionContainer);
 			
-			for (i = 0; i < 10; i += 1) {
-				game.addLayer("blocksGameLayer" + (i + 1));
+			// Resize the game the first time to initialize the game scale propetries
+			resizeGame();
+			
+			// Create the single layer. Note this must be down after calling resizeGame
+			if (game.singleLayer) {
+				game.singleLayer = game.createLayer("FrameworkRenderCanvas", { 
+					canvas: spec.canvas,
+					scale: game.pixelMultiplier / game.scale
+				});
 			}
 			
-			if (game.debug) {
-
+			// Create virtual keyboard
+			if (game.debug && game.virtualKeyboardEnabled) {
 				virtualKeyboard = BLOCKS.virtualKeyboard(game.controller, {
-					layer: game.addLayer("internalblocksjsdebuglayer", {
+					layer: game.addLayer("FrameworkDebugCanvas", {
 						zIndex: 999999
 					}, false),
 					customKeys: spec.customVirtualKeys
 				});
 			}
-	
+
 			window.addEventListener("orientationchange", onOrientationChange);
 			window.addEventListener("resize", resizeGame);
-			
-			resizeGame();
 			
 			game.controller.addEventListener("keyUp", onKeyUp);
 			game.controller.addEventListener("keyDown", onKeyDown);
@@ -236,7 +248,7 @@ BLOCKS.game = function (spec, element) {
 				
 					game.dispatchEvent("preUpdate");
 				
-					if (game.debug) {
+					if (game.debug && virtualKeyboard) {
 						virtualKeyboard.update();
 					}
 					
@@ -260,7 +272,7 @@ BLOCKS.game = function (spec, element) {
 
 				game.dispatchEvent("preRender", e);
 			
-				if (game.debug) {
+				if (game.debug && virtualKeyboard) {
 					virtualKeyboard.render(e);
 				}
 				
@@ -292,7 +304,7 @@ BLOCKS.game = function (spec, element) {
 		
 		onTap = function (pos) {
 
-			if (game.debug) {
+			if (game.debug && virtualKeyboard) {
 				if (pos.x < 100 && pos.y < 100) {
 					debugPressTimeout = window.setTimeout(function () {
 						virtualKeyboard.visible = !virtualKeyboard.visible;
@@ -414,13 +426,19 @@ BLOCKS.game = function (spec, element) {
 		resizeGame = function () {
 		
 			var i, viewport, newGameWidth, newGameHeight, newGameX, newGameY;
-					
+				
 			// Get the dimensions of the viewport
-			viewport = {
-				width: game.element.offsetWidth,
-				height: game.element.offsetHeight
-			};
-			
+			if (game.element) {
+				viewport = {
+					width: game.element.offsetWidth,
+					height: game.element.offsetHeight
+				};
+			} else {
+				viewport = {
+					width: window.innerWidth * game.pixelMultiplier,
+					height: window.innerHeight * game.pixelMultiplier
+				};
+			}	
 			
 			// If the viewport is greater than a minimum or maximum game dimension use that instead
 			if (minWidth && viewport.width < minWidth) {
@@ -480,18 +498,20 @@ BLOCKS.game = function (spec, element) {
 			game.camera.width = (viewport.width - Math.max(newGameX, 0) * 2) / game.scale;
 			game.camera.height = (viewport.height - Math.max(newGameY, 0) * 2) / game.scale;
 			
-			// Resize the game container
-			gameContainer.style.width = (viewport.width - Math.max(newGameX, 0) * 2) + "px";
-			gameContainer.style.height = (viewport.height - Math.max(newGameY, 0) * 2)+ "px";
-					
-			// Set the new padding of the game so it will be centered
-			gameContainer.style.padding = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
+			if (gameContainer) {
+				// Resize the game container
+				gameContainer.style.width = (viewport.width - Math.max(newGameX, 0) * 2) + "px";
+				gameContainer.style.height = (viewport.height - Math.max(newGameY, 0) * 2)+ "px";
+						
+				// Set the new padding of the game so it will be centered
+				gameContainer.style.padding = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
+			}
 			
 			// Tell the controller the game dimensions
-			game.controller.scaleX = game.width / newGameWidth;
-			game.controller.scaleY = game.height / newGameHeight;
-			game.controller.offsetX = -game.camera.x * game.scale;
-			game.controller.offsetY = -game.camera.y * game.scale;
+			game.controller.scaleX = (game.width / newGameWidth) * game.pixelMultiplier;
+			game.controller.scaleY = (game.height / newGameHeight) * game.pixelMultiplier;
+			game.controller.offsetX = -game.camera.x * game.scale / game.pixelMultiplier;
+			game.controller.offsetY = -game.camera.y * game.scale / game.pixelMultiplier;
 
 			for (i = 0; i < game.layers.length; i += 1) {			
 				game.layers[i].width = game.camera.width;
@@ -506,7 +526,26 @@ BLOCKS.game = function (spec, element) {
 	
 	// Define spec as empty object if it was specified as a parameter
 	spec = spec || {};
+	
+	maxLayers = spec.maxLayers !== undefined ? spec.maxLayers : 10;
+	
+	// The element in which the game markup will be injected will be the element with
+	//   the "BlockGame" id unless specified via a parameter of the game
+	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
+	
+	// If no game element found with matching id, look for one with a matching class name
+	if (!game.element) {
+		if (document.getElementsByClassName && document.getElementsByClassName("BlocksGame")) {
+			game.element = document.getElementsByClassName("BlocksGame")[0];
+		}
+	}
 
+	// If there is no game element to scale for us we will need to scale manually
+	game.pixelMultiplier = !game.element && window.devicePixelRatio ? window.devicePixelRatio : 1;
+	// The scale property represents the amount the game is scaled
+	game.scale = 1;
+	// The singleLayer property will render everything to one layer
+	game.singleLayer = spec.singleLayer !== undefined ? spec.singleLayer : false;
 	game.layers = [];
 	game.width = spec.width !== undefined ? spec.width : 1024;
 	game.height = spec.height !== undefined ? spec.height : 768;
@@ -514,7 +553,6 @@ BLOCKS.game = function (spec, element) {
 	game.safeHeight = spec.safeHeight || game.height;
 	game.debug = spec.debug !== undefined ? spec.debug : false;
 	game.maxLoopDuration = spec.maxLoopDuration !== undefined ? spec.maxLoopDuration : 500;
-	game.scale = 1;
 	game.stage = BLOCKS.container(game);
 	game.camera = BLOCKS.camera({
 		width: game.width,
@@ -523,16 +561,6 @@ BLOCKS.game = function (spec, element) {
 	game.autoLoad = spec.autoLoad !== undefined ? spec.autoLoad : true;
 	game.autoStart = spec.autoStart !== undefined ? spec.autoStart : true;
 	game.state = "intro";
-	
-	// The element in which the game markup will be injected will be the element with
-	//   the "BlockGame" id unless specified via a parameter of the game
-	game.element = (element !== undefined) ? element : document.getElementById("BlocksGame");
-	if (!game.element) {
-		game.element = document.getElementsByClassName("BlocksGame")[0];
-	}
-	if (!game.element) {
-		BLOCKS.error("Game does not have a game element");
-	}
 	
 	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
 	
@@ -543,7 +571,8 @@ BLOCKS.game = function (spec, element) {
 	// Create sound player
 	game.speaker = BLOCKS.speaker({
 		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
-		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : ""
+		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : "",
+		audioPlayerType: (spec && spec.audioPlayerType !== undefined) ? spec.audioPlayerType : ""
 	});
 	
 	game.speaker.addEventListener("update", function (e) {
@@ -611,23 +640,61 @@ BLOCKS.game = function (spec, element) {
 		game.stage.render(e);
 	};
 	
-	game.getLayer = function (name) {
+	game.clearLayers = function () {
 		
 		var i;
-		
+	
 		for (i = 0; i < game.layers.length; i += 1) {
-			if (game.layers[i].name === name) {
-				return game.layers[i];
+			game.layers[i].clear();
+		}
+	};
+	
+	// Label can match a layer's name or id or index
+	game.getLayer = function (label) {
+		
+		var i, layer, index;
+		
+		// If using one layer then return that
+		if (game.singleLayer) {
+			layer = game.singleLayer;	
+		} else {
+			
+			if (typeof label === "number") {
+				
+				index = label;
+				// If the index is larger than the number of layers
+				if (index > game.layers.length - 1) {
+					if (index > maxLayers - 1) {
+						layer = game.layers[game.layers.length - 1];
+						BLOCKS.warn("Layer index larger than maximum layers, using the top layer instead.");
+					} else {
+						// Create a new layer
+						layer = game.addLayer("FrameworkGameLayer" + index);
+					}
+				} else {
+					layer = game.layers[index];	
+				}
+			} else {
+				// Return the layer with the layer with the matching name
+				for (i = 0; i < game.layers.length; i += 1) {
+					if (game.layers[i].name === label || game.layers[i].id === label) {
+						layer = game.layers[i];
+					}
+				}
 			}
 		}
+		return layer;
 	};
 	
 	game.createLayer = function (name, options) {
 	
 		options = options || {};
 		options.name = name;
+		options.id = (+ new Date()).toString() + tickerIndex;
 		
-		options.parentElement = interactionContainer;
+		if (interactionContainer) {
+			options.parentElement = interactionContainer;
+		}
 		if (!options.width) {
 			options.width = game.camera.width;
 		}
@@ -637,25 +704,26 @@ BLOCKS.game = function (spec, element) {
 
 		return BLOCKS.layer(options);
 	};
-		
-	game.destroyLayer = function (layer) {
-		
-		layer.destroy();
-		layer = null;
-	};
-		
+	
 	game.addLayer = function (name, options) {
 	
 		var layer;
 		
-		if (!game.getLayer(name)) {
-		
+		// If using one layer then return that
+		if (game.singleLayer) {
+			return game.singleLayer;
+		} else {
 			layer = game.createLayer(name, options);
-
 			game.layers.push(layer);
 			return layer;
-		} else {
-			BLOCKS.warn("Cannot add layer '" + name + "' because it already exists.");
+		}
+	};
+	
+	game.destroyLayer = function (layer) {
+		
+		if (layer) {
+			layer.destroy();
+			layer = null;
 		}
 	};
 	
@@ -670,8 +738,6 @@ BLOCKS.game = function (spec, element) {
 				return true;
 			}
 		}
-	
-		BLOCKS.warn("Cannot remove layer '" + name + "' because it cannot be found.");
 	};
 	
 	game.addMotor = function (type) {
@@ -821,6 +887,11 @@ BLOCKS.game = function (spec, element) {
 		
 		for (i = 0; i < game.layers; i += 1) {
 			game.removeLayer(game.layers[i]);
+		}
+		
+		if (game.singleLayer) {
+			game.singleLayer.destroy();
+			game.singleLayer = null;
 		}
 	};
 	

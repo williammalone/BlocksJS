@@ -16,7 +16,7 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.container = function () {
+BLOCKS.container = function (game) {
 	
 	"use strict";
 	
@@ -26,6 +26,7 @@ BLOCKS.container = function () {
 		motors = [],
 		layers = [],
 		views = [],
+		layerLabels = {},
 		
 		// Private Methods
 		motorDestroyed = function (motor) {
@@ -43,6 +44,27 @@ BLOCKS.container = function () {
 	// Public Properties
 	container.visible = true;
 	container.dirty = true;
+	
+	container.assignLayers = function () {
+		
+		var i, args;
+		
+		args = Array.prototype.slice.call(arguments);
+		
+		layerLabels = {};
+		
+		for (i = 0; i < args.length; i += 1) {	
+			layerLabels[args[i]] = game.getLayer(i);
+		}
+	};
+	
+	container.getLayer = function (label) {	
+		if (layerLabels[label]) {
+			return layerLabels[label];
+		} else {
+			BLOCKS.error("Cannot find container layer: " + label);
+		}
+	};
 
 	container.addView = function (view) {
 	

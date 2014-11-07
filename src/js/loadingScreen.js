@@ -85,10 +85,8 @@ BLOCKS.loadingScreen = function (spec, game) {
 		prepare = function () {
 		
 			layers = {
-				loadingBg: game.addLayer("loadingBg", {
-					enableWebGL: false
-				}),
-				loading: game.addLayer("loading")
+				loadingBg: game.getLayer(0),
+				loading: game.getLayer(1)
 			};
 
 			bg = BLOCKS.slice({
@@ -172,10 +170,7 @@ BLOCKS.loadingScreen = function (spec, game) {
 		if (clock) {
 			clock.destroy();
 			
-			if (layers) {
-				game.removeLayer("loadingBg");
-				game.removeLayer("loading");
-			}
+			layers = null;
 			
 			bg.destroy();
 			bg = null;
