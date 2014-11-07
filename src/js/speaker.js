@@ -97,6 +97,10 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		
 		load = function () {
 		
+			if (!audioElement) {
+				return;
+			}
+		
 			if (speaker.debug) {
 				BLOCKS.debug("load audio sprite: " + spriteSrc);
 			}
@@ -150,7 +154,9 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			// Clear the sound complete timer
 			window.clearInterval(soundCompleteTimer);
 			soundCompleteTimer = null;
-			audioElement.pause();
+			//if (audioElement) {
+				audioElement.pause();
+			//}
 		},
 		
 		stop = function () {
@@ -323,7 +329,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	// Return if audio is ready to be played
 	speaker.isReady = function () {
 	
-		return ready;
+		return true;
 	};
 	
 	speaker.load = function () {
@@ -374,7 +380,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			// Add the sprite filename without extension
 			spriteSrc += spec.src;
 			
-			audioElement = window.document.createElement("audio");
+			audioElement = document.createElement("audio");
 			audioElement.addEventListener("canplaythrough", onCanPlayThrough);
 			
 						
@@ -1038,6 +1044,621 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	return speaker;
 };
 
+BLOCKS.audio.multiAudioElementPlayer = function (spec) {
+
+	"use strict";
+	
+	var speaker = BLOCKS.eventDispatcher(),
+		initialized = false,
+		loadStarted = false,
+		loadComplete = false,
+		ready = false,
+		muted = false,
+		extension,
+		path = (spec && spec.path) || "",
+		masterGain,
+		ctx,
+		sounds = {},
+		files = {},
+		instances = [],
+		tracks = {},
+		loadTimeoutId,
+		maxLoadTime = spec.maxLoadTime || 60000, // The maximum amount of time for all sounds to load
+		loadTries = 0,
+		maxLoadTries = 5,
+		
+		createTrack = function (name) {
+		
+			if (!tracks[name]) {
+				tracks[name] = {
+					name: name,
+					gain: (ctx.createGain) ? ctx.createGain() : ctx.createGainNode()
+				};
+				
+				// Connect the track's gain node to the master node
+				tracks[name].gain.connect(masterGain);
+			}
+			
+			return tracks[name];
+		},
+		
+		onFileLoaded = function (file) {
+		
+			var key, numFilesLoaded, totalNumFiles;
+			
+			numFilesLoaded = speaker.getNumFilesLoaded();
+			totalNumFiles = speaker.getNumFiles();
+		
+			if (speaker.debug) {
+				BLOCKS.debug("load: " + numFilesLoaded + " of " + totalNumFiles);
+			}
+		
+			speaker.dispatchEvent("update", numFilesLoaded, totalNumFiles);
+			
+			if (numFilesLoaded === totalNumFiles) {
+				
+				if (!ready) {
+					ready = true;
+					
+					// Clear the load timeout
+					window.clearTimeout(loadTimeoutId);
+					if (speaker.debug) {
+						BLOCKS.debug("audio ready");
+					}
+
+					speaker.dispatchEvent("ready");
+				}
+			}
+		},
+		
+		loadFile = function (file) {
+
+			file.audioElement = document.createElement("audio");
+			
+			file.audioElement.preload = true;
+			file.audioElement.src = (path + file.src + extension);
+			file.audioElement.load();
+			file.audioElement.addEventListener("canplaythrough", function () {
+				BLOCKS.debug("Audio element loaded: " + (path + file.src + extension));
+				file.loaded = true;
+				onFileLoaded(file);
+			});
+			//document.body.appendChild(file.audioElement);
+		},
+		
+		load = function () {
+		
+			/*
+			var source;
+			
+			loadStarted = true;
+		
+			source = ctx.createOscillator();
+
+			if (source.start) {
+				source.start(0, 0, 1);
+			} else if (source.noteGrainOn) {
+				source.noteGrainOn(0, 0, 1);
+			}
+			*/
+		},
+		
+		destroyInstance = function (inst) {
+			
+			var i, index;
+			
+			for (i = 0; i < instances.length; i += 1) {
+			
+				if (instances[i] === inst) {
+					instances[i] = null;
+					index = i;
+					break;
+				}	
+			}
+
+			instances.splice(index, 1);
+		},
+		
+		soundCompleteChecker = function (inst) {
+		
+			var callback, soundName;
+		
+			if (speaker.debug) {
+				BLOCKS.debug("Sound '" + inst.sound.name + "' Complete");
+			}
+
+			if (inst.callback) {
+				callback = inst.callback;
+				soundName = inst.name;
+			}
+		
+			// Destroy the instance before calling a possible callback
+			destroyInstance(inst);
+			
+			if (callback) {
+				callback(soundName);
+			}
+		},
+
+		stopSound = function (inst) {
+		
+			window.clearTimeout(inst.timeout);
+
+			/*
+			if (inst.source.stop) {
+				inst.source.stop(0);
+			} else if (inst.source.noteGrainOff) {
+				inst.source.noteGrainOff(0);
+			} else {					
+				inst.source.noteOff(0);
+			}
+			*/
+			
+			inst.sound.file.audioElement.pause();
+			
+			destroyInstance(inst);
+		},
+
+		getSoundGain = function (inst) {
+		
+			return inst.gain.gain.value;
+		},
+		
+		setSoundGain = function (inst, gainValue, delay) {
+		
+// TODO: support a fade in and out with the delay property
+			inst.sound.file.audioElement.volume = gainValue;
+		
+			/*
+			// If the sound doesn't have its own gain then create its own gain we can change
+			if (inst.gain === inst.track.gain) {
+				
+				// Disconnect the source from its track gain node
+				inst.source.disconnect(0);
+				
+				// Create a new gain
+				inst.gain = (ctx.createGain) ? ctx.createGain() : ctx.createGainNode();
+				inst.gain.connect(masterGain);
+				
+				// Connect the source to the new gain
+				inst.source.connect(inst.gain);
+			}
+			if (speaker.debug) {
+				BLOCKS.debug("speaker.setSoundGain of sound '" + inst.name + "' to '" + gainValue + "'");
+			}			
+			// If the gain should be faded out
+			if (delay) {
+				inst.gain.gain.linearRampToValueAtTime(inst.gain.gain.value, ctx.currentTime);
+				inst.gain.gain.linearRampToValueAtTime(gainValue, ctx.currentTime + delay);
+			} else {
+				inst.gain.gain.value = gainValue;
+			}
+			*/
+		},
+		
+		pauseSound = function (inst) {
+
+			window.clearTimeout(inst.timeout);
+			
+			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000;
+		
+			if (inst.source.stop) {
+				inst.source.stop(0);
+			} else if (inst.source.noteGrainOff) {
+				inst.source.noteGrainOff(0);
+			} else {					
+				inst.source.noteOff(0);
+			}
+			
+			//if (speaker.debug) {
+			//	BLOCKS.debug("Pause sound: '" + inst.name + "' at scrubber position of " + inst.currentTime.toFixed(2));
+			//}
+		},
+		
+		unpauseSound = function (inst) {
+		
+			var newInst;
+			
+			//if (speaker.debug) {
+			//	BLOCKS.debug("Unpause sound: '" + inst.name + "'");
+			//}
+		
+			// Play a new instance of the sound
+			newInst = playSound(inst.name, inst.callback, inst.track.name, inst.currentTime);
+
+			if (inst.gain.gain.value !== 1) {
+				setSoundGain(newInst, inst.gain.gain.value);
+			}
+			
+			// Delete the old instance
+			destroyInstance(inst);
+		},
+		
+		playSound = function (name, callback, trackName, currentTime, delay) {
+		
+			var inst = {};
+
+			if (sounds[name].file.loaded) {
+			
+				instances.push(inst);
+				inst.sound = sounds[name];
+				inst.name = name;
+				
+				// If an offset is set (set when unpausing a sound)
+				if (currentTime) {
+					inst.currentTime = currentTime;
+				} else {
+					// Start from the beginning of the sound
+					inst.currentTime = 0;
+				}
+				
+				// Save when the sound starts, or would have started if started from the beginning
+				inst.startTime = (+ new Date()) - inst.currentTime * 1000;
+				
+				if (delay) {
+					// Play the sound after a delay
+					inst.delay = ctx.currentTime + delay;
+				} else {
+					// Play the sound immediately
+					delay = 0;
+					inst.delay = 0;
+				}
+				
+				if (trackName) {
+					if (!tracks[trackName]) {
+						createTrack(trackName);
+					}
+					inst.track = tracks[trackName];
+				} else {
+					inst.track = tracks["default"];
+				}
+				
+				// Create a new source for this sound instance
+				//inst.source = ctx.createBufferSource();
+				//inst.source.buffer = sounds[name].file.buffer;
+				//inst.source.loop = sounds[name].loop;
+				//inst.gain = inst.track.gain;
+				
+				
+				
+				// Connect the source to the gains
+				//inst.source.connect(inst.gain);
+				
+				if (!sounds[name].loop) {
+					// Timeout at the end of the sound
+					//inst.timeout = window.setTimeout(soundCompleteChecker, (delay + inst.source.buffer.duration - inst.currentTime) * 1000, inst);
+					
+					// Assign a callback to be called once the sound is complete
+					inst.callback = callback;
+				} else {
+					inst.sound.file.audioElement.loop = true;
+				}
+
+				if (speaker.debug) {
+					if (inst.currentTime) {
+						BLOCKS.debug("Play sound: " + name + " (" + inst.currentTime + " - " + sounds[name].end + "), src: " + sounds[name].file.src + extension);
+					} else {
+						BLOCKS.debug("Play sound: " + name + " (" + sounds[name].start + " - " + sounds[name].end + "), src: " + sounds[name].file.src + extension);
+					}
+				}
+				
+				inst.sound.file.audioElement.currentTime = inst.currentTime;
+				inst.sound.file.audioElement.play();
+				
+				/*
+				// Play the sound
+				if (inst.source.start) {
+					// If an offset is specified then add the start time and duration parameters
+					if (inst.currentTime) {
+						inst.source.start(inst.delay, inst.currentTime, inst.source.buffer.duration - inst.currentTime);
+					} else {
+						inst.source.start(inst.delay);
+					}
+				} else if (inst.source.noteGrainOn) {
+					inst.source.noteGrainOn(inst.delay, inst.currentTime, inst.source.buffer.duration - inst.currentTime);
+				}
+				*/
+				
+				return inst;
+			} else {
+				// TODO: Play the unloaded sound once its loaded
+				//if (speaker.debug) {
+					BLOCKS.warn("Tried to play sound: " + name + ", but it is not loaded yet");
+				//}
+			}
+		},
+		
+		createLoadTimer = function () {
+			
+			loadTimeoutId = window.setTimeout(function () {
+			
+				var key;
+			
+				for (key in files) {
+					if (files.hasOwnProperty(key)) {
+						if (!files[key].loaded) {
+							
+							// Cancel the request
+							if (files[key].request) {
+								BLOCKS.warn("Sound file load has timed out. Aborting request and trying again: " + files[key].src);
+								files[key].request.abort();
+							} else {
+								BLOCKS.warn("Sound file load has timed out. Sending additional request: " + files[key].src);
+							}
+							loadFile(files[key]);
+						}
+					}
+				}
+				
+				loadTries += 1;
+				if (loadTries < maxLoadTries) {
+					createLoadTimer();
+				}
+				
+			}, maxLoadTime);
+		};
+
+	speaker.play = function (name, callback, trackName, startTime, delay) {
+
+		if (sounds[name]) {
+			return playSound(name, callback, trackName, startTime, delay);
+		} else {
+			BLOCKS.warn("Cannot play sound '" + name + "' because it was not defined");
+		}
+	};
+	
+	speaker.getSoundDuration = function (name) {
+	
+		return sounds[name].file.buffer.duration;
+	};
+	
+	speaker.getSoundInstanceGain = function (inst) {
+	
+		return getSoundGain(inst);
+	};
+	
+	speaker.getSoundGain = function (name) {
+	
+		var i, instanceArr = instances.slice(0);
+			
+		for (i = 0; i < instanceArr.length; i += 1) {
+			if (instanceArr[i].name === name) {
+			
+				return getSoundGain(instanceArr[i]);
+			}
+		}
+	};
+	
+	speaker.setSoundInstanceGain = function (inst, gainValue, delay) {
+	
+		setSoundGain(inst, gainValue, delay);
+	};
+	
+	speaker.setSoundGain = function (name, gainValue, delay) {
+	
+		var i, instanceArr = instances.slice(0);
+			
+		for (i = 0; i < instanceArr.length; i += 1) {
+			if (instanceArr[i].name === name) {
+			
+				setSoundGain(instanceArr[i], gainValue, delay);
+			}
+		}
+	};
+	
+	speaker.stopSound = function (name) {
+	
+		var i, instanceArr = instances.slice(0);
+				
+		for (i = 0; i < instanceArr.length; i += 1) {
+			if (instanceArr[i].name === name) {
+				stopSound(instanceArr[i]);
+			}
+		}
+	};
+	
+	speaker.pauseSound = function (name) {
+	
+		var i, instanceArr = instances.slice(0);
+			
+		for (i = 0; i < instanceArr.length; i += 1) {
+			if (instanceArr[i].name === name) {
+				pauseSound(instanceArr[i]);
+			}
+		}
+	};
+	
+	speaker.unpauseSound = function (name) {
+	
+		var i, instanceArr = instances.slice(0);
+			
+		for (i = 0; i < instanceArr.length; i += 1) {
+			if (instanceArr[i].name === name) {
+				unpauseSound(instanceArr[i]);
+			}
+		}
+	};
+
+	speaker.stopTrack = function (trackName) {
+	
+		//var i, instanceArr = instances.slice(0);
+		//	
+		//for (i = 0; i < instanceArr.length; i += 1) {
+		//	if (instanceArr[i].track.name === trackName) {
+		//		stopSound(instanceArr[i]);
+		//	}
+		//}
+	};
+	
+	speaker.pauseTrack = function (trackName) {
+	
+		//var i, instanceArr = instances.slice(0);
+		//	
+		//for (i = 0; i < instanceArr.length; i += 1) {
+		//	if (instanceArr[i].track.name === trackName) {
+		//		pauseSound(instanceArr[i]);
+		//	}
+		//}
+	};
+	
+	speaker.unpauseTrack = function (trackName) {
+	
+		//var i, instanceArr = instances.slice(0);
+		//	
+		//for (i = 0; i < instanceArr.length; i += 1) {
+		//	if (instanceArr[i].track.name === trackName) {
+		//		unpauseSound(instanceArr[i]);
+		//	}
+		//}
+	};
+	
+	// Stop all sounds
+	speaker.stop = function () {
+	
+		var i, instanceArr = instances.slice(0);
+		
+		for (i = 0; i < instanceArr.length; i += 1) {
+			stopSound(instanceArr[i]);
+		}
+	};
+	
+	// Pause all sounds
+	speaker.pause = function () {
+	
+		var i, instanceArr = instances.slice(0);
+		
+		for (i = 0; i < instanceArr.length; i += 1) {
+			pauseSound(instanceArr[i]);
+		}
+	};
+	
+	// Unpause any paused sounds
+	speaker.unpause = function () {
+	
+		var i, instanceArr = instances.slice(0);
+			
+		for (i = 0; i < instanceArr.length; i += 1) {
+			unpauseSound(instanceArr[i]);
+		}
+	};
+	
+	// Mute all sound
+	speaker.mute = function () {
+	
+		if (!muted) {
+			muted = true;
+// TODO: mute all sounds
+		}
+	};
+	
+	// Unmute all sound
+	speaker.unmute = function () {
+	
+		if (muted) {
+			muted = false;
+// TODO: unmute all sounds
+		}
+	};
+	
+	speaker.isMuted = function () {
+		
+		return muted;	
+	};
+	
+	// Load the audio element
+	speaker.load = function () {
+
+		if (!loadStarted) {
+			loadStarted = true;
+			
+			createLoadTimer();
+			
+			load();
+		}
+	};
+	
+	// Return if audio is ready to be played
+	speaker.isReady = function () {
+	
+		return ready;
+	};
+	
+	speaker.createSound = function (spec) {
+
+		sounds[spec.name] = {
+			name: spec.name,
+			start: spec.start,
+			end: spec.end,
+			loop: spec.loop
+		};
+//BLOCKS.debug("Create Sound: " + spec.name);
+		if (!files[spec.src]) {
+			files[spec.src] = {
+				src: spec.src
+			};
+			loadFile(files[spec.src]);
+//BLOCKS.debug("Load Sound: " + spec.src);
+		}
+		
+		sounds[spec.name].file = files[spec.src];
+	};
+	
+	speaker.getActiveSoundInstances = function () {
+	
+		return instances;
+	};
+	
+	speaker.getNumFiles = function () {
+	
+		var key, totalNumFiles;
+
+		totalNumFiles = 0;
+		
+		// Determine load progress
+		for (key in files) {
+			if (files.hasOwnProperty(key)) {
+				totalNumFiles += 1;
+			}
+		}
+		
+		return totalNumFiles;
+	};
+	
+	speaker.getNumFilesLoaded = function () {
+	
+		var key, numFilesLoaded;
+			
+		numFilesLoaded = 0;
+		
+		// Determine load progress
+		for (key in files) {
+			if (files.hasOwnProperty(key)) {
+				if (files[key].loaded) {
+					numFilesLoaded += 1;
+				}
+			}
+		}
+		
+		return numFilesLoaded;
+	};
+	
+	speaker.getCurrentTime = function () {
+		
+		// Since multiple sounds could be playing this returns nothing
+		return null;
+	};
+	
+	speaker.multipleTracksSupported = true;
+
+	(function () {
+	
+		extension = ".mp3";
+
+	}());
+	
+	return speaker;
+};
+
 BLOCKS.speaker = function (spec) {
 	
 	"use strict";
@@ -1051,7 +1672,9 @@ BLOCKS.speaker = function (spec) {
 			spec = {};
 		}
 		
-		if ((typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') && spec.webAudioEnabled !== false) {
+		if (spec.audioPlayerType === "multiAudioElementPlayer") {
+			speaker = BLOCKS.audio.multiAudioElementPlayer(spec);
+		} else if ((typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') && spec.webAudioEnabled !== false) {
 			speaker = BLOCKS.audio.webAudioPlayer(spec);
 		} else {
 			speaker = BLOCKS.audio.audioElementPlayer(spec);
