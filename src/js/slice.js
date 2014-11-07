@@ -56,11 +56,11 @@ BLOCKS.slice = function (options) {
 			if (spec.sourceHeight > frameHeight) {
 				spec.sourceHeight = frameHeight;
 			}
-			if (spec.destWidth > slice.width) {
-				spec.destWidth = slice.width;
+			if (spec.destWidth > slice.width / slice.layer.scale) {
+				spec.destWidth = slice.width / slice.layer.scale;
 			}
-			if (spec.destHeight > slice.height) {
-				spec.destHeight = slice.height;
+			if (spec.destHeight > slice.height / slice.layer.scale) {
+				spec.destHeight = slice.height / slice.layer.scale;
 			}
 			
 //BLOCKS.debug("render: " + spec.image + ", " + spec.sourceX + ", " + spec.sourceY + ", " + spec.sourceWidth + ", " + spec.sourceHeight + ", " + spec.destX + ", " + spec.destY + ", " + spec.destWidth + ", " + spec.destHeight);	
