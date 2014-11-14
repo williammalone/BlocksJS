@@ -406,7 +406,7 @@ BLOCKS.slice = function (options) {
 	
 		var newFrameCnt = Math.floor(slice.frameDelay * (frameIndex - Math.floor(frameIndex)) / 100);
 		frameIndex = Math.floor(frameIndex);
-	
+
 		if (curFrameIndex !== frameIndex || frameCnt !== newFrameCnt) {
 			curFrameIndex = frameIndex;
 			
@@ -430,6 +430,16 @@ BLOCKS.slice = function (options) {
 	};
 	
 	options = options || {};
+	
+
+	Object.defineProperty(slice, "currentFrameIndex", {
+		get: function () {
+			return curFrameIndex;
+		},
+		set: function (value) {
+			slice.gotoFrame(value);
+		}
+	});
 	
 	cropWidth = options.cropWidth;
 	Object.defineProperty(slice, "cropWidth", {
