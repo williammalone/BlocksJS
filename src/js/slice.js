@@ -27,6 +27,8 @@ BLOCKS.slice = function (options) {
 		drawBounds = false,
 		frameCnt = 0,
 		loopIndex = 0,
+		rowIndex = 0,
+		colIndex = 0,
 		curFrameIndex = 0,
 		
 		// Private Methods
@@ -39,12 +41,12 @@ BLOCKS.slice = function (options) {
 			
 			// Set the sprite dimensions to the image dimensions  
 			// Note: Divide the width by the number of frames in the sprite sheet if an animation. If the sprite is only an image then the number of frames will be 1.
-			
+		
 			if (imageResource) {
-				frameWidth = imageResource.image.width / slice.numberOfFrames;
-				frameHeight = imageResource.image.height;
-				slice.width = imageResource.image.width / slice.numberOfFrames;
-				slice.height = imageResource.image.height;
+				frameWidth = imageResource.image.width / slice.numberOfColumns;
+				frameHeight = imageResource.image.height / slice.numberOfRows;
+				slice.width = imageResource.image.width / slice.numberOfColumns;
+				slice.height = imageResource.image.height / slice.numberOfRows;
 			}
 		},
 		
@@ -79,9 +81,10 @@ BLOCKS.slice = function (options) {
 		};
 	
 	slice.loop = options && options.loop;
-	
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
+	slice.numberOfRows = (options && options.numberOfRows) || 1;
+	slice.numberOfColumns = (options && options.numberOfColumns) ? options.numberOfColumns : slice.numberOfFrames;
 	slice.autoPlay = (options && options.autoPlay !== undefined) ? options.autoPlay : true;
 	slice.resetOnComplete = (options && options.resetOnComplete !== undefined) ? options.resetOnComplete : true;
 	
@@ -109,6 +112,8 @@ BLOCKS.slice = function (options) {
 							if (slice.loop === true || (typeof slice.loop === "number" && loopIndex < slice.loop)) {
 								// Reset the frame back to the first frame
 								curFrameIndex = 0;
+								rowIndex = 0;
+								colIndex = 0;
 								slice.dirty = true;
 							
 							} else {
@@ -116,6 +121,8 @@ BLOCKS.slice = function (options) {
 								if (slice.resetOnComplete) {
 									// Reset the frame back to the first frame
 									curFrameIndex = 0;
+									rowIndex = 0;
+									colIndex = 0;
 									slice.dirty = true;
 								}
 								paused = true;
@@ -138,11 +145,24 @@ BLOCKS.slice = function (options) {
 								}());
 							}
 						}
+					// If the current frame is not the last frame
 					} else {
 	
 						if (frameCnt >= slice.frameDelay) {
+							
+
 							// Go to the next frame
 							curFrameIndex += 1;
+							
+							if (slice.numberOfColumns > 1) {
+								if (curFrameIndex - rowIndex * slice.numberOfColumns === slice.numberOfColumns) {
+									colIndex = 0;
+									rowIndex += 1;
+								} else {
+									colIndex += 1;
+								}
+							}						
+							
 							frameCnt = 0;
 							
 							slice.dirty = true;
@@ -173,6 +193,8 @@ BLOCKS.slice = function (options) {
 		frameCnt = 0;
 		curFrameIndex = 0;
 		loopIndex = 0;
+		rowIndex = 0;
+		colIndex = 0;
 	};
 	
 	slice.stop = function () {
@@ -281,8 +303,8 @@ BLOCKS.slice = function (options) {
 							drawImage({
 								ctx: context,
 								image: imageResource.image,
-								sourceX: curFrameIndex * slice.width / slice.scale + slice.frameOffsetX,
-								sourceY: slice.frameOffsetY,
+								sourceX: colIndex * slice.width / slice.scale + slice.frameOffsetX,
+								sourceY: rowIndex * slice.height / slice.scale + slice.frameOffsetY,
 								sourceWidth: slice.cropWidth || frameWidth, 
 								sourceHeight: slice.cropHeight || frameHeight, 
 								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,
@@ -374,6 +396,8 @@ BLOCKS.slice = function (options) {
 	
 		if (curFrameIndex !== slice.numberOfFrames - 1) {
 			curFrameIndex = slice.numberOfFrames - 1;
+			rowIndex = slice.numberOfRows;
+			colIndex = slice.numberOfColumns;
 			slice.dirty = true;
 		}
 	};
@@ -385,6 +409,10 @@ BLOCKS.slice = function (options) {
 	
 		if (curFrameIndex !== frameIndex || frameCnt !== newFrameCnt) {
 			curFrameIndex = frameIndex;
+			
+			rowIndex = Math.floor(curFrameIndex / slice.numberOfColumns);
+			colIndex = curFrameIndex - rowIndex * slice.numberOfColumns;
+
 			frameCnt = newFrameCnt;
 			slice.dirty = true;
 		}
