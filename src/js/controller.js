@@ -135,7 +135,6 @@ BLOCKS.controller = function (element) {
 				break;
 				
 			case "drag": 
-				controller.drag = true;
 				controller.dispatchEvent("drag", e);
 				
 				break;    
