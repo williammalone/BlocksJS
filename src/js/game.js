@@ -484,8 +484,8 @@ BLOCKS.game = function (spec, element) {
 			game.scale = newGameWidth / game.width;
 			
 			// Define the camera
-			game.camera.x = -Math.min(newGameX, 0) / game.scale;
-			game.camera.y = -Math.min(newGameY, 0) / game.scale;
+			game.camera.offsetX = -Math.min(newGameX, 0) / game.scale;
+			game.camera.offsetY = -Math.min(newGameY, 0) / game.scale;
 			game.camera.width = (viewport.width - Math.max(newGameX, 0) * 2) / game.scale;
 			game.camera.height = (viewport.height - Math.max(newGameY, 0) * 2) / game.scale;
 			
@@ -501,8 +501,8 @@ BLOCKS.game = function (spec, element) {
 			// Tell the controller the game dimensions
 			game.controller.scaleX = (game.width / newGameWidth) * game.pixelMultiplier;
 			game.controller.scaleY = (game.height / newGameHeight) * game.pixelMultiplier;
-			game.controller.offsetX = -game.camera.x * game.scale / game.pixelMultiplier;
-			game.controller.offsetY = -game.camera.y * game.scale / game.pixelMultiplier;
+			game.controller.offsetX = -game.camera.offsetX * game.scale / game.pixelMultiplier;
+			game.controller.offsetY = -game.camera.offsetY * game.scale / game.pixelMultiplier;
 
 			for (i = 0; i < game.layers.length; i += 1) {			
 				game.layers[i].width = game.camera.width;

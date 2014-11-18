@@ -229,8 +229,8 @@ BLOCKS.slice = function (options) {
 		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0) {
 		
 			cameraOffset = {
-				x: (e && e.camera && e.camera.x) || 0,
-				y: (e && e.camera && e.camera.y) || 0
+				x: (e && e.camera && e.camera.offsetX) || 0,
+				y: (e && e.camera && e.camera.offsetY) || 0
 			};
 			
 			// Set local x and y to increases performance when slice is associated to a stack 
