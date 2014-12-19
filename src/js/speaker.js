@@ -610,7 +610,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 
 			window.clearTimeout(inst.timeout);
 			
-			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000;
+			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000 % inst.source.buffer.duration;
 		
 			if (inst.source.stop) {
 				inst.source.stop(0);
@@ -1240,15 +1240,17 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 
 			window.clearTimeout(inst.timeout);
 			
-			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000;
+			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000 % inst.sound.file.audioElement.duration;
+			
+			inst.sound.file.audioElement.pause();
 		
-			if (inst.source.stop) {
-				inst.source.stop(0);
-			} else if (inst.source.noteGrainOff) {
-				inst.source.noteGrainOff(0);
-			} else {					
-				inst.source.noteOff(0);
-			}
+			//if (inst.source.stop) {
+			//	inst.source.stop(0);
+			//} else if (inst.source.noteGrainOff) {
+			//	inst.source.noteGrainOff(0);
+			//} else {					
+			//	inst.source.noteOff(0);
+			//}
 			
 			//if (speaker.debug) {
 			//	BLOCKS.debug("Pause sound: '" + inst.name + "' at scrubber position of " + inst.currentTime.toFixed(2));
@@ -1264,11 +1266,12 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			//}
 		
 			// Play a new instance of the sound
-			newInst = playSound(inst.name, inst.callback, inst.track.name, inst.currentTime);
+			//newInst = playSound(inst.name, inst.callback, inst.track.name, inst.currentTime);
+			newInst = playSound(inst.name, inst.callback, null, inst.currentTime);
 
-			if (inst.gain.gain.value !== 1) {
-				setSoundGain(newInst, inst.gain.gain.value);
-			}
+			//if (inst.gain.gain.value !== 1) {
+			//	setSoundGain(newInst, inst.gain.gain.value);
+			//}
 			
 			// Delete the old instance
 			destroyInstance(inst);
