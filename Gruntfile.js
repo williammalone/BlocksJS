@@ -38,7 +38,7 @@ module.exports = function(grunt) {
             files: [
                 {
                     expand: true, 
-                    cwd: '',
+                    cwd: 'src',
                     src: '**',
                     dest: 'archive/<%= pkg.version %>/', 
                     filter: 'isFile'

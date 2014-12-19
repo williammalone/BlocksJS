@@ -1,1 +1,0 @@
-William Malone (http://williammalone.com)
