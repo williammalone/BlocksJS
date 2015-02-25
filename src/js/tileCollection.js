@@ -127,18 +127,14 @@ BLOCKS.tileCollection = function (options) {
 					spec.sourceX = 0;
 					spec.destX = tilePos.x + x - spec.camera.offsetX;
 					spec.sourceWidth = spec.camera.width + spec.camera.offsetX - (tilePos.x + x);
-if (collection.name === "surface" && spec.column === 0) {
-BLOCKS.debug(collection.name + ": If tile outside bounds on the right only: sourceX: " + spec.sourceX + ", sourceWidth: " + spec.sourceWidth + ", x: " + x +", tilePos.x: " + tilePos.x + ", spec.camera.x: " + spec.camera.x);
-}
+//BLOCKS.debug(collection.name + ": If tile outside bounds on the right only: sourceX: " + spec.sourceX + ", sourceWidth: " + spec.sourceWidth + ", x: " + x +", tilePos.x: " + tilePos.x + ", spec.camera.x: " + spec.camera.x);
 				// If tile is inside bounds on the left and right
 				} else {
 					spec.sourceX = 0;
 					spec.destX = x - spec.camera.offsetX + tilePos.x;
 					spec.sourceWidth = tileWidth;
 
-if (collection.name === "surface" && spec.column === 0) {
-BLOCKS.debug(collection.name + ": If tile inside horizontal bounds: sourceX: " + spec.sourceX + ", sourceWidth: " + spec.sourceWidth + ", x: " + x +", tilePos.x: " + tilePos.x + ", spec.camera.x: " + spec.camera.x);
-}
+//BLOCKS.debug(collection.name + ": If tile inside horizontal bounds: sourceX: " + spec.sourceX + ", sourceWidth: " + spec.sourceWidth + ", x: " + x +", tilePos.x: " + tilePos.x + ", spec.camera.x: " + spec.camera.x);
 				}
 				
 				// If tile outside bounds on the top (maybe bottom too)
