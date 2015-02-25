@@ -115,45 +115,47 @@ BLOCKS.tileCollection = function (options) {
 						spec.sourceWidth =  spec.camera.width;
 					// If outside bounds on the left but not the right
 					} else {
-						spec.sourceWidth = tileWidth - tilePos.x;
+						spec.sourceWidth = tileWidth + tilePos.x;
 					}
-	//BLOCKS.debug(collection.name + ": If tile outside bounds on the left: sourceWidth: " + spec.sourceWidth);
+//BLOCKS.debug(collection.name + ": If tile outside bounds on the left: sourceWidth: " + spec.sourceWidth);
 				// If tile outside bounds on the right only
 				} else if (tilePos.x + tileWidth > x + spec.camera.offsetX + spec.camera.width) {
 					spec.sourceX = 0;
 					spec.destX = tilePos.x + x - spec.camera.offsetX;
 					spec.sourceWidth = spec.camera.width + spec.camera.offsetX - (tilePos.x + x);
-	//BLOCKS.debug(collection.name + ": If tile outside bounds on the right: destX: sourceWidth: " + spec.sourceWidth);
+//BLOCKS.debug(collection.name + ": If tile outside bounds on the right: destX: sourceWidth: " + spec.sourceWidth);
 				// If tile is inside bounds on the left and right
 				} else {
 					spec.sourceX = 0;
 					spec.destX = x - spec.camera.offsetX + tilePos.x;
 					spec.sourceWidth = tileWidth;
-	//BLOCKS.debug(collection.name + ": If tile inside horizontal bounds: sourceWidth: " + spec.sourceWidth);
+//BLOCKS.debug(collection.name + ": If tile inside horizontal bounds: sourceWidth: " + spec.sourceWidth);
 				}
 				
 				// If tile outside bounds on the top (maybe bottom too)
 				if (tilePos.y + y + spec.camera.offsetY < 0) {
-	
+
 					spec.sourceY = -tilePos.y - y + spec.camera.offsetY;
 					spec.destY = 0;
 					
 					// If outside bounds on the bottom too
 					if (tilePos.y + tileHeight > spec.camera.height) {
-						spec.sourceHeight =  spec.camera.height;
+						spec.sourceHeight = spec.camera.height;
 					// If outside bounds on the top but not the bottom
 					} else {
 						spec.sourceHeight = tileHeight - tilePos.y;
 					}
-	//BLOCKS.debug(collection.name + "(" + spec.id + "): If tile outside bounds on the top: sourceY: " + spec.sourceY + ", sourceHeight: " + spec.sourceHeight + ", y: " + y +", tilePos.y: " + tilePos.y);
+
+//BLOCKS.debug(collection.name + "(" + spec.id + "): If tile outside bounds on the top: sourceY: " + spec.sourceY + ", sourceHeight: " + spec.sourceHeight + ", y: " + y +", tilePos.y: " + tilePos.y + ", spec.camera.y: " + spec.camera.y);
+
 				// If tile outside bounds on the bottom only
 				} else if (tilePos.y + tileHeight > y + spec.camera.offsetY + spec.camera.height) {
-	
+					
 					spec.sourceY = 0;
 					spec.destY = tilePos.y + y - spec.camera.offsetY;
 					spec.sourceHeight = spec.camera.height + spec.camera.offsetY - (tilePos.y + y);
 					
-	//BLOCKS.debug(collection.name + ": If tile outside bounds on the bottom: destY: " + spec.destY);
+//BLOCKS.debug(collection.name + ": If tile outside bounds on the bottom: destY: " + spec.destY);
 					
 				// If tile is inside bounds on the top and bottom
 				} else {
@@ -161,14 +163,14 @@ BLOCKS.tileCollection = function (options) {
 					spec.sourceY = 0;
 					spec.destY = y - spec.camera.offsetY + tilePos.y;
 					spec.sourceHeight = tileHeight;
-	//BLOCKS.debug(collection.name + ": If tile inside vertical bounds: destY: " + spec.destY);
+//BLOCKS.debug(collection.name + ": If tile inside vertical bounds: destY: " + spec.destY);
 				}
 				
 				spec.destWidth = spec.sourceWidth;
 				spec.destHeight = spec.sourceHeight;
 	
-	//BLOCKS.debug(spec.id + ": " + spec.sourceWidth + ", x: " + x + ", spec.sourceX: " + spec.sourceX + ", spec.destX: " + spec.destX);
-	//BLOCKS.debug(spec.id + " > spec.sourceHeight: " + spec.sourceHeight + ", y: " + y + ", spec.sourceY: " + spec.sourceY + ", spec.destY: " + spec.destY);
+//BLOCKS.debug(spec.id + ": " + spec.sourceWidth + ", x: " + x + ", spec.sourceX: " + spec.sourceX + ", spec.destX: " + spec.destX);
+//BLOCKS.debug(spec.id + " > spec.sourceHeight: " + spec.sourceHeight + ", y: " + y + ", spec.sourceY: " + spec.sourceY + ", spec.destY: " + spec.destY);
 	
 				if (spec.sourceWidth && spec.sourceHeight) {
 			
@@ -204,7 +206,7 @@ BLOCKS.tileCollection = function (options) {
 	collection.render = function (e) {
 		
 		var i, j, minColIndex, maxColIndex, minRowIndex, maxRowIndex;
-		
+
 		if (dirty && visible) {
 			
 			minColIndex = Math.floor((e.camera.x * speed - x) / tileWidth);
@@ -212,10 +214,6 @@ BLOCKS.tileCollection = function (options) {
 			
 			minRowIndex = Math.floor((e.camera.y * speed - y) / tileHeight);
 			maxRowIndex = Math.floor((e.camera.y * speed - y + e.camera.height + e.camera.offsetY) / tileHeight);
-
-//if (collection.name === "bg") {
-//BLOCKS.debug(collection.name + " >  minColIndex: " + minColIndex + ", maxColIndex: " + maxColIndex + ", minRowIndex: " + minRowIndex + ", maxRowIndex: " + maxRowIndex);
-//}
 			
 			for (i = minColIndex; i <= maxColIndex; i += 1) {
 				for (j = minRowIndex; j <= maxRowIndex; j += 1) { 
