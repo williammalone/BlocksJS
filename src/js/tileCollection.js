@@ -215,7 +215,7 @@ BLOCKS.tileCollection = function (options) {
 
 		if (dirty && visible) {
 			
-			collection.layer.context.save();
+			collection.layer.ctx.save();
 			collection.layer.ctx.globalAlpha = alpha;
 			
 			minColIndex = Math.floor((e.camera.x * speed - x) / tileWidth);
@@ -268,7 +268,7 @@ BLOCKS.tileCollection = function (options) {
 				}
 			}
 			
-			collection.layer.context.restore();
+			collection.layer.ctx.restore();
 		}
 		dirty = false;
 	};
