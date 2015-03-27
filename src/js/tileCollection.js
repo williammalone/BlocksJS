@@ -37,6 +37,7 @@ BLOCKS.tileCollection = function (options) {
 		visible,
 		prevCamera,
 		speed,
+		loopX,
 		
 		motorDestroyed = function (motor) {
 			
@@ -210,22 +211,45 @@ BLOCKS.tileCollection = function (options) {
 	
 	collection.render = function (e) {
 		
-		var i, j, minColIndex, maxColIndex, minRowIndex, maxRowIndex;
+		var i, j, minColIndex, maxColIndex, minRowIndex, maxRowIndex, col, row;
 
 		if (dirty && visible) {
 			
 			minColIndex = Math.floor((e.camera.x * speed - x) / tileWidth);
-			maxColIndex = Math.floor((e.camera.x * speed + e.camera.width + e.camera.offsetX) / tileWidth);
-			
+			if (loopX) {
+//BLOCKS.debug("minColIndex: " + minColIndex);
+				maxColIndex = Math.ceil((e.camera.x + e.camera.width + e.camera.offsetX) / tileWidth) - 1;
+//BLOCKS.debug("maxColIndex: " + maxColIndex);
+//BLOCKS.debug(Math.floor((e.camera.x * speed - x) / tileWidth) + " -      " + minColIndex + " > " + maxColIndex + "    - " + tileIndexArray[0].length);
+			} else {
+				maxColIndex = Math.floor((e.camera.x * speed + e.camera.width + e.camera.offsetX) / tileWidth);
+			}			
 			minRowIndex = Math.floor((e.camera.y * speed - y) / tileHeight);
 			maxRowIndex = Math.floor((e.camera.y * speed - y + e.camera.height + e.camera.offsetY) / tileHeight);
 			
 			for (i = minColIndex; i <= maxColIndex; i += 1) {
 				for (j = minRowIndex; j <= maxRowIndex; j += 1) { 
+
+					// Enable looping					
+					if (loopX && tileIndexArray[j]) {
+						//BLOCKS.debug("(" + i + ", " + j + "): " + i + " >=" + tileIndexArray[j].length);
+						if (i >= tileIndexArray[j].length) {
+							col = i % tileIndexArray[j].length;
+					//BLOCKS.debug(j + ": minColIndex out of range: " + minColIndex + ", " + i + " > " + col);
+						} else {
+							col = i;
+					//BLOCKS.debug(j + ": minColIndex in range: " + i);
+						}
+					} else {
+						col = i;	
+					}
+					row = j;
 					
-					if (tileIndexArray && tileIndexArray[j] && tileIndexArray[j][i]) {
+					if (tileIndexArray && tileIndexArray[row] && tileIndexArray[row][col]) {
+					
+						
 						drawTile({
-							id: tileIndexArray[j][i],
+							id: tileIndexArray[row][col],
 							row: j,
 							column: i,
 							camera: {
@@ -405,6 +429,18 @@ BLOCKS.tileCollection = function (options) {
 		set: function (value) {
 			if (speed !== value) {
 				speed = value;
+			}
+		}
+	});
+	
+	loopX = options.loopX;
+	Object.defineProperty(collection, "loopX", {
+		get: function () {
+			return loopX;
+		},
+		set: function (value) {
+			if (loopX !== value) {
+				loopX = value;
 			}
 		}
 	});
