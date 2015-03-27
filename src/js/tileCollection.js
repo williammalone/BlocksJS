@@ -215,6 +215,8 @@ BLOCKS.tileCollection = function (options) {
 
 		if (dirty && visible) {
 			
+			collection.layer.ctx.globalAlpha = alpha;
+			
 			minColIndex = Math.floor((e.camera.x * speed - x) / tileWidth);
 			if (loopX) {
 //BLOCKS.debug("minColIndex: " + minColIndex);
