@@ -211,11 +211,11 @@ BLOCKS.tileCollection = function (options) {
 	
 	collection.render = function (e) {
 		
-		var i, j, minColIndex, maxColIndex, minRowIndex, maxRowIndex, col, row;
+		var i, j, minColIndex, maxColIndex, minRowIndex, maxRowIndex, col, row, previousAlpha;
 
 		if (dirty && visible) {
 			
-			collection.layer.ctx.save();
+			previousAlpha = collection.layer.ctx.globalAlpha;
 			collection.layer.ctx.globalAlpha = alpha;
 			
 			minColIndex = Math.floor((e.camera.x * speed - x) / tileWidth);
@@ -268,7 +268,7 @@ BLOCKS.tileCollection = function (options) {
 				}
 			}
 			
-			collection.layer.ctx.restore();
+			collection.layer.ctx.globalAlpha = previousAlpha;
 		}
 		dirty = false;
 	};
@@ -342,6 +342,7 @@ BLOCKS.tileCollection = function (options) {
 		}
 	});
 	
+	alpha = options.alpha || 1;
 	Object.defineProperty(collection, "alpha", {
 		get: function () {
 			return alpha !== undefined ? alpha : 1;
