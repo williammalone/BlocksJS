@@ -217,7 +217,7 @@ BLOCKS.slice = function (options) {
 	
 	slice.render = function (e) {
 	
-		var i, bounds, restoreNeeded, context, cameraOffset, x, y, destCropWidth, destCropHeight;
+		var i, bounds, boundingBox, restoreNeeded, context, cameraOffset, x, y, destCropWidth, destCropHeight;
 		
 		// Prevent alpha from being negative
 		if (slice.alpha < 0) {
@@ -385,6 +385,14 @@ BLOCKS.slice = function (options) {
 						context.arc((x - cameraOffset.x) / slice.layer.scale, (y - cameraOffset.y) / slice.layer.scale, 7, 0, 2 * Math.PI, false);
 						context.fillStyle = "rgba(96, 255, 0, 0.5)";
 						context.fill();
+						
+						boundingBox = slice.getBoundingBox();
+						if (boundingBox.x !== bounds[0].x || boundingBox.y !== bounds[0].y || boundingBox.width !== bounds[0].width || boundingBox.height !== bounds[0].height) {
+							context.beginPath();
+							context.strokeStyle = "rgba(244, 246, 0, 0.5)";
+							context.strokeRect((boundingBox.x - cameraOffset.x) / slice.layer.scale, (boundingBox.y - cameraOffset.y) / slice.layer.scale, boundingBox.width / slice.layer.scale, boundingBox.height / slice.layer.scale);
+							context.closePath();
+						}
 					}
 				//}
 			}
