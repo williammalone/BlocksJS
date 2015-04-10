@@ -132,20 +132,31 @@ BLOCKS.block = function (options) {
 	
 	block.removeMotors = function (type) {
 		
-		var i, motorArr = [];
+		var i, 
+			motorsToDestroy = [],
+			newMotorArr = [];
 		
+		// Mark all motors to be destroyed. Don't destroy them yet because
+		//   the motors array will change because an event is dispatched
+		//   when the destroy method is called which alters the motor array
 		for (i = 0 ; i < motors.length; i += 1)  {
 			if (type) {
 				if (motors[i].type === type) {
-					motors[i].destroy();
+					motorsToDestroy.push(motors[i]);
 				} else {
-					motorArr.push(motors[i]);
+					newMotorArr.push(motors[i]);
 				}
 			} else {
-				motors[i].destroy();
+				motorsToDestroy.push(motors[i]);
 			}
 		}
-		motors = motorArr;
+		
+		// Destroy all motors marked for destruction
+		for (i = 0 ; i < motorsToDestroy.length; i += 1)  {
+			motorsToDestroy[i].destroy();
+		}
+		
+		motors = newMotorArr;
 	};
 	
 	block.destroy = function () {
