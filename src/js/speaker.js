@@ -1182,8 +1182,12 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 
 		stopSound = function (inst) {
 		
-			window.clearTimeout(inst.timeout);
-
+			if (inst.timeout) {
+				window.clearTimeout(inst.timeout);
+			}
+			if (inst.fadeTimeout) {
+				window.clearTimeout(inst.fadeTimeout);
+			}
 			/*
 			if (inst.source.stop) {
 				inst.source.stop(0);
@@ -1205,35 +1209,31 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		},
 		
 		setSoundGain = function (inst, gainValue, delay) {
-		
-// TODO: support a fade in and out with the delay property
-			inst.sound.file.audioElement.volume = gainValue;
-		
-			/*
-			// If the sound doesn't have its own gain then create its own gain we can change
-			if (inst.gain === inst.track.gain) {
-				
-				// Disconnect the source from its track gain node
-				inst.source.disconnect(0);
-				
-				// Create a new gain
-				inst.gain = (ctx.createGain) ? ctx.createGain() : ctx.createGainNode();
-				inst.gain.connect(masterGain);
-				
-				// Connect the source to the new gain
-				inst.source.connect(inst.gain);
+			
+			var fadeInterval = 10;
+			
+			// Clear previous fade if it's still going
+			if (inst.fadeTimeout) {
+				inst.sound.file.audioElement.volume = inst.fadeTarget;
+				window.clearInterval(inst.fadeTimeout);
+				inst.fadeTarget = 0;
+				inst.fadeAmount = 0;
 			}
-			if (speaker.debug) {
-				BLOCKS.debug("speaker.setSoundGain of sound '" + inst.name + "' to '" + gainValue + "'");
-			}			
-			// If the gain should be faded out
+		
 			if (delay) {
-				inst.gain.gain.linearRampToValueAtTime(inst.gain.gain.value, ctx.currentTime);
-				inst.gain.gain.linearRampToValueAtTime(gainValue, ctx.currentTime + delay);
+
+				// Create timer to fade the gain over time
+				inst.fadeTarget = gainValue;
+				inst.fadeAmount = (gainValue - inst.sound.file.audioElement.volume) / ((delay * 1000) / fadeInterval);
+				inst.fadeTimeout = window.setInterval(function () {
+					if (inst.sound.file.audioElement.volume === inst.fadeTarget) {
+						window.clearInterval(inst.fadeTimeout);
+					}
+					inst.sound.file.audioElement.volume += inst.fadeAmount;
+				}, fadeInterval);
 			} else {
-				inst.gain.gain.value = gainValue;
+				inst.sound.file.audioElement.volume = gainValue;
 			}
-			*/
 		},
 		
 		pauseSound = function (inst) {
@@ -1243,18 +1243,6 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000 % inst.sound.file.audioElement.duration;
 			
 			inst.sound.file.audioElement.pause();
-		
-			//if (inst.source.stop) {
-			//	inst.source.stop(0);
-			//} else if (inst.source.noteGrainOff) {
-			//	inst.source.noteGrainOff(0);
-			//} else {					
-			//	inst.source.noteOff(0);
-			//}
-			
-			//if (speaker.debug) {
-			//	BLOCKS.debug("Pause sound: '" + inst.name + "' at scrubber position of " + inst.currentTime.toFixed(2));
-			//}
 		},
 		
 		unpauseSound = function (inst) {
@@ -1264,15 +1252,9 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			//if (speaker.debug) {
 			//	BLOCKS.debug("Unpause sound: '" + inst.name + "'");
 			//}
-		
-			// Play a new instance of the sound
-			//newInst = playSound(inst.name, inst.callback, inst.track.name, inst.currentTime);
+
 			newInst = playSound(inst.name, inst.callback, null, inst.currentTime);
 
-			//if (inst.gain.gain.value !== 1) {
-			//	setSoundGain(newInst, inst.gain.gain.value);
-			//}
-			
 			// Delete the old instance
 			destroyInstance(inst);
 		},
