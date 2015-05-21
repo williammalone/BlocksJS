@@ -144,11 +144,9 @@ BLOCKS.motor = function (spec) {
 	"use strict";
 	
 	// Private Properties
-	var motor;
-		
-	if (spec.type === "move") {
+	var motor,
 	
-		motor = (function (spec) {
+		moveMotor = function (spec) {
 
 			// Private Properties
 			var motor = BLOCKS.eventDispatcher(),
@@ -266,8 +264,163 @@ BLOCKS.motor = function (spec) {
 				totalTicks = totalDist / speed;
 			}());
 			
+			Object.defineProperty(motor, "curOffset", {
+				get: function () {
+					return curOffset;
+				}
+			});
+			
 			return motor;
-		}(spec));
+		},
+		
+		vibrateMotor = function (spec) {
+
+			// Private Properties
+			var motor = BLOCKS.eventDispatcher(),
+				destroyed = false,
+				clock = spec.clock,
+				object = spec.object,
+				callback = spec.callback,
+				amplitude = spec.amplitude || 10,
+				angle = spec.angle * Math.PI / 180 || 0,
+				duration = spec.duration,
+				timesToVibrate = spec.amount,
+				timesVibrated = 0,
+				direction = 1,
+				timesTillReverseDirection,
+				curMoveMotor,
+				curOffset = {
+					x: 0,
+					y: 0
+				},
+				vibrationComplete,
+				
+				createMoveMotor = function () {
+					
+					var dx, dy;
+					
+					dx = amplitude * direction * Math.cos(angle);
+					dy = amplitude * direction * Math.sin(angle);
+					
+					curMoveMotor = moveMotor({
+						object: object,
+						x: dx,
+						y: dy,
+						duration: duration / (timesToVibrate * 2),
+						clock: clock,
+						callback: function () {
+							
+							curOffset.x += dx;
+							curOffset.y += dy;
+							moveMotorComplete();
+						}
+					});
+					
+					curMoveMotor.addEventListener("tick", motor.tick);
+				},
+				
+				moveMotorComplete = function () {
+					
+					timesVibrated += 1;
+					timesTillReverseDirection += 1;
+					
+					if (timesTillReverseDirection >= 2) {
+						timesTillReverseDirection = 0;
+						direction *= -1;
+					}
+					
+					if (curMoveMotor) {
+						curMoveMotor.removeEventListener("tick", motor.tick);
+					}
+				
+					if (timesVibrated >= timesToVibrate) {
+						
+						vibrationComplete = true;
+						
+						motor.dispatchEvent("complete", motor);
+						
+						if (callback) {
+							callback();
+						}
+						if (motor) {
+							motor.destroy();
+						}
+					} else {
+						createMoveMotor();
+					}
+				};
+			
+			// Public Methods
+			motor.tick = function () {
+			
+				if (!destroyed) {	
+					motor.dispatchEvent("tick");
+				}
+			};
+			
+			motor.reset = function () {
+			
+				if (!destroyed) {	
+					
+					if (timesTillReverseDirection === 1) {
+						timesVibrated = -2;
+					} else if (timesTillReverseDirection === 0) {
+						timesVibrated = -1;
+					}
+				}
+			};
+			
+			motor.destroy = function () {
+	
+				if (!destroyed) {
+					destroyed = true;
+
+					if (curMoveMotor) {
+						curOffset.x += curMoveMotor.curOffset.x;
+						curOffset.y += curMoveMotor.curOffset.y;
+						curMoveMotor.destroy();
+					}
+					
+					if (!vibrationComplete) {
+						object.x -= curOffset.x;
+						object.y -= curOffset.y;
+					}
+					
+					motor.dispatchEvent("destroyed", motor);
+					motor = null;
+				}
+			};
+			
+			(function () {
+				if (!object) {
+					BLOCKS.error("A vibrate motor will not work without an object");
+					return null;
+				}
+				
+				if (!duration) {
+					BLOCKS.error("A vibrate motor will not work without a duration");
+					return null;
+				}
+				
+				if (!spec.amount) {
+					BLOCKS.error("A vibrate motor will not work without an amount");
+					return null;
+				}
+
+				timesTillReverseDirection = 1;
+				createMoveMotor();
+			}());
+			
+			return motor;
+		};
+		
+	if (spec.type === "move") {
+	
+		motor = moveMotor(spec);
+		
+	} else if (spec.type === "vibrate") {
+	
+		motor = vibrateMotor(spec);
 		
 	} else if (spec.type === "drag") {
 	
