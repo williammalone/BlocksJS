@@ -707,17 +707,17 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 						BLOCKS.debug("Play sound: " + name + " (" + sounds[name].start + " - " + sounds[name].end + "), src: " + sounds[name].file.src + extension);
 					}
 				}
-				
+							
 				// Play the sound
 				if (inst.source.start) {
 					// If an offset is specified then add the start time and duration parameters
 					if (inst.currentTime) {
-						inst.source.start(inst.delay, inst.currentTime, inst.source.buffer.duration - inst.currentTime);
+						inst.source.start(inst.delay, inst.currentTime/*, inst.source.buffer.duration - inst.currentTime*/);
 					} else {
 						inst.source.start(inst.delay);
 					}
 				} else if (inst.source.noteGrainOn) {
-					inst.source.noteGrainOn(inst.delay, inst.currentTime, inst.source.buffer.duration - inst.currentTime);
+					inst.source.noteGrainOn(inst.delay, inst.currentTime/*, inst.source.buffer.duration - inst.currentTime*/);
 				}
 				
 				return inst;
@@ -905,7 +905,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	// Mute all sound
 	speaker.mute = function () {
-	
+
 		if (!muted) {
 			muted = true;
 			masterGain.gain.value = 0;
@@ -914,7 +914,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	// Unmute all sound
 	speaker.unmute = function () {
-	
+
 		if (muted) {
 			muted = false;
 			masterGain.gain.value = 1;
