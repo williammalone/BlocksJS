@@ -435,6 +435,9 @@ BLOCKS.motor = function (spec) {
 				verticalOnly = spec.verticalOnly,
 				draggingObject,
 				destroyed = false,
+				snapToRegistrationPoint = spec.snapToRegistrationPoint,
+				offsetX,
+				offsetY,
 				
 				convertToBoundedPos = function (point) {
 					
@@ -460,12 +463,12 @@ BLOCKS.motor = function (spec) {
 				updatePos = function (point) {
 				
 					point = convertToBoundedPos(point);
-					
+
 					if (!verticalOnly) {
-						object.x = Math.round(point.x);
+						object.x = Math.round(point.x - offsetX);
 					}
 					if (!horizontalOnly) {
-						object.y = Math.round(point.y);
+						object.y = Math.round(point.y - offsetY);
 					}
 					object.dirty = true;
 				},
@@ -476,6 +479,14 @@ BLOCKS.motor = function (spec) {
 		
 						object.justTapped = true;
 						object.dirty = true;
+						
+						if (snapToRegistrationPoint === false) {
+							offsetX = point.x - object.x;
+							offsetY = point.y - object.y;	
+						} else {
+							offsetX = 0;
+							offsetY = 0;
+						}
 					
 						draggingObject = true;
 						updatePos(point);
