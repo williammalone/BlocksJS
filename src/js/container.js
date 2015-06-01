@@ -196,6 +196,14 @@ BLOCKS.container = function (game) {
 	
 		var i, key,
 			dirtyLayers = {};
+			
+		for (key in layerLabels) {
+			if (layerLabels.hasOwnProperty(key)) {
+				if (layerLabels[key].dirty || container.dirty) {
+					dirtyLayers[layerLabels[key].name] = layerLabels[key];
+				}
+			}
+		}
 
 		// Check if any layers were set to dirty (or the container is dirty)
 		for (i = 0; i < layers.length; i += 1) {
