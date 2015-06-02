@@ -38,7 +38,9 @@ BLOCKS.block = function (options) {
 			motor.removeEventListener("destroyed", motorDestroyed);
 			
 			for (i = 0 ; i < motors.length; i += 1)  {
-				motors.splice(i, 1);
+				if (motors[i] === motor) {
+					motors.splice(i, 1);
+				}
 				break;
 			}
 		};
@@ -125,7 +127,7 @@ BLOCKS.block = function (options) {
 	};
 	
 	block.motorize = function (motor) {
-	
+
 		motor.addEventListener("destroyed", motorDestroyed);
 		motors.push(motor);
 	};
