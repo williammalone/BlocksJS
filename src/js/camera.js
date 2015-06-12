@@ -20,7 +20,7 @@ BLOCKS.camera = function (options) {
 	
 	"use strict";
 	
-	var camera = BLOCKS.eventDispatcher();
+	var camera = BLOCKS.gear();
 	
 	// Public Properties
 	camera.x = (options && options.x) || 0;
