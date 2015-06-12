@@ -243,6 +243,7 @@ BLOCKS.motor = function (spec) {
 			(function () {
 				if (!totalDist) {
 					motor.destroy();
+					motor = null;
 					return null;
 				}
 				
@@ -262,13 +263,13 @@ BLOCKS.motor = function (spec) {
 				
 				curTick = 0;
 				totalTicks = totalDist / speed;
+				
+				Object.defineProperty(motor, "curOffset", {
+					get: function () {
+						return curOffset;
+					}
+				});
 			}());
-			
-			Object.defineProperty(motor, "curOffset", {
-				get: function () {
-					return curOffset;
-				}
-			});
 			
 			return motor;
 		},
