@@ -204,11 +204,6 @@ BLOCKS.game = function (spec, element) {
 			}
 			
 			window.onunload = game.destroy;
-			
-			// If autoLoad is not turned off then load
-			if (game.autoLoad !== false) {
-				game.load();
-			}
 		},
 		
 		gameUpdate = function () {
