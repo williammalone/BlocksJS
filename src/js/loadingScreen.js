@@ -30,8 +30,10 @@ BLOCKS.loadingScreen = function (spec, game) {
 		
 		loadAnimation = function () {
 			
-			spec.bg.image = game.imageLoader.loadNow(spec.animation);
-			spec.bg.image.onload = animationLoaded;
+			if (spec.animation) {
+				spec.bg.image = game.imageLoader.loadNow(spec.animation);
+				spec.bg.image.onload = animationLoaded;
+			}
 		},
 		
 		animationLoaded = function () {
@@ -54,8 +56,10 @@ BLOCKS.loadingScreen = function (spec, game) {
 		
 		loadBg = function () {
 			
-			spec.bg.image = game.imageLoader.loadNow(spec.bg);
-			spec.bg.image.onload = bgLoaded;
+			if (spec.bg) {
+				spec.bg.image = game.imageLoader.loadNow(spec.bg);
+				spec.bg.image.onload = bgLoaded;
+			}
 		},
 		
 		bgLoaded = function () {
@@ -77,8 +81,11 @@ BLOCKS.loadingScreen = function (spec, game) {
 		},
 		
 		loadBar = function () {
-			spec.progressBar.image = game.imageLoader.loadNow(spec.progressBar);
-			spec.progressBar.image.onload = barLoaded;
+			
+			if (spec.progressBar) {
+				spec.progressBar.image = game.imageLoader.loadNow(spec.progressBar);
+				spec.progressBar.image.onload = barLoaded;
+			}
 		},
 		
 		barLoaded = function () {
