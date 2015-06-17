@@ -833,30 +833,34 @@ BLOCKS.game = function (spec, element) {
 	game.load = function () {
 	
 		var i;
+		
+		if (!loadStarted) {
+			loadStarted = true;
 
-		game.imageLoader.loadFromTree(spec);
-
-		// Define game sounds
-		if (spec.sounds) {
-			for (i = 0; i < spec.sounds.length; i += 1) {
-				game.speaker.createSound(spec.sounds[i]);
+			game.imageLoader.loadFromTree(spec);
+	
+			// Define game sounds
+			if (spec.sounds) {
+				for (i = 0; i < spec.sounds.length; i += 1) {
+					game.speaker.createSound(spec.sounds[i]);
+				}
 			}
+	
+			game.imageLoader.addEventListener("update", function () {
+			
+				var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
+	
+				if (game.loadingScreen) {
+					game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
+				}
+			});
+			
+			game.imageLoader.addEventListener("complete", function () {
+			
+				checkLoadProgress();
+			});
+			game.imageLoader.load();
 		}
-
-		game.imageLoader.addEventListener("update", function () {
-		
-			var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
-
-			if (game.loadingScreen) {
-				game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
-			}
-		});
-		
-		game.imageLoader.addEventListener("complete", function () {
-		
-			checkLoadProgress();
-		});
-		game.imageLoader.load();
 	};
 	
 	game.stop = function () {
