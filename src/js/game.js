@@ -46,6 +46,7 @@ BLOCKS.game = function (spec, element) {
 		maxLayers,
 		prepared,
 		wasMutedWhenPaused,
+		loadStarted,
 		
 		handleTickers = function () {
 			
@@ -90,7 +91,7 @@ BLOCKS.game = function (spec, element) {
 		
 		onFirstTap = function () {
 			
-			if (!gameTappedOnce) {
+			if (!gameTappedOnce && loadStarted) {
 				game.controller.removeEventListener("tap", onFirstTap);
 				
 				game.dispatchEvent("firstTap");
@@ -513,6 +514,39 @@ BLOCKS.game = function (spec, element) {
 				game.loadingScreen.dirty = true;
 			}
 			game.dispatchEvent("resize");
+		},
+		
+		initLoad = function () {
+			
+			if (!loadStarted) {
+				// If autoLoad is not turned off then load
+				if (game.autoLoad !== false) {
+					game.load();
+				}
+			}
+		},
+		
+		checkInitialScreenProgress = function () {
+			
+			if (game.introScreen) {
+				if (!game.introScreen.loaded) {
+					
+//BLOCKS.debug("waiting for intro screen to load");
+					return;
+				}
+			}
+			
+			if (game.loadingScreen) {
+				if (!game.loadingScreen.loaded) {
+					
+//BLOCKS.debug("waiting for loading screen to load");
+					return;
+				}
+			}
+			
+//BLOCKS.debug("load game");
+			
+			initLoad();
 		};
 	
 	// Define spec as empty object if it was specified as a parameter
@@ -527,6 +561,9 @@ BLOCKS.game = function (spec, element) {
 		if (document.getElementsByClassName && document.getElementsByClassName("BlocksGame")) {
 			game.element = document.getElementsByClassName("BlocksGame")[0];
 		}
+	}
+	if (!game.element) {
+		BLOCKS.error("Game does not have a game element");
 	}
 
 	// If there is no game element to scale for us we will need to scale manually
@@ -559,38 +596,7 @@ BLOCKS.game = function (spec, element) {
 	} else {
 		maxLayers = spec.maxLayers !== undefined ? spec.maxLayers : 10;
 	}
-	
-	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
-	
-	if (spec && spec.loading) {
-		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
-	}
-	
-	// Create sound player
-	game.speaker = BLOCKS.speaker({
-		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
-		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : "",
-		audioPlayerType: (spec && spec.audioPlayerType !== undefined) ? spec.audioPlayerType : ""
-	});
-	
-	game.speaker.addEventListener("update", function (e) {
-		var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
 
-		if (game.loadingScreen) {
-			game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
-		}
-	});
-	
-	game.speaker.addEventListener("ready", function () {
-		checkLoadProgress();
-	}, true);
-	
-	Object.defineProperty(game, "paused", {
-		get: function () {
-			return paused;
-		}
-	});
-	
 	game.pause = function () {
 	
 		if (!paused) {
@@ -921,11 +927,48 @@ BLOCKS.game = function (spec, element) {
 	
 	init();
 	
+	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
+	
+	if (spec && spec.loading) {
+		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
+	}
+	
 	if (spec && spec.intro) {
 		game.introScreen = BLOCKS.introScreen(spec.intro, game);
-	} else {
-		onFirstTap();
 	}
+	
+	// Create sound player
+	game.speaker = BLOCKS.speaker({
+		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
+		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : ""
+	});
+	
+	game.speaker.addEventListener("update", function (e) {
+		var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
+
+		if (game.loadingScreen) {
+			game.loadingScreen.setProgress(assetsLoaded, game.imageLoader.getNumFiles() + game.speaker.getNumFiles());
+		}
+	});
+	
+	game.speaker.addEventListener("ready", function () {
+		checkLoadProgress();
+	}, true);
+	
+	Object.defineProperty(game, "paused", {
+		get: function () {
+			return paused;
+		}
+	});
+	
+	if (game.loadingScreen) {
+		game.loadingScreen.addEventListener("loaded", checkInitialScreenProgress);
+	}
+	if (game.introScreen) {
+		game.introScreen.addEventListener("loaded", checkInitialScreenProgress);
+	}
+	
+	checkInitialScreenProgress();
 	
 	return game;
 };

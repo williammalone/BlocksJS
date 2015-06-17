@@ -26,7 +26,84 @@ BLOCKS.loadingScreen = function (spec, game) {
 		messageY = 0,
 		messageText = "loading... ",
 		progressBarImageLoaded,
-		animationLoaded,
+		destroyed,
+		
+		loadAnimation = function () {
+			
+			spec.bg.image = game.imageLoader.loadNow(spec.animation);
+			spec.bg.image.onload = animationLoaded;
+		},
+		
+		animationLoaded = function () {
+			
+			if (!destroyed) {
+				if (spec.bg.image.width !== 0 && spec.bg.image.height !== 0) {
+					prepare();
+					
+					if (progressBar) {
+						loadingScreen.loaded = true;
+						loadingScreen.dispatchEvent("loaded");
+					}
+				} else {
+					if (!destroyed) {
+						window.setTimeout(bgLoaded, 10);
+					}
+				}
+			}
+		},
+		
+		loadBg = function () {
+			
+			spec.bg.image = game.imageLoader.loadNow(spec.bg);
+			spec.bg.image.onload = bgLoaded;
+		},
+		
+		bgLoaded = function () {
+			
+			if (!destroyed) {
+				if (spec.bg.image.width !== 0 && spec.bg.image.height !== 0) {
+					prepare();
+					
+					if (progressBar) {
+						loadingScreen.loaded = true;
+						loadingScreen.dispatchEvent("loaded");
+					}
+				} else {
+					if (!destroyed) {
+						window.setTimeout(bgLoaded, 10);
+					}
+				}
+			}
+		},
+		
+		loadBar = function () {
+			spec.progressBar.image = game.imageLoader.loadNow(spec.progressBar);
+			spec.progressBar.image.onload = barLoaded;
+		},
+		
+		barLoaded = function () {
+			
+			if (!destroyed) {
+				if (spec.progressBar.image.width !== 0 && spec.progressBar.image.height !== 0) {
+					
+					progressBarImageLoaded = true;
+					
+					if (layers && layers.loading) {
+						createProgressBar();
+					}
+					
+					if (bg) {
+						loadingScreen.loaded = true;
+						loadingScreen.dispatchEvent("loaded");
+					}
+					
+				} else {
+					if (!destroyed) {
+						window.setTimeout(barLoaded, 10);
+					}
+				}
+			}
+		},
 		
 		createAnimation = function () {
 		
@@ -55,63 +132,49 @@ BLOCKS.loadingScreen = function (spec, game) {
 		},
 		
 		load = function () {
-
-			spec.bg.image = game.imageLoader.loadNow(spec.bg);
-			spec.bg.image.onload = prepare;
 			
-			spec.progressBar.image = game.imageLoader.loadNow(spec.progressBar);
-			spec.progressBar.image.onload = function () {
-			
-				progressBarImageLoaded = true;
-				
-				if (layers && layers.loading) {
-					createProgressBar();
-				}
+			layers = {
+				loadingBg: game.addLayer("loadingBg", {
+					enableWebGL: false
+				}),
+				loading: game.addLayer("loading")
 			};
+
+			loadBg();
 			
-			if (spec.animation) {
-				spec.animation.image = game.imageLoader.loadNow(spec.animation);
-				spec.animation.image.onload = function () {
-				
-					animationLoaded = true;
-					
-					if (layers && layers.loading) {
-						createAnimation();
-					}
-				};
-			}
+			loadBar();
+			
+			loadAnimation();
 		},
 		
 		prepare = function () {
 		
-			layers = {
-				loadingBg: game.getLayer(0),
-				loading: game.getLayer(1)
-			};
-
-			bg = BLOCKS.slice({
-				layer: layers.loadingBg,
-				image: spec.bg.image
-			});
-			
-			// If the progress bar is ready to be created and was not already created
-			if (progressBarImageLoaded && !progressBar) {
-				createProgressBar();
+			if (!destroyed) {
+	
+				bg = BLOCKS.slice({
+					layer: layers.loadingBg,
+					image: spec.bg.image
+				});
+				
+				// If the progress bar is ready to be created and was not already created
+				if (progressBarImageLoaded && !progressBar) {
+					createProgressBar();
+				}
+				
+				// If the animation is ready to be created and was not already created
+				if (spec.animation && !animation) {
+					createAnimation();
+				}
+	
+				clock = BLOCKS.clock();
+				clock.addEventListener("tick", function () {
+					update();
+					render();
+				});
+				clock.start();
+				
+				loadingScreen.dirty = true;
 			}
-			
-			// If the animation is ready to be created and was not already created
-			if (spec.animation && animationLoaded && !animation) {
-				createAnimation();
-			}
-
-			clock = BLOCKS.clock();
-			clock.addEventListener("tick", function () {
-				update();
-				render();
-			});
-			clock.start();
-			
-			loadingScreen.dirty = true;
 		},
 		
 		update = function () {
@@ -166,11 +229,17 @@ BLOCKS.loadingScreen = function (spec, game) {
 	loadingScreen.dirty = true;
 	
 	loadingScreen.destroy = function () {
+		
+		destroyed = true;
 
 		if (clock) {
+			
 			clock.destroy();
 			
-			layers = null;
+			if (layers) {
+				game.removeLayer("loadingBg");
+				game.removeLayer("loading");
+			}
 			
 			bg.destroy();
 			bg = null;
