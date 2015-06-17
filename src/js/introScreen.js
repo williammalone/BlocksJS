@@ -73,6 +73,7 @@ BLOCKS.introScreen = function (spec, game) {
 		}
 		
 		if (layer) {
+			layer.clear();
 			game.removeLayer("intro");
 		}
 
