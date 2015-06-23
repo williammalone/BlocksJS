@@ -105,6 +105,8 @@ BLOCKS.game = function (spec, element) {
 				game.state = "loading";
 				game.speaker.load();
 				checkLoadProgress();
+				
+				checkInitialScreenProgress();
 			}
 		},
 		
@@ -394,15 +396,16 @@ BLOCKS.game = function (spec, element) {
 		
 						loaded = true;
 						
+						if (game.loadingScreen) {
+							game.loadingScreen.destroy();
+							game.loadingScreen = null;
+						}
+						
 						// If autoLoad is not turned off then load
 						if (game.autoStart !== false) {
 							game.start();
 						}
 						
-						if (game.loadingScreen) {
-							game.loadingScreen.destroy();
-							game.loadingScreen = null;
-						}
 						game.dispatchEvent("loaded");
 					}
 				}
@@ -526,7 +529,7 @@ BLOCKS.game = function (spec, element) {
 			if (game.introScreen) {
 				if (!game.introScreen.loaded) {
 					
-//BLOCKS.debug("waiting for intro screen to load");
+					//BLOCKS.debug("waiting for intro screen to load");
 					return;
 				}
 			}
@@ -534,12 +537,12 @@ BLOCKS.game = function (spec, element) {
 			if (game.loadingScreen) {
 				if (!game.loadingScreen.loaded) {
 					
-//BLOCKS.debug("waiting for loading screen to load");
+					//BLOCKS.debug("waiting for loading screen to load");
 					return;
 				}
 			}
 			
-//BLOCKS.debug("load game");
+			//BLOCKS.debug("load game");
 			
 			initLoad();
 		};
@@ -889,6 +892,10 @@ BLOCKS.game = function (spec, element) {
 		var i;
 
 		clock.destroy();
+		
+		if (game.introScreen) {
+			game.introScreen.destroy();
+		}
 		
 		if (game.loadingScreen) {
 			game.loadingScreen.destroy();

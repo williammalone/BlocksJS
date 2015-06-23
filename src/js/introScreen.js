@@ -45,7 +45,7 @@ BLOCKS.introScreen = function (spec, game) {
 				if (spec.bg.image.width !== 0 && spec.bg.image.height !== 0) {
 					prepare();
 					
-					if (button) {
+					if (button || !spec.button) {
 						introScreen.loaded = true;
 						introScreen.dispatchEvent("loaded");
 					}
