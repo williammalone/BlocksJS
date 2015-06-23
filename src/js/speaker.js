@@ -717,7 +717,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 						inst.source.start(inst.delay);
 					}
 				} else if (inst.source.noteGrainOn) {
-					inst.source.noteGrainOn(inst.delay, inst.currentTime/*, inst.source.buffer.duration - inst.currentTime*/);
+					inst.source.noteGrainOn(inst.delay, inst.currentTime, inst.source.buffer.duration - inst.currentTime);
 				}
 				
 				return inst;
