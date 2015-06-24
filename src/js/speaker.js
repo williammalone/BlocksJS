@@ -91,7 +91,9 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		},
 		
 		onCanPlayThrough = function () {	
-			
+			if (speaker.debug) {
+				BLOCKS.debug("onCanPlayThrough");	
+			}			
 			setReady();
 		},
 		
@@ -145,6 +147,8 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 					}
 				}
 			}, 100);
+			
+			audioElement.src = spriteSrc;
 			
 			audioElement.play();
 		},
@@ -203,7 +207,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			}
 		
 			if (sounds[name].start >= 0 && sounds[name].end > 0) {
-			
+
 				// If the previous sound had a different volume set temporarily
 				if (resetGainValue >= 0) {
 					audioElement.volume = resetGainValue;
@@ -329,7 +333,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	// Return if audio is ready to be played
 	speaker.isReady = function () {
 	
-		return true;
+		return ready;
 	};
 	
 	speaker.load = function () {
@@ -341,6 +345,24 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	};
 	
 	speaker.createSound = function (spec) {
+		
+		// Support legacy startTime, endTime and duration properties
+		if (spec.startTime !== undefined && spec.start === undefined) {
+			spec.start = spec.startTime;
+		}
+		
+		if (spec.endTime !== undefined && spec.end === undefined) {
+			spec.end = spec.endTime;
+		}
+		
+		if (spec.duration !== undefined && spec.end === undefined) {
+			spec.end = spec.start + spec.duration;	
+		}
+		
+		if (spec.end >= audioElement.duration) {
+			BLOCKS.warn("Sound ('" + spec.name + "') end time is larger than sprite duration. Setting end time to the sprite duration.");
+			spec.end = audioElement.duration - 0.0001;
+		}
 
 		sounds[spec.name] = {
 			name: spec.name,
@@ -391,7 +413,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				spriteSrc += ".ogg";
 			}
 			
-			audioElement.src = spriteSrc;
+			
 		} else {
 			BLOCKS.error("sprite filename not specified");
 		}
