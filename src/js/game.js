@@ -99,10 +99,10 @@ BLOCKS.game = function (spec, element) {
 				gameTappedOnce = true;
 				
 				if (game.introScreen) {
+					game.state = "loading";
 					game.introScreen.destroy();
 					game.introScreen = null;
 				}
-				game.state = "loading";
 				game.speaker.load();
 				checkLoadProgress();
 				
@@ -192,8 +192,9 @@ BLOCKS.game = function (spec, element) {
 			game.controller.addEventListener("mouseOut", onMouseOut);
 			game.controller.addEventListener("mouseUpOutside", mouseUpOutside);
 			
+			// Listen to the first time the game is tapped
 			game.controller.addEventListener("tap", onFirstTap);
-			
+
 			// Mute and pause the game when the browser is not visible
 			if (typeof document.hidden !== "undefined") {	
 				document.addEventListener("visibilitychange", onVisibilityChange);
@@ -584,7 +585,7 @@ BLOCKS.game = function (spec, element) {
 	});
 	game.autoLoad = spec.autoLoad !== undefined ? spec.autoLoad : true;
 	game.autoStart = spec.autoStart !== undefined ? spec.autoStart : true;
-	game.state = "intro";
+	game.state = "";
 	
 	// A canvas can be specified to be used for all rendering
 	gameCanvas = spec.canvas;
@@ -937,10 +938,12 @@ BLOCKS.game = function (spec, element) {
 	
 	if (spec && spec.loading) {
 		game.loadingScreen = BLOCKS.loadingScreen(spec.loading, game);
+		game.intro = "loading";
 	}
 	
 	if (spec && spec.intro) {
 		game.introScreen = BLOCKS.introScreen(spec.intro, game);
+		game.intro = "intro";
 	}
 	
 	// Create sound player
