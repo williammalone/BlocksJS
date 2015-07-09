@@ -206,6 +206,11 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 				BLOCKS.debug("Play sound: " + name + " (" + sounds[name].start + " - " + sounds[name].end + ")");
 			}
 		
+			if (sounds[name].end >= audioElement.duration) {
+				BLOCKS.warn("Sound ('" + sounds[name].name + "') end time is larger than sprite duration. Setting end time to the sprite duration.");
+				sounds[name].end = audioElement.duration - 0.0001;
+			}
+		
 			if (sounds[name].start >= 0 && sounds[name].end > 0) {
 
 				// If the previous sound had a different volume set temporarily
@@ -359,7 +364,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			spec.end = spec.start + spec.duration;	
 		}
 		
-		if (spec.end >= audioElement.duration) {
+		if (spec.end > audioElement.duration) {
 			BLOCKS.warn("Sound ('" + spec.name + "') end time is larger than sprite duration. Setting end time to the sprite duration.");
 			spec.end = audioElement.duration - 0.0001;
 		}
@@ -1681,7 +1686,7 @@ BLOCKS.speaker = function (spec) {
 		
 		if (spec.audioPlayerType === "multiAudioElementPlayer") {
 			speaker = BLOCKS.audio.multiAudioElementPlayer(spec);
-		} else if ((typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') && spec.webAudioEnabled !== false) {
+		} else if (spec.audioPlayerType !== "audioElementPlayer" && (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') && spec.webAudioEnabled !== false) {
 			speaker = BLOCKS.audio.webAudioPlayer(spec);
 		} else {
 			speaker = BLOCKS.audio.audioElementPlayer(spec);

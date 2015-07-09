@@ -894,6 +894,10 @@ BLOCKS.game = function (spec, element) {
 
 		clock.destroy();
 		
+		if (game.speaker) {
+			game.speaker.stop();	
+		}
+		
 		if (game.introScreen) {
 			game.introScreen.destroy();
 		}
@@ -949,7 +953,8 @@ BLOCKS.game = function (spec, element) {
 	// Create sound player
 	game.speaker = BLOCKS.speaker({
 		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
-		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : ""
+		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : "",
+		audioPlayerType: spec.audioPlayerType
 	});
 	
 	game.speaker.addEventListener("update", function (e) {
