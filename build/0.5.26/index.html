@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    	<title>BLOCKSJS Game</title>
+    	
+    	<script type="text/javascript">
+
+			  var _gaq = _gaq || [];
+			  _gaq.push(['_setAccount', 'UA-XXXXXXXX-X']); // Production
+			  _gaq.push(['_trackPageview']);
+			
+			  (function() {
+			    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			  })();
+		</script>
+     
+        <!-- Create viewport meta tag. Content will be set by player object in JavaScript. -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, minimal-ui">
+        <!-- Set standalone mode so the URL bar and Button bar are hidden when run from Home Screen. -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <!-- Set the iOS status bar to black. -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        
+        <link rel="stylesheet" href="css/blocksjs-0.5.26.min.css">
+        
+        <style>
+        	html { 
+				margin: 0;
+				padding: 0;
+				width: 100%; 
+				height: 100%;
+			}
+			
+			body { 
+				margin: 0; 
+				padding: 0;
+				width: 100%; 
+				height: 100%;
+			}
+			</style>
+    </head>
+ 
+    <body oncontextmenu="return false">
+
+	    <div id="BlocksGame"></div>
+	    
+		<script src="js/blocksjs-0.5.26.min.js"></script>
+		
+		<!-- BlocksJS Game JS START -->
+
+		<!-- BlocksJS Game JS END -->
+
+	    <script>
+			
+			(function () {
+			
+				"use strict";
+
+		        var game = BLOCKS.game();
+		        
+		        // Method to write to Google Analytics
+		        game.ga = function (obj) {
+							
+					var str,
+						arr = ["_trackEvent"];
+					
+					arr.push(String(obj.category));
+					arr.push(String(obj.action));
+					if (obj.label) {
+						arr.push(String(obj.label));
+						if (obj.value) {
+							arr.push(parseInt(obj.value, 10));
+						}
+					}
+					
+					// Send to Google Analytics
+					_gaq.push(arr);
+					
+					if (JSON) {
+						BLOCKS.log("Analytics: " + JSON.stringify(obj));
+					}
+				};
+			}());
+			
+	    </script>
+    </body>
+</html>
