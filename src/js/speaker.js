@@ -154,7 +154,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		},
 		
 		endSound = function () {
-		
+			
 			// Clear the sound complete timer
 			window.clearInterval(soundCompleteTimer);
 			soundCompleteTimer = null;
@@ -171,17 +171,27 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		
 		soundCompleteChecker = function () {
 		
-			var inst;
+			var inst, atEnd;
 	
 			// If a sound is playing
 			if (curSoundInst) {
 		
 				// If the scrubber is past the sound end time then the sound is complete
-				if (audioElement.currentTime >= curSoundInst.end) {
+				if (audioElement.currentTime >= curSoundInst.end || audioElement.currentTime >= audioElement.duration) {
 				
 					// If the sound is set to loop then move the scrubber to the beginning of the sound
 					if (curSoundInst.loop === true) {
+						
+						if (audioElement.currentTime >= audioElement.duration) {
+							atEnd = true;
+						}
+
 						audioElement.currentTime = curSoundInst.start;
+
+						// If the current time is at the end then play after moving scrubber
+						if (atEnd) {
+							audioElement.play();
+						}
 					} else {
 					
 						endSound();
@@ -205,7 +215,7 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			if (speaker.debug) {
 				BLOCKS.debug("Play sound: " + name + " (" + sounds[name].start + " - " + sounds[name].end + ")");
 			}
-		
+	
 			if (sounds[name].end >= audioElement.duration) {
 				BLOCKS.warn("Sound ('" + sounds[name].name + "') end time is larger than sprite duration. Setting end time to the sprite duration.");
 				sounds[name].end = audioElement.duration - 0.0001;
