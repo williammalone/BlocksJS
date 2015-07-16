@@ -1091,7 +1091,6 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		loadComplete = false,
 		ready = false,
 		muted = false,
-		extension,
 		path = (spec && spec.path) || "",
 		masterGain,
 		ctx,
@@ -1149,14 +1148,14 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		},
 		
 		loadFile = function (file) {
-
+			
 			file.audioElement = document.createElement("audio");
 			
 			file.audioElement.preload = true;
-			file.audioElement.src = (path + file.src + extension);
+			file.audioElement.src = (path + file.src);
 			file.audioElement.load();
 			file.audioElement.addEventListener("canplaythrough", function () {
-				BLOCKS.debug("Audio element loaded: " + (path + file.src + extension));
+				BLOCKS.debug("Audio element loaded: " + (path + file.src));
 				file.loaded = true;
 				onFileLoaded(file);
 			});
@@ -1358,9 +1357,9 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 
 				if (speaker.debug) {
 					if (inst.currentTime) {
-						BLOCKS.debug("Play sound: " + name + " (" + inst.currentTime + " - " + sounds[name].end + "), src: " + sounds[name].file.src + extension);
+						BLOCKS.debug("Play sound: " + name + " (" + inst.currentTime + " - " + sounds[name].end + "), src: " + sounds[name].file.src);
 					} else {
-						BLOCKS.debug("Play sound: " + name + " (" + sounds[name].start + " - " + sounds[name].end + "), src: " + sounds[name].file.src + extension);
+						BLOCKS.debug("Play sound: " + name + " (" + sounds[name].start + " - " + sounds[name].end + "), src: " + sounds[name].file.src);
 					}
 				}
 				
@@ -1606,7 +1605,17 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 	};
 	
 	speaker.createSound = function (spec) {
-
+		
+		var tmpAudioElement = document.createElement("audio");
+		
+		if (tmpAudioElement.canPlayType("audio/x-caf")) {
+			
+		}
+		
+		if (spec.extension === undefined || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/x-caf")) || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/mp4"))) {
+			spec.extension = "mp3";	
+		}
+		
 		sounds[spec.name] = {
 			name: spec.name,
 			start: spec.start,
@@ -1614,15 +1623,15 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			loop: spec.loop
 		};
 //BLOCKS.debug("Create Sound: " + spec.name);
-		if (!files[spec.src]) {
-			files[spec.src] = {
-				src: spec.src
+		if (!files[spec.src + "." + spec.extension]) {
+			files[spec.src + "." + spec.extension] = {
+				src: spec.src + "." + spec.extension
 			};
-			loadFile(files[spec.src]);
+			loadFile(files[spec.src + "." + spec.extension]);
 //BLOCKS.debug("Load Sound: " + spec.src);
 		}
 		
-		sounds[spec.name].file = files[spec.src];
+		sounds[spec.name].file = files[spec.src + "." + spec.extension];
 	};
 	
 	speaker.getActiveSoundInstances = function () {
@@ -1671,12 +1680,6 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 	};
 	
 	speaker.multipleTracksSupported = true;
-
-	(function () {
-	
-		extension = ".mp3";
-
-	}());
 	
 	return speaker;
 };
