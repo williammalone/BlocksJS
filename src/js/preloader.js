@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*global window, document, Image, HTMLElement */
+/*global window, document, Image, HTMLElement, navigator */
 
 var BLOCKS;
 
@@ -23,6 +23,7 @@ BLOCKS.preloader = function (path) {
 	var preloader = BLOCKS.eventDispatcher(),
 		imageList = [],
 		imagesLoaded,
+		iOS = /iPad|iPhone|iPod/.test(navigator.userAgent),
 	
 		// Private Methods
 		imageLoaded = function () {
@@ -93,7 +94,13 @@ BLOCKS.preloader = function (path) {
 	
 		var i, obj;
 		
-		if (spec && spec.src && (spec.src.toLowerCase().indexOf("jpg") !== -1 || spec.src.toLowerCase().indexOf("png") !== -1)) {
+		if (!iOS) {
+			if (spec.src.toLowerCase().indexOf("pvr") !== -1) {
+				spec.src = "png";
+			}
+		}
+		
+		if (spec && spec.src && (spec.src.toLowerCase().indexOf("jpg") !== -1 || spec.src.toLowerCase().indexOf("png") !== -1 || spec.src.toLowerCase().indexOf("pvr") !== -1)) {
 		
 			// Check if the image is already in the list
 			for (i = 0; i < imageList.length; i += 1) {
