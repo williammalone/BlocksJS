@@ -73,6 +73,10 @@ BLOCKS.tileCollection = function (options) {
 					} else {
 						tiles[i] = options.tiles[i];
 					}
+					
+if (options.tiles[i].image) {
+tileWidth = options.tiles[i].image.width;
+}
 				}
 
 				// If an image is loaded for the first tile
@@ -320,10 +324,21 @@ BLOCKS.tileCollection = function (options) {
 		motors = motorArr;
 	};
 	
-	collection.destroy = function () {
+	collection.destroy = function (spec) {
 	
-		var i;
-		
+		var i, src;
+
+		// Optional destroy behavior
+		if (spec && spec.resetSrc && options.tiles) {
+			for (i = 0; i < options.tiles.length; i += 1) {
+				if (options.tiles[i].image) {
+					src = options.tiles[i].image.src;
+					options.tiles[i].image.src = null;
+					options.tiles[i].image.src = src;
+				}
+			}
+		}
+
 		for (i = 0; i < visibleTiles.length; i += 1) {
 			visibleTiles[i].destroy();
 		}
