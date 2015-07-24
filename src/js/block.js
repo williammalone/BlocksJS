@@ -82,6 +82,14 @@ BLOCKS.block = function (options) {
 		return slice;
 	};
 	
+	block.removeSlice = function (name, destroyOptions) {
+	
+		if (slicesObj[name]) {
+			slicesObj[name].destroy(destroyOptions);
+			slicesObj[name] = null;
+		}
+	};
+	
 	block.getSlice = function (name) {
 	
 		if (name === undefined) {
@@ -161,7 +169,7 @@ BLOCKS.block = function (options) {
 		motors = newMotorArr;
 	};
 	
-	block.destroy = function () {
+	block.destroy = function (options) {
 	
 		var i;
 		
@@ -169,7 +177,7 @@ BLOCKS.block = function (options) {
 			block.removeMotors();
 			
 			for (i = 0; i < slicesArr.length; i += 1) {
-				slicesArr[i].destroy();
+				slicesArr[i].destroy(options);
 			}
 			slicesArr = null;
 			slicesObj = null;
