@@ -96,7 +96,7 @@ BLOCKS.preloader = function (path) {
 		
 		if (!iOS) {
 			if (spec.src.toLowerCase().indexOf("pvr") !== -1) {
-				spec.src = "png";
+				spec.src = spec.src.slice(0, -4) + ".png";
 			}
 		}
 		
