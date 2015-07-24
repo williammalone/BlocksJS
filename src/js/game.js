@@ -561,7 +561,7 @@ BLOCKS.game = function (spec, element) {
 			game.element = document.getElementsByClassName("BlocksGame")[0];
 		}
 	}
-	if (!game.element) {
+	if (!game.element && !spec.canvas) {
 		BLOCKS.error("Game does not have a game element");
 	}
 
