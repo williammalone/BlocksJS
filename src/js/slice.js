@@ -43,10 +43,10 @@ BLOCKS.slice = function (options) {
 			// Note: Divide the width by the number of frames in the sprite sheet if an animation. If the sprite is only an image then the number of frames will be 1.
 		
 			if (imageResource) {
-				frameWidth = imageResource.image.width / slice.numberOfColumns;
-				frameHeight = imageResource.image.height / slice.numberOfRows;
-				slice.width = imageResource.image.width / slice.numberOfColumns;
-				slice.height = imageResource.image.height / slice.numberOfRows;
+				frameWidth = options.frameWidth ? options.frameWidth : imageResource.image.width / slice.numberOfColumns;
+				frameHeight = options.frameHeight ? options.frameHeight : imageResource.image.height / slice.numberOfRows;
+				slice.width = frameWidth;
+				slice.height = frameHeight;
 			}
 		},
 		
@@ -426,15 +426,26 @@ BLOCKS.slice = function (options) {
 		}
 	};
 	
-	slice.destroy = function () {
+	slice.destroy = function (spec) {
+		
+		var src, img;
 	
 		if (slice) {
 			slice.removeMotors();
 			slice.dispatchEvent("destroyed", slice);
 		}
+
+		// Optional destroy behavior
+		if (imageResource && imageResource.image && spec && spec.resetSrc) {
+			src = imageResource.image.src;
+			imageResource.image.src = null;
+			imageResource.image.src = src;
+		}
+		
 		imageResource = null;
 		options = null;
 		slice = null;
+		options = null;
 	};
 	
 	options = options || {};
