@@ -1155,7 +1155,7 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			file.audioElement.src = (path + file.src);
 			file.audioElement.load();
 			file.audioElement.addEventListener("canplaythrough", function () {
-				BLOCKS.debug("Audio element loaded: " + (path + file.src));
+				//BLOCKS.debug("Audio element loaded: " + (path + file.src));
 				file.loaded = true;
 				onFileLoaded(file);
 			});
@@ -1608,11 +1608,7 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		var tmpAudioElement = document.createElement("audio");
 		
-		if (tmpAudioElement.canPlayType("audio/x-caf")) {
-			
-		}
-		
-		if (spec.extension === undefined || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/x-caf")) || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/mp4"))) {
+		if (spec.extension === undefined || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/x-caf")) || (spec.extension === "mp4" && !tmpAudioElement.canPlayType("audio/mp4"))) {
 			spec.extension = "mp3";	
 		}
 		
