@@ -52,8 +52,10 @@ BLOCKS.clock = function () {
 	
 	clock.destroy = function () {
 	
-		clock.stop();
-		clock = null;
+		if (clock) {
+			clock.stop();
+			clock = null;
+		}
 	};
 	
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/	
