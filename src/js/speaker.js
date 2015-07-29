@@ -401,6 +401,10 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	
 		return ready ? 1 : 0;
 	};
+	
+	speaker.destroy = function () {
+		audioElement = null;
+	};
 
 	// Create audio element
 	(function () {
@@ -1045,6 +1049,16 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		return ctx.currentTime;
 	};
 	
+	speaker.destroy = function () {
+		
+		speaker.stop();
+		if (ctx && ctx.close) {
+			// Close the WebAudioContext as a way to remove it from memory
+			ctx.close();	
+		}
+		ctx = null;
+	};
+	
 	speaker.multipleTracksSupported = true;
 
 	(function () {
@@ -1339,8 +1353,6 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 				//inst.source.buffer = sounds[name].file.buffer;
 				//inst.source.loop = sounds[name].loop;
 				//inst.gain = inst.track.gain;
-				
-				
 				
 				// Connect the source to the gains
 				//inst.source.connect(inst.gain);
@@ -1673,6 +1685,19 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		// Since multiple sounds could be playing this returns nothing
 		return null;
+	};
+	
+	speaker.destroy = function () {
+		
+		var key;
+		
+		for (key in files) {
+			if (files.hasOwnProperty(key)) {
+				if (files[key].audioElement) {
+					files[key].audioElement = null;
+				}
+			}
+		}
 	};
 	
 	speaker.multipleTracksSupported = true;
