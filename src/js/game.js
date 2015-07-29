@@ -895,7 +895,7 @@ BLOCKS.game = function (spec, element) {
 		clock.destroy();
 		
 		if (game.speaker) {
-			game.speaker.stop();	
+			game.speaker.destroy();
 		}
 		
 		if (game.introScreen) {

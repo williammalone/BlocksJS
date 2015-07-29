@@ -552,14 +552,17 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		
 			var source;
 			
-			loadStarted = true;
-		
-			source = ctx.createOscillator();
-
-			if (source.start) {
-				source.start(0, 0, 1);
-			} else if (source.noteGrainOn) {
-				source.noteGrainOn(0, 0, 1);
+			if (ctx) {
+			
+				loadStarted = true;
+			
+				source = ctx.createOscillator();
+	
+				if (source.start) {
+					source.start(0, 0, 1);
+				} else if (source.noteGrainOn) {
+					source.noteGrainOn(0, 0, 1);
+				}
 			}
 		},
 		
@@ -1073,7 +1076,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		} else {
 			extension = ".ogg";
 		}
-		
+	
 		if (typeof AudioContext !== "undefined") {
 			ctx = new window.AudioContext();
 		} else if (typeof webkitAudioContext !== "undefined") {
