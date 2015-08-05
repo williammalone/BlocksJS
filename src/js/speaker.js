@@ -401,10 +401,6 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 	
 		return ready ? 1 : 0;
 	};
-	
-	speaker.destroy = function () {
-		audioElement = null;
-	};
 
 	// Create audio element
 	(function () {
@@ -552,17 +548,14 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		
 			var source;
 			
-			if (ctx) {
-			
-				loadStarted = true;
-			
-				source = ctx.createOscillator();
-	
-				if (source.start) {
-					source.start(0, 0, 1);
-				} else if (source.noteGrainOn) {
-					source.noteGrainOn(0, 0, 1);
-				}
+			loadStarted = true;
+		
+			source = ctx.createOscillator();
+
+			if (source.start) {
+				source.start(0, 0, 1);
+			} else if (source.noteGrainOn) {
+				source.noteGrainOn(0, 0, 1);
 			}
 		},
 		
@@ -1052,16 +1045,6 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		return ctx.currentTime;
 	};
 	
-	speaker.destroy = function () {
-		
-		speaker.stop();
-		if (ctx && ctx.close) {
-			// Close the WebAudioContext as a way to remove it from memory
-			ctx.close();	
-		}
-		ctx = null;
-	};
-	
 	speaker.multipleTracksSupported = true;
 
 	(function () {
@@ -1076,7 +1059,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		} else {
 			extension = ".ogg";
 		}
-	
+		
 		if (typeof AudioContext !== "undefined") {
 			ctx = new window.AudioContext();
 		} else if (typeof webkitAudioContext !== "undefined") {
@@ -1119,6 +1102,7 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		maxLoadTime = spec.maxLoadTime || 60000, // The maximum amount of time for all sounds to load
 		loadTries = 0,
 		maxLoadTries = 5,
+		soundCompleteCheckerId,
 		
 		createTrack = function (name) {
 		
@@ -1212,10 +1196,10 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			instances.splice(index, 1);
 		},
 		
-		soundCompleteChecker = function (inst) {
-		
+		soundComplete = function (inst) {
+			
 			var callback, soundName;
-		
+			
 			if (speaker.debug) {
 				BLOCKS.debug("Sound '" + inst.sound.name + "' Complete");
 			}
@@ -1230,6 +1214,45 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			
 			if (callback) {
 				callback(soundName);
+			}
+		},
+		
+		isSoundComplete = function (inst) {
+
+			if (inst.sound.file.audioElement.ended) {
+
+				return true;
+			}
+		},
+		
+		soundCompleteChecker = function (inst) {
+		
+			var i, soundStillPlaying, endedSounds,
+				newInstancesArr = [];
+		
+			for (i = 0; i < instances.length; i += 1) {
+				if (isSoundComplete(instances[i])) {
+					if (!endedSounds) {
+						endedSounds = [];
+					}
+					endedSounds.push(instances[i]);
+				} else {
+					newInstancesArr.push(instances[i]);
+				}
+			}
+			
+			if (endedSounds) {
+				for (i = 0; i < endedSounds.length; i += 1) {
+					soundComplete(endedSounds[i]);
+				}
+			}
+			
+			instances = newInstancesArr;
+			
+			// If no songs are playing then stop the sound complete check
+			if (!instances.length) {
+				window.clearInterval(soundCompleteCheckerId);
+				soundCompleteCheckerId = null;
 			}
 		},
 
@@ -1291,9 +1314,7 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		pauseSound = function (inst) {
 
-			window.clearTimeout(inst.timeout);
-			
-			inst.currentTime = ((+ new Date()) - inst.startTime) / 1000 % inst.sound.file.audioElement.duration;
+			inst.currentTime = inst.sound.file.audioElement.currentTime;
 			
 			inst.sound.file.audioElement.pause();
 		},
@@ -1302,9 +1323,9 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 			var newInst;
 			
-			//if (speaker.debug) {
-			//	BLOCKS.debug("Unpause sound: '" + inst.name + "'");
-			//}
+			if (speaker.debug) {
+				BLOCKS.debug("Unpause sound: '" + inst.name + "'");
+			}
 
 			newInst = playSound(inst.name, inst.callback, null, inst.currentTime);
 
@@ -1357,10 +1378,18 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 				//inst.source.loop = sounds[name].loop;
 				//inst.gain = inst.track.gain;
 				
+				
+				
 				// Connect the source to the gains
 				//inst.source.connect(inst.gain);
 				
 				if (!sounds[name].loop) {
+					
+					// If nothing is checking for the sound to be ended, start checking
+					if (!soundCompleteCheckerId) {
+						soundCompleteCheckerId = window.setInterval(soundCompleteChecker, 100);	
+					}
+					
 					// Timeout at the end of the sound
 					//inst.timeout = window.setTimeout(soundCompleteChecker, (delay + inst.source.buffer.duration - inst.currentTime) * 1000, inst);
 					
@@ -1688,19 +1717,6 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		// Since multiple sounds could be playing this returns nothing
 		return null;
-	};
-	
-	speaker.destroy = function () {
-		
-		var key;
-		
-		for (key in files) {
-			if (files.hasOwnProperty(key)) {
-				if (files[key].audioElement) {
-					files[key].audioElement = null;
-				}
-			}
-		}
 	};
 	
 	speaker.multipleTracksSupported = true;
