@@ -1286,7 +1286,7 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		setSoundGain = function (inst, gainValue, delay) {
 			
-			var fadeInterval = 10;
+			var fadeInterval = 100;
 			
 			// Clear previous fade if it's still going
 			if (inst.fadeTimeout) {
@@ -1302,10 +1302,12 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 				inst.fadeTarget = gainValue;
 				inst.fadeAmount = (gainValue - inst.sound.file.audioElement.volume) / ((delay * 1000) / fadeInterval);
 				inst.fadeTimeout = window.setInterval(function () {
-					if (inst.sound.file.audioElement.volume === inst.fadeTarget) {
+					if (inst.sound.file.audioElement.volume === inst.fadeTarget || Math.abs(inst.sound.file.audioElement.volume - inst.fadeTarget) < 0.1) {
 						window.clearInterval(inst.fadeTimeout);
+						inst.sound.file.audioElement.volume = gainValue;
+					} else {
+						inst.sound.file.audioElement.volume += inst.fadeAmount;
 					}
-					inst.sound.file.audioElement.volume += inst.fadeAmount;
 				}, fadeInterval);
 			} else {
 				inst.sound.file.audioElement.volume = gainValue;
