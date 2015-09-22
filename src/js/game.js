@@ -193,7 +193,9 @@ BLOCKS.game = function (spec, element) {
 			game.controller.addEventListener("mouseUpOutside", mouseUpOutside);
 			
 			// Listen to the first time the game is tapped
-			game.controller.addEventListener("tap", onFirstTap);
+			//game.controller.addEventListener("tap", onFirstTap);
+// Listen to the release event instead of the tap event due to the iOS 9 Web Audio bug wmalone.com/ios9webaudio
+			game.controller.addEventListener("release", onFirstTap);
 
 			// Mute and pause the game when the browser is not visible
 			if (typeof document.hidden !== "undefined") {	
