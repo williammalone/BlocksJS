@@ -404,7 +404,7 @@ BLOCKS.game = function (spec, element) {
 							game.loadingScreen = null;
 						}
 						
-						// If autoLoad is not turned off then load
+						// If autoStart is not turned off then start
 						if (game.autoStart !== false) {
 							game.start();
 						}
