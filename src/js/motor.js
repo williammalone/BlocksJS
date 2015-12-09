@@ -327,15 +327,18 @@ BLOCKS.motor = function (spec) {
 					timesVibrated += 1;
 					timesTillReverseDirection += 1;
 					
+					if (timesVibrated % 4 === 0) {
+						amplitude *= decay;
+					}
+					
 					if (timesTillReverseDirection >= 2) {
 						timesTillReverseDirection = 0;
 						direction *= -1;
-						
-						amplitude *= decay;
 					}
 					
 					if (curMoveMotor) {
 						curMoveMotor.removeEventListener("tick", motor.tick);
+						curMoveMotor = null;
 					}
 				
 					if (timesVibrated >= timesToVibrate) {
