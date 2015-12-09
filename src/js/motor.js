@@ -284,8 +284,9 @@ BLOCKS.motor = function (spec) {
 				callback = spec.callback,
 				amplitude = spec.amplitude || 10,
 				angle = spec.angle * Math.PI / 180 || 0,
+				decay = spec.decay || 1,
 				duration = spec.duration,
-				timesToVibrate = spec.amount,
+				timesToVibrate = spec.amount * 4,
 				timesVibrated = 0,
 				direction = 1,
 				timesTillReverseDirection,
@@ -309,6 +310,7 @@ BLOCKS.motor = function (spec) {
 						y: dy,
 						duration: duration / (timesToVibrate * 2),
 						clock: clock,
+						easing: timesTillReverseDirection % 2 ? "easeOut" : "easeIn",
 						callback: function () {
 							
 							curOffset.x += dx;
@@ -328,6 +330,8 @@ BLOCKS.motor = function (spec) {
 					if (timesTillReverseDirection >= 2) {
 						timesTillReverseDirection = 0;
 						direction *= -1;
+						
+						amplitude *= decay;
 					}
 					
 					if (curMoveMotor) {
