@@ -252,7 +252,9 @@ BLOCKS.controller = function (element) {
 			if (controller.listening) {
 			
 				// Stop the mouse event from going to the any elements behind the game
-				e.stopPropagation();
+				if (controller.stopPropagation) {
+					e.stopPropagation();
+				}
 
 				// Disable right click
 				//if (e.button === 2) {
@@ -325,6 +327,7 @@ BLOCKS.controller = function (element) {
 	controller.offsetX = 0;
 	controller.offsetY = 0;
 	controller.listening = true;
+	controller.stopPropagation = true;
 		
 	controller.simulateKeyDownEvent = function (keyCode) {
 		onKeyDownEvent({
