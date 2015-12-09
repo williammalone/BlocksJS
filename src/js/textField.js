@@ -22,7 +22,7 @@ BLOCKS.textField = function (options) {
 	
 	var textField = BLOCKS.view(options),
 	
-		drawBounds = false, motors = [],
+		drawBounds = true, motors = [],
 		
 		// Private Method
 		motorDestroyed = function (motor) {
@@ -51,12 +51,17 @@ BLOCKS.textField = function (options) {
 	//textField.dirty = true;
 	
 	// Public Methods
-	textField.render = function () {
+	textField.render = function (e) {
 	
 		var i, bounds, restoreNeeded, wordArr, curLine, tempLine, xLoc, yLoc,
-			context;
+			context, cameraOffset;
 		
 		if (textField.dirty && textField.visible && textField.layer) {
+			
+			cameraOffset = {
+				x: (e && e.camera && e.camera.offsetX) || 0,
+				y: (e && e.camera && e.camera.offsetY) || 0
+			};
 		
 			context = textField.layer.ctx;
 		
@@ -95,7 +100,7 @@ BLOCKS.textField = function (options) {
 					curLine = tempLine;
 				}
 			}
-			context.fillText(curLine, xLoc, yLoc);
+			context.fillText(curLine, xLoc - cameraOffset.x, yLoc - cameraOffset.y);
 			
 			//context.fillText(textField.prependText + textField.text, textField.x, textField.y);
 						
@@ -106,7 +111,7 @@ BLOCKS.textField = function (options) {
 			if (drawBounds) {
 				context.beginPath();
 				context.strokeStyle = "rgba(255, 80, 0, 0.5)";
-				context.strokeRect(textField.x, textField.y, textField.width, textField.height);
+				context.strokeRect(textField.x - cameraOffset.x, textField.y - cameraOffset.y, textField.width, textField.height);
 				context.closePath();
 			}
 		}
