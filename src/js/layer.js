@@ -94,6 +94,18 @@ BLOCKS.layer = function (options) {
 		}
 	});
 	
+	Object.defineProperty(layer, "canvasElement", {
+		get: function () {
+			return canvasElement;
+		}
+	});
+	
+	Object.defineProperty(layer, "parentElement", {
+		get: function () {
+			return parentElement;
+		}
+	});
+	
 	if (!options) {
 		options = {};
 	}
