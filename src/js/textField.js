@@ -22,7 +22,7 @@ BLOCKS.textField = function (options) {
 	
 	var textField = BLOCKS.view(options),
 	
-		drawBounds = true, motors = [],
+		drawBounds = false, motors = [],
 		
 		// Private Method
 		motorDestroyed = function (motor) {
