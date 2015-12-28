@@ -24,7 +24,7 @@ BLOCKS.slice = function (options) {
 	
 		// Properties
 		imageResource, frameWidth, frameHeight, paused, texture, tmpCtx, cropWidth, cropHeight, frameOffsetX, frameOffsetY, mirrorX, mirrorY,
-		drawBounds = true,
+		drawBounds = false,
 		frameCnt = 0,
 		loopIndex = 0,
 		rowIndex = 0,
@@ -227,7 +227,7 @@ BLOCKS.slice = function (options) {
 			slice.alpha = 1;
 		}
 		
-		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0) {
+		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0 && slice.scale !== 0 && slice.scaleX !== 0 && slice.scaleY !== 0) {
 		
 			cameraOffset = {
 				x: (e && e.camera && e.camera.offsetX) || 0,
