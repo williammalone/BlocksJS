@@ -769,7 +769,7 @@ BLOCKS.game = function (spec, element) {
 		
 		if (motor) {
 			motor.type = type;
-			if (spec.object) {
+			if (spec.object && spec.object.motorize) {
 				spec.object.motorize(motor);
 			}
 			motor.addEventListener("destroyed", game.removeMotor);
