@@ -24,7 +24,7 @@ BLOCKS.slice = function (options) {
 	
 		// Properties
 		imageResource, frameWidth, frameHeight, paused, texture, tmpCtx, cropWidth, cropHeight, frameOffsetX, frameOffsetY, mirrorX, mirrorY,
-		drawBounds = false,
+		drawBounds = true,
 		frameCnt = 0,
 		loopIndex = 0,
 		rowIndex = 0,
@@ -58,11 +58,13 @@ BLOCKS.slice = function (options) {
 			if (spec.sourceHeight > frameHeight) {
 				spec.sourceHeight = frameHeight;
 			}
-			if (spec.destWidth > slice.width / slice.layer.scale) {
-				spec.destWidth = slice.width / slice.layer.scale;
-			}
-			if (spec.destHeight > slice.height / slice.layer.scale) {
-				spec.destHeight = slice.height / slice.layer.scale;
+			if (slice.scale <= 1 && slice.scaleX <= 1 && slice.scaleY <= 1) {
+				if (spec.destWidth > slice.width / slice.layer.scale) {
+					spec.destWidth = slice.width / slice.layer.scale;
+				}
+				if (spec.destHeight > slice.height / slice.layer.scale) {
+					spec.destHeight = slice.height / slice.layer.scale;
+				}
 			}
 			
 //BLOCKS.debug("render: " + spec.image + ", " + spec.sourceX + ", " + spec.sourceY + ", " + spec.sourceWidth + ", " + spec.sourceHeight + ", " + spec.destX + ", " + spec.destY + ", " + spec.destWidth + ", " + spec.destHeight);	
@@ -303,14 +305,14 @@ BLOCKS.slice = function (options) {
 							drawImage({
 								ctx: context,
 								image: imageResource.image,
-								sourceX: colIndex * slice.width / slice.scale + slice.frameOffsetX,
-								sourceY: rowIndex * slice.height / slice.scale + slice.frameOffsetY,
+								sourceX: colIndex * slice.width / slice.scaleX + slice.frameOffsetX,
+								sourceY: rowIndex * slice.height / slice.scaleY + slice.frameOffsetY,
 								sourceWidth: slice.cropWidth || frameWidth, 
 								sourceHeight: slice.cropHeight || frameHeight, 
 								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,
 								destY: (y + slice.offsetY - cameraOffset.y) / slice.layer.scale, 
-								destWidth: (slice.cropWidth * slice.scale || slice.width) / slice.layer.scale,
-								destHeight: (slice.cropHeight * slice.scale || slice.height) / slice.layer.scale
+								destWidth: (slice.cropWidth * slice.scaleX || slice.width) / slice.layer.scale,
+								destHeight: (slice.cropHeight * slice.scaleY || slice.height) / slice.layer.scale
 							});
 						// If the sprite is not an animation
 						} else {
@@ -323,8 +325,8 @@ BLOCKS.slice = function (options) {
 								sourceHeight: slice.cropHeight || frameHeight,
 								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,
 								destY: (y + slice.offsetY - cameraOffset.y) / slice.layer.scale, 
-								destWidth: (slice.cropWidth * slice.scale || slice.width) / slice.layer.scale,
-								destHeight: (slice.cropHeight * slice.scale || slice.height) / slice.layer.scale
+								destWidth: (slice.cropWidth * slice.scaleX || slice.width * slice.scaleX) / slice.layer.scale,
+								destHeight: (slice.cropHeight * slice.scaleY || slice.height * slice.scaleY) / slice.layer.scale
 							});
 						}
 						

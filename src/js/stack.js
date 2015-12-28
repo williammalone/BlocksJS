@@ -22,7 +22,6 @@ BLOCKS.stack = function (options) {
 	
 	var stack = BLOCKS.eventDispatcher(),
 		views = [],
-		dirty,
 		alpha,
 		motors = [],
 		x,
@@ -46,6 +45,16 @@ BLOCKS.stack = function (options) {
 				
 			for (i = 0; i < views.length; i += 1) {
 				views[i].dirty = value;
+			}
+		},
+		
+		getViewsDirty = function () {
+			var i;
+				
+			for (i = 0; i < views.length; i += 1) {
+				if (views[i].dirty) {
+					return true;	
+				}
 			}
 		};
 		
@@ -100,7 +109,6 @@ BLOCKS.stack = function (options) {
 		
 		if (visible) {
 			visible = false;
-			dirty = true;
 			
 			for (i = 0; i < views.length; i += 1) {
 				views[i].hide();
@@ -158,7 +166,7 @@ BLOCKS.stack = function (options) {
 	
 	Object.defineProperty(stack, "dirty", {
 		get: function () {
-			return dirty;
+			return getViewsDirty();
 		},
 		set: function (value) {
 			setViewsDirty(value);
