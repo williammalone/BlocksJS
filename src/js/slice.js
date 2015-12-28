@@ -52,19 +52,18 @@ BLOCKS.slice = function (options) {
 		
 		drawImage = function (spec) {
 		
+			// These four conditions must exist to prevent the error in Firefox: IndexSizeError: Index or size is negative or greater than the allowed amount
 			if (spec.sourceWidth > frameWidth) {
 				spec.sourceWidth = frameWidth;
 			}
 			if (spec.sourceHeight > frameHeight) {
 				spec.sourceHeight = frameHeight;
 			}
-			if (slice.scale <= 1 && slice.scaleX <= 1 && slice.scaleY <= 1) {
-				if (spec.destWidth > slice.width / slice.layer.scale) {
-					spec.destWidth = slice.width / slice.layer.scale;
-				}
-				if (spec.destHeight > slice.height / slice.layer.scale) {
-					spec.destHeight = slice.height / slice.layer.scale;
-				}
+			if (spec.destWidth > slice.width / slice.layer.scale) {
+				spec.destWidth = slice.width / slice.layer.scale;
+			}
+			if (spec.destHeight > slice.height / slice.layer.scale) {
+				spec.destHeight = slice.height / slice.layer.scale;
 			}
 			
 //BLOCKS.debug("render: " + spec.image + ", " + spec.sourceX + ", " + spec.sourceY + ", " + spec.sourceWidth + ", " + spec.sourceHeight + ", " + spec.destX + ", " + spec.destY + ", " + spec.destWidth + ", " + spec.destHeight);	
