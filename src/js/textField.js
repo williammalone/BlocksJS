@@ -21,8 +21,9 @@ BLOCKS.textField = function (options) {
 	"use strict";
 	
 	var textField = BLOCKS.view(options),
-	
-		drawBounds = false, motors = [],
+		drawBounds = false, // Used for debug to see the text field's bounding box
+		paragraphs,
+		motors = [],
 		
 		// Private Method
 		motorDestroyed = function (motor) {
@@ -35,39 +36,236 @@ BLOCKS.textField = function (options) {
 				motors.splice(i, 1);
 				break;
 			}
+		},
+
+		populateParagraphs = function () {
+			
+			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key,
+			
+				charProperties = {
+					fontColor: null,
+					fontFamily: null,
+					fontSize: null,
+					fontItalic: null,
+					fontWeight: null,
+					highlight: null
+				},
+				supportedTags = {
+					b: "fontWeight",
+					i: "fontItalic",
+					hi: "highlights",
+					newLine: "newLine"
+				},
+				
+				executeTag = function (tagContents, startTag) {
+					
+					var contentArray, tagName, tagValues;
+					
+					contentArray = tagContents.split("=");
+					tagName = contentArray[0];			
+					if (contentArray.length > 1) {
+						tagValues = contentArray[1];	
+					}
+
+					if (supportedTags[tagName]) {						
+						if (tagName === "b" || tagName === "i") {
+							charProperties[supportedTags[tagName]] = startTag;
+						}
+					} else {
+//BLOCKS.debug("tag not supported: " + tagName);	
+					}
+				};
+			
+			for (i = 0; i < paragraphs.length; i += 1) {
+//BLOCKS.dir(paragraphs[i]);
+
+				paragraphs[i] = {
+					text: paragraphs[i]
+				};				
+				newParagraph = true;
+				paragraphs[i].charList = [];
+				lastWordStartIndex = 0;
+				lineCharacterIndex = 0;
+				
+				while (lineCharacterIndex < paragraphs[i].text.length) {
+//BLOCKS.dir(paragraphs[i].text.slice(lineCharacterIndex));				
+
+					// If encountered an end tag
+					if (/^<\/(.*?)\>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
+						
+						results = /<\/(.*?)\>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
+//BLOCKS.debug("closing tag found! " + results[1]);	
+//BLOCKS.dir(results);
+
+						executeTag(results[1].replace("/", ""), false);
+						
+						lineCharacterIndex += results[0].length;
+					
+					// If encountered an opening tag
+					} else if (/^<(.*?)>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
+				
+						// Get the details of the tag
+						results = /<(.*?)>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
+//BLOCKS.debug("opening tag found! " + results[1]);	
+//BLOCKS.dir(results);
+						
+						executeTag(results[1], true);
+
+						lineCharacterIndex += results[0].length;
+					} else {
+					
+						// If it is a space then remember it's location to tell the next characters what word they belong to
+						if (paragraphs[i].text[lineCharacterIndex] === " ") {
+							lastWordStartIndex = paragraphs[i].charList.length + 2;	
+						}
+						
+						// Save the character
+						paragraphs[i].charList.push({
+							character: paragraphs[i].text[lineCharacterIndex],
+							wordStartIndex: lastWordStartIndex,
+							newParagraph: newParagraph,
+							style: {}
+						});
+						
+						// Save the current font styles
+						for (key in charProperties) {
+							paragraphs[i].charList[paragraphs[i].charList.length - 1].style[key] = charProperties[key];
+						}
+						
+						newParagraph = false;
+						lineCharacterIndex += 1;
+					}
+				}
+			}
+			
+			/*
+			str = "";
+			for (i = 0; i < paragraphs.length; i += 1) {
+				for (j = 0; j < paragraphs[i].charList.length; j += 1) {
+					str += paragraphs[i].charList[j].character;
+				}
+			}
+			BLOCKS.debug("str: " + str);
+			*/
 		};
-	
-	// Public Properties
-	//textField.name = (options && options.name !== undefined) ? options.name : undefined;
-	//textField.width = options.width || 0;
-	//textField.height = options.height || 0;
-	//textField.x = options.x || 0;
-	//textField.y = options.y || 0;
-	//textField.layer = options && options.layer;
-	//textField.angle = (options && options.angle);
-	//textField.alpha = (options && options.alpha);
-	//textField.scale = (options && options.scale) || 1;
-	//textField.visible = true;
-	//textField.dirty = true;
 	
 	// Public Methods
 	textField.render = function (e) {
 	
-		var i, bounds, restoreNeeded, wordArr, curLine, tempLine, xLoc, yLoc,
-			context, cameraOffset;
-		
-		if (textField.dirty && textField.visible && textField.layer) {
+		var i, j, bounds, restoreNeeded, wordArr, curLine, newLineIndex, xLoc, yLoc,
+			context, cameraOffset, cameraSize, fontStr, x, y, numLines,
 			
+			renderCharactersOnThisLine = function (spec) {
+				
+				var j, fontStr, lineWidth,
+				
+					loop = function (renderPos) {
+						
+						var curWidth = 0;
+				
+						for (j = spec.startIndex; j < spec.endIndex; j += 1) {
+							
+							fontStr = "";
+		
+							if (paragraphs[i].charList[j].style.fontWeight || textField.fontWeight) {
+								fontStr += (paragraphs[i].charList[j].style.fontWeight || textField.fontWeight) + " ";
+							}
+							
+							if (paragraphs[i].charList[j].style.fontItalic || textField.fontItalic) {
+								fontStr += "italic" + " ";
+							}
+							fontStr += (Number(textField.fontSize.toString().replace("px", "")) * textField.scale + "px") + " " + textField.fontFamily;
+							context.font = fontStr;
+							
+//BLOCKS.debug(paragraphs[i].charList[j].character + ": fontStr: " + fontStr + " > " + context.measureText(paragraphs[i].charList[j].character).width);
+						
+							if (renderPos) {
+								
+								if (spec.stroke) {
+									BLOCKS.debug("stroke");
+									
+									// TODO: Move this properties outside of the for loop
+									context.strokeStyle = textField.strokeColor;
+									context.lineWidth = textField.strokeLineWidth || 10;
+									context.lineCap = textField.strokeLineCap || "round";
+									context.lineJoin = textField.strokeLineJoin || "round";
+									context.strokeText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
+								} else {
+								
+								context.fillStyle = textField.fontColor;
+								
+								// Draw this chracter
+								context.fillText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
+								}
+							}
+							
+							curWidth += context.measureText(paragraphs[i].charList[j].character).width;
+						}
+						
+						return curWidth;
+					};
+					
+				// Determine the width of the line (depends on the characters and their style)	
+				lineWidth = loop();
+			
+				// Just return the line width if function called specifing only a measurement
+				if (spec.measureOnly === true || spec.y === undefined) {
+					return lineWidth;	
+				}
+				
+				// Set the starting horizontal position of the text based on the text alignment
+				if (textField.textAlign === "center") {
+					x = textField.x - cameraOffset.x - lineWidth / 2;
+				} else if (textField.textAlign === "right") {
+					x = textField.x - cameraOffset.x + (textField.width || cameraSize.width);
+				} else {
+					x = textField.x - cameraOffset.x;
+				}
+				
+				y = spec.y;
+	
+// Debug				
+textField.strokeColor = "#990000";
+				if (textField.strokeColor) {
+					// First draw all the strokes
+					loop({
+						x: x,
+						y: y,
+						stroke: true	
+					});
+				}
+				
+				loop({
+					x: x,
+					y: y	
+				});
+				
+				return lineWidth;
+			};
+		
+		if (textField.dirty && textField.visible && textField.alpha !== 0 && textField.layer && textField.scale !== 0 && textField.scaleX !== 0 && textField.scaleY !== 0) {
+
 			cameraOffset = {
 				x: (e && e.camera && e.camera.offsetX) || 0,
 				y: (e && e.camera && e.camera.offsetY) || 0
 			};
+			
+			cameraSize = {
+				width: (e && e.camera && e.camera.width) || 300,
+				height: (e && e.camera && e.camera.height) || 150
+			};
 		
 			context = textField.layer.ctx;
-		
-			if (textField.angle || textField.alpha !== 1) {
+			
+			if (textField.angle || textField.alpha !== 1 || textField.scaleX !== 1 || textField.scaleY !== 1) {
 				context.save();
 				restoreNeeded = true;
+			}
+			
+			if (textField.scaleX !== 1 || textField.scaleY !== 1) {
+				context.translate(textField.x - cameraOffset.x, textField.y - cameraOffset.y);
+				context.scale(textField.scaleX, textField.scaleY);
+				context.translate(-(textField.x - cameraOffset.x), -(textField.y - cameraOffset.y));
 			}
 			
 			if (textField.alpha !== 1) {
@@ -75,44 +273,89 @@ BLOCKS.textField = function (options) {
 			}
 			
 			if (textField.angle) {
-				context.translate(textField.x, textField.y);
+				context.translate(textField.x - cameraOffset.x, textField.y - cameraOffset.y);
 				context.rotate(textField.angle * Math.PI / 180);
-				context.translate(-textField.x, -textField.y);
+				context.translate(-(textField.x - cameraOffset.x), -(textField.y - cameraOffset.y));
 			}
 		
-			context.fillStyle = textField.fontColor;
-			context.font = textField.fontWeight + " " + (Number(textField.fontSize.toString().replace("px", "")) * textField.scale + "px") + " " + textField.fontFamily;
-			context.textAlign = textField.textAlign;
-			
-			wordArr = (textField.prependText + textField.text).split(" ");
-			curLine = "";
-			
-			xLoc = textField.x;
-			yLoc = textField.y;
 			context.textBaseline = textField.textBaseline;
-			for (i = 0; i < wordArr.length; i += 1) {
-				tempLine = curLine + wordArr[i] + " ";
-				if (i && textField.width && context.measureText(tempLine).width > textField.width) {
-					context.fillText(curLine, xLoc, yLoc);
-					curLine = wordArr[i] + " ";
-					yLoc += 20;
-				} else {
-					curLine = tempLine;
-				}
-			}
-			context.fillText(curLine, xLoc - cameraOffset.x, yLoc - cameraOffset.y);
-			
-			//context.fillText(textField.prependText + textField.text, textField.x, textField.y);
-						
-			if (restoreNeeded) {
-				context.restore();
-			}
 
+			yLoc = textField.y - cameraOffset.y;
+			numLines = 0;
+			for (i = 0; i < paragraphs.length; i += 1) {
+				
+				curLine = "";
+				newLineIndex = 0;
+				
+				for (j = 0; j < paragraphs[i].charList.length; j += 1) {
+					
+					curLine += paragraphs[i].charList[j].character;
+					
+// TODO: To increase accuracy might have to keep track of each character's width since they could be different depending on the font size, weight, etc
+	
+					// If adding this character makes this line wider than the max width
+					//   then render the line and move down an start the next line
+					if (j && // If not the first character
+						textField.width && // If a width is specified
+						renderCharactersOnThisLine({
+							startIndex: newLineIndex,
+							endIndex: j,
+							measureOnly: true	
+						}) > textField.width) {  // If current line is wider
+						
+				
+						// If only one word is on the line then the word has to be broken
+						if (paragraphs[i].charList[j].wordStartIndex > newLineIndex) {
+						
+							// Remove all characters in the word that is outside the textfield width
+							curLine = curLine.slice(0, curLine.length - 1 - (j - paragraphs[i].charList[j].wordStartIndex));
+							
+							// Jump back to the beginning of the word
+							j = paragraphs[i].charList[j].wordStartIndex - 2;
+						}
+						
+						renderCharactersOnThisLine({
+							startIndex: newLineIndex,
+							endIndex: j,
+							y: yLoc
+						});
+						
+						// Clear the current line that has been drawn
+						curLine = "";
+
+						// If the start of a new line is a space then skip it
+						if (paragraphs[i].charList[j].character === " ") {
+							newLineIndex = j + 1;
+						} else {
+							newLineIndex = j;
+						}
+						
+						// Move the vertical position to the next line
+						yLoc += textField.lineHeight;
+						numLines += 1;
+					}
+				}
+				renderCharactersOnThisLine({
+					startIndex: newLineIndex,
+					endIndex: j,
+					y: yLoc
+				});
+				numLines += 1;
+			}
+			
 			if (drawBounds) {
 				context.beginPath();
 				context.strokeStyle = "rgba(255, 80, 0, 0.5)";
-				context.strokeRect(textField.x - cameraOffset.x, textField.y - cameraOffset.y, textField.width, textField.height);
+				if (textField.textAlign === "center") {
+					context.strokeRect(textField.x - cameraOffset.x - (textField.width || cameraSize.width) / 2, textField.y - cameraOffset.y, (textField.width || cameraSize.width), textField.height || (numLines * textField.lineHeight));
+				} else {
+					context.strokeRect(textField.x - cameraOffset.x, textField.y - cameraOffset.y, (textField.width || cameraSize.width), textField.height || (numLines * textField.lineHeight));
+				}
 				context.closePath();
+			}
+						
+			if (restoreNeeded) {
+				context.restore();
 			}
 		}
 		textField.dirty = false;
@@ -121,7 +364,6 @@ BLOCKS.textField = function (options) {
 	textField.destroy = function () {
 		
 		textField.stopMotors();
-		options = null;
 		textField = null;
 	};
 	
@@ -146,6 +388,29 @@ BLOCKS.textField = function (options) {
 		}
 	};
 	
+	textField.startHighlighting = function (type) {
+		
+		
+	};
+	
+	paragraphs = [];
+	Object.defineProperty(textField, "text", {
+		get: function () {
+			return paragraphs;
+		},
+		set: function (value) {
+
+			paragraphs = value;
+
+			if (typeof paragraphs === "string") {
+				paragraphs = [paragraphs];
+			}
+
+			populateParagraphs();
+			textField.dirty = true;
+		}
+	});
+	
 	(function () {
 		
 		options = options || {};
@@ -153,12 +418,16 @@ BLOCKS.textField = function (options) {
 		textField.fontColor = options.fontColor || "#000000";
 		textField.fontFamily = options.fontFamily || "Arial,sans";
 		textField.fontSize = (options.fontSize && Number(options.fontSize.toString().replace("px", ""))) || 24;
-		textField.fontWeight = options.fontWeight || "bold";
-		textField.textAlign = options.textAlign || "center";
-		textField.prependText = options.prependText || "";
+		textField.fontWeight = options.fontWeight;
+		textField.fontItalic = options.fontItalic;
+		textField.textAlign = options.textAlign || "left";
 		textField.textBaseline = options.textBaseline || "top";
+		textField.lineHeight = options.lineHeight || 10;
+		textField.paragraphSpacing = options.paragraphSpacing || 10;
+		textField.highlightColor = options.highlightColor || "#999999";
+		
+		// Make sure the text is set last
 		textField.text = options.text || "";
-
 	}());
 	
 	return textField;
