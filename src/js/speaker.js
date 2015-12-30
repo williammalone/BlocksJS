@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*global window, document, navigator */
+/*global window, document, navigator, HTMLElement */
 
 var BLOCKS;
 
@@ -377,6 +377,10 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 		if (spec.end > audioElement.duration) {
 			BLOCKS.warn("Sound ('" + spec.name + "') end time is larger than sprite duration. Setting end time to the sprite duration.");
 			spec.end = audioElement.duration - 0.0001;
+		}
+
+		if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
+			BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
 		}
 
 		sounds[spec.name] = {
@@ -989,6 +993,10 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	};
 	
 	speaker.createSound = function (spec) {
+		
+		if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
+			BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
+		}
 
 		sounds[spec.name] = {
 			name: spec.name,
@@ -1623,6 +1631,10 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		var tmpAudioElement = document.createElement("audio");
 		
+		if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
+			BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
+		}
+		
 		if (spec.extension === undefined || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/x-caf")) || (spec.extension === "mp4" && !tmpAudioElement.canPlayType("audio/mp4"))) {
 			spec.extension = "mp3";	
 		}
@@ -1729,6 +1741,36 @@ BLOCKS.speaker = function (spec) {
 			speaker = BLOCKS.audio.audioElementPlayer(spec);
 		}
 	}());
+	
+	speaker.createSoundsFromTree = function (spec) {
+		
+		var traverse = function (obj, callback) {
+			
+			var key, i;
+		
+			for (key in obj) {
+
+				if (obj.hasOwnProperty(key) && !(obj[key] instanceof HTMLElement)) {
+   
+					callback.apply(this, [key, obj]);
+					if (obj[key] instanceof Object && !(obj[key] instanceof Array)) {
+						traverse(obj[key], callback);
+					} else if (obj[key] instanceof Array) {
+						for (i = 0; i < obj[key].length; i += 1) {
+							traverse(obj[key][i], callback);
+						}
+					}
+				}
+			}
+		};
+		
+		traverse(spec, function (key, obj) {
+			// If no extension then assume it is a sound
+			if (key === "src" && obj[key].indexOf(".") === -1) {
+				speaker.createSound(obj);
+			}
+		});
+	};
 	
 	speaker.debug = false;
 	

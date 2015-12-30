@@ -840,12 +840,15 @@ BLOCKS.game = function (spec, element) {
 		
 			game.imageLoader.loadFromTree(spec);
 	
+
 			// Define game sounds
-			if (spec.sounds) {
-				for (i = 0; i < spec.sounds.length; i += 1) {
-					game.speaker.createSound(spec.sounds[i]);
-				}
-			}
+			//if (spec.sounds) {
+			//	for (i = 0; i < spec.sounds.length; i += 1) {
+			//		game.speaker.createSound(spec.sounds[i]);
+			//	}
+			//}
+			// Creates sounds for any object with an "src" property that has no extension
+			game.speaker.createSoundsFromTree(spec);
 	
 			game.imageLoader.addEventListener("update", function () {
 			
