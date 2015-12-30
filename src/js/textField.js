@@ -405,6 +405,9 @@ textField.strokeColor = "#990000";
 			if (typeof paragraphs === "string") {
 				paragraphs = [paragraphs];
 			}
+			
+			// Make a copy of the paragraphs array so the original is not changed
+			paragraphs = paragraphs.slice(0);
 
 			populateParagraphs();
 			textField.dirty = true;
