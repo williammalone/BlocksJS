@@ -21,8 +21,11 @@ BLOCKS.textField = function (options) {
 	"use strict";
 	
 	var textField = BLOCKS.view(options),
+		sup = {},
 		drawBounds = false, // Used for debug to see the text field's bounding box
 		paragraphs,
+		numLines,
+		cameraSize,
 		motors = [],
 		
 		// Private Method
@@ -153,7 +156,7 @@ BLOCKS.textField = function (options) {
 	textField.render = function (e) {
 	
 		var i, j, bounds, restoreNeeded, wordArr, curLine, newLineIndex, xLoc, yLoc,
-			context, cameraOffset, cameraSize, fontStr, x, y, numLines,
+			context, cameraOffset, fontStr, x, y, index,
 			
 			renderCharactersOnThisLine = function (spec) {
 				
@@ -174,7 +177,7 @@ BLOCKS.textField = function (options) {
 							if (paragraphs[i].charList[j].style.fontItalic || textField.fontItalic) {
 								fontStr += "italic" + " ";
 							}
-							fontStr += (Number(textField.fontSize.toString().replace("px", "")) * textField.scale + "px") + " " + textField.fontFamily;
+							fontStr += (Number(textField.fontSize.toString().replace("px", ""))  + "px") + " " + textField.fontFamily;
 							context.font = fontStr;
 							
 //BLOCKS.debug(paragraphs[i].charList[j].character + ": fontStr: " + fontStr + " > " + context.measureText(paragraphs[i].charList[j].character).width);
@@ -182,7 +185,6 @@ BLOCKS.textField = function (options) {
 							if (renderPos) {
 								
 								if (spec.stroke) {
-									BLOCKS.debug("stroke");
 									
 									// TODO: Move this properties outside of the for loop
 									context.strokeStyle = textField.strokeColor;
@@ -192,10 +194,10 @@ BLOCKS.textField = function (options) {
 									context.strokeText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
 								} else {
 								
-								context.fillStyle = textField.fontColor;
+									context.fillStyle = textField.fontColor;
 								
-								// Draw this chracter
-								context.fillText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
+									// Draw this chracter
+									context.fillText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
 								}
 							}
 							
@@ -224,8 +226,6 @@ BLOCKS.textField = function (options) {
 				
 				y = spec.y;
 	
-// Debug				
-textField.strokeColor = "#990000";
 				if (textField.strokeColor) {
 					// First draw all the strokes
 					loop({
@@ -261,7 +261,7 @@ textField.strokeColor = "#990000";
 				context.save();
 				restoreNeeded = true;
 			}
-			
+		
 			if (textField.scaleX !== 1 || textField.scaleY !== 1) {
 				context.translate(textField.x - cameraOffset.x, textField.y - cameraOffset.y);
 				context.scale(textField.scaleX, textField.scaleY);
@@ -280,6 +280,7 @@ textField.strokeColor = "#990000";
 		
 			context.textBaseline = textField.textBaseline;
 
+			index = 0;
 			yLoc = textField.y - cameraOffset.y;
 			numLines = 0;
 			for (i = 0; i < paragraphs.length; i += 1) {
@@ -301,9 +302,8 @@ textField.strokeColor = "#990000";
 							startIndex: newLineIndex,
 							endIndex: j,
 							measureOnly: true	
-						}) > textField.width) {  // If current line is wider
+						}) > textField.width / textField.scaleX) {  // If current line is wider
 						
-				
 						// If only one word is on the line then the word has to be broken
 						if (paragraphs[i].charList[j].wordStartIndex > newLineIndex) {
 						
@@ -334,6 +334,13 @@ textField.strokeColor = "#990000";
 						yLoc += textField.lineHeight;
 						numLines += 1;
 					}
+					
+					// Prevent crash
+					index += 1;
+					if (index > 1000) {
+						BLOCKS.error("Cannot render textfield. Width maybe smaller than character.");	
+						break;
+					}
 				}
 				renderCharactersOnThisLine({
 					startIndex: newLineIndex,
@@ -343,15 +350,35 @@ textField.strokeColor = "#990000";
 				numLines += 1;
 			}
 			
+			// Change the bounding box to match the text baseline and the number of lines rendered
+			if (textField.textBaseline === "alphabetic") {
+				textField.hotspots = [{
+					x: 0,
+					y: -textField.lineHeight * 0.7,
+					width: textField.width / textField.scaleX || cameraSize.width,
+					height: textField.lineHeight * numLines
+				}];
+			}
+			
 			if (drawBounds) {
-				context.beginPath();
-				context.strokeStyle = "rgba(255, 80, 0, 0.5)";
-				if (textField.textAlign === "center") {
-					context.strokeRect(textField.x - cameraOffset.x - (textField.width || cameraSize.width) / 2, textField.y - cameraOffset.y, (textField.width || cameraSize.width), textField.height || (numLines * textField.lineHeight));
-				} else {
-					context.strokeRect(textField.x - cameraOffset.x, textField.y - cameraOffset.y, (textField.width || cameraSize.width), textField.height || (numLines * textField.lineHeight));
+				
+				bounds = textField.getBounds();
+				if (!bounds.length) {
+					bounds = [bounds];
 				}
-				context.closePath();
+				
+				context.lineWidth = 4;
+				
+				for (i = 0; i < bounds.length; i += 1) {
+					context.beginPath();
+					context.strokeStyle = "rgba(255, 10, 255, 0.4)";
+					if (textField.textAlign === "center") {
+						context.strokeRect(bounds[i].x - cameraOffset.x - (bounds[i].width || cameraSize.width) / 2, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), bounds[i].height || (numLines * textField.lineHeight));
+					} else {
+						context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), bounds[i].height || (numLines * textField.lineHeight));
+					}
+					context.closePath();
+				}
 			}
 						
 			if (restoreNeeded) {

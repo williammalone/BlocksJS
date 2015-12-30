@@ -227,7 +227,7 @@ BLOCKS.slice = function (options) {
 			slice.alpha = 1;
 		}
 		
-		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0 && slice.scale !== 0 && slice.scaleX !== 0 && slice.scaleY !== 0) {
+		if (slice.dirty && slice.visible && slice.alpha !== 0 && slice.cropWidth !== 0 && slice.cropHeight !== 0 && slice.scaleX !== 0 && slice.scaleY !== 0) {
 		
 			cameraOffset = {
 				x: (e && e.camera && e.camera.offsetX) || 0,
@@ -304,8 +304,8 @@ BLOCKS.slice = function (options) {
 							drawImage({
 								ctx: context,
 								image: imageResource.image,
-								sourceX: colIndex * slice.width / slice.scaleX + slice.frameOffsetX,
-								sourceY: rowIndex * slice.height / slice.scaleY + slice.frameOffsetY,
+								sourceX: colIndex * slice.width + slice.frameOffsetX,
+								sourceY: rowIndex * slice.height + slice.frameOffsetY,
 								sourceWidth: slice.cropWidth || frameWidth, 
 								sourceHeight: slice.cropHeight || frameHeight, 
 								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,

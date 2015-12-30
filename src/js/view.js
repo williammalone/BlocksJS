@@ -23,7 +23,7 @@ BLOCKS.view = function (options) {
 	var view = BLOCKS.eventDispatcher(),
 	
 		// Properties
-		x, y, width, height, offsetX, offsetY, angle, scale, scaleX, scaleY, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
+		x, y, width, height, offsetX, offsetY, angle, scaleX, scaleY, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
 		
 		motors = [],
 			
@@ -272,7 +272,6 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
-		scale = options.scale !== undefined ? options.scale : 1;
 		Object.defineProperty(view, "scale", {
 			get: function () {
 				
@@ -286,16 +285,15 @@ BLOCKS.view = function (options) {
 				}
 			},
 			set: function (value) {
-				if (scale !== value) {
+				if (value !== scaleX || value !== scaleY) {
 					view.dirty = true;
-					scale = value;
 					scaleX = value;
 					scaleY = value;
 				}
 			}
 		});
 		
-		scaleX = options.scaleX !== undefined ? options.scaleX : scale;
+		scaleX = options.scaleX !== undefined ? options.scaleX : (options.scale !== undefined ? options.scale : 1);
 		Object.defineProperty(view, "scaleX", {
 			get: function () {
 				return scaleX;
@@ -308,7 +306,7 @@ BLOCKS.view = function (options) {
 			}
 		});
 		
-		scaleY = options.scaleY !== undefined ? options.scaleY : scale;
+		scaleY = options.scaleY !== undefined ? options.scaleY : (options.scale !== undefined ? options.scale : 1);
 		Object.defineProperty(view, "scaleY", {
 			get: function () {
 				return scaleY;
