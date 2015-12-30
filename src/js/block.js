@@ -28,7 +28,7 @@ BLOCKS.block = function (options) {
 		curSlice,
 		motors = [],
 		// The order of properties matters in cases of dependencies
-		properties = ["stack", "worldX", "worldY", "x", "y", "scale", "width", "height", "centerRegistrationPoint", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos", "cropWidth", "cropHeight", "frameOffsetX", "frameOffsetY", "offsetX", "offsetY", "minHotspot", "hotspots", "currentFrameIndex"],	
+		properties = ["stack", "worldX", "worldY", "x", "y", "scale", "scaleX", "scaleY", "width", "height", "centerRegistrationPoint", "mirrorX", "mirrorY", "angle", "alpha", "layer", "visible", "dirty", "justTapped", "justNotTapped", "dragging", "justReleased", "tapPos", "cropWidth", "cropHeight", "frameOffsetX", "frameOffsetY", "offsetX", "offsetY", "minHotspot", "hotspots", "currentFrameIndex"],	
 		methods = ["update", "render", "show", "hide", "pause", "unpause", "reset", "stop", "play", "isPointInside", "getBounds", "getBoundingBox", "isRectInside", "gotoLastFrame", "gotoFrame"],
 		
 		motorDestroyed = function (motor) {

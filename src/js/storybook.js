@@ -75,18 +75,23 @@ BLOCKS.storybookPage = function (options) {
 	page.update = function () {
 	
 		var i;
+		
+		// If the turn ratio is really small make it zero to hide the elements
+		if (Math.abs(page.turnRatio) < 0.001) {
+			page.turnRatio = 0;
+		}
 	
 		if (bg) {
-			bg.scaleX = bg.world.scaleX * page.turnRatio * page.scaleX;
-			bg.scaleY = bg.world.scaleY * page.scaleY;
+			bg.scaleX = bg.world.scale * page.turnRatio * page.scaleX;
+			bg.scaleY = bg.world.scale * page.scaleY;
 			bg.x = page.x + bg.world.x * page.turnRatio * page.scaleX;
 			bg.y = page.y + bg.world.y * page.scaleY;
 			bg.update();
 		}
 
 		for (i = 0; i < items.length; i += 1) {
-			items[i].scaleX = items[i].world.scaleX * page.turnRatio * page.scaleX;
-			items[i].scaleY = items[i].world.scaleY * page.scaleY;
+			items[i].scaleX = items[i].world.scale * page.turnRatio * page.scaleX;
+			items[i].scaleY = items[i].world.scale * page.scaleY;
 			items[i].x = page.x + items[i].world.x * page.turnRatio * page.scaleX;
 			items[i].y = page.y + items[i].world.y * page.scaleY;
 			items[i].update();
@@ -104,6 +109,11 @@ BLOCKS.storybookPage = function (options) {
 		for (i = 0; i < items.length; i += 1) {
 			items[i].render(e);
 		}
+	};
+	
+	page.getChildren = function () {
+		
+		return children;
 	};
 	
 	page.getChild = function (name) {
@@ -183,8 +193,7 @@ BLOCKS.storybookPage = function (options) {
 			bg.world = {
 				x: bg.x || 0,
 				y: bg.y || 0,
-				scaleX: 1,
-				scaleY: 1	
+				scale: 1	
 			};
 			if (bg.name) {
 				children[bg.name] = bg;
@@ -211,19 +220,22 @@ BLOCKS.storybookPage = function (options) {
 					spec = options.content[i];
 					item = BLOCKS.textField(spec);	
 				}
+				// Save the initial properties so they can be reset
 				item.start = {
 					x: item.x || 0,
 					y: item.y || 0,
-					scale: item.scale || 1,
-					scaleX: item.scaleX || 1,
-					scaleY: item.scaleY || 1
+					scale: item.scale || 1
 				};
+				// Save the properties since the item will be in the storybook coordinate space
 				item.world = {
 					x: item.start.x,
 					y: item.start.y,
-					scaleX: 1,
-					scaleY: 1	
+					scale: item.scale
 				};
+				// Reset the item's scale since it was assigned to the world property (don't want it on the item and again on the world - see the render method)
+				item.scale = 1;
+				
+				// Add the item to the items array
 				items.push(item);
 				
 				if (item.name) {
@@ -329,11 +341,11 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				clock: storybook,
 				callback: function () {
 					spec.page.turning = false;
-					updatePageVisibility();
 					
 					if (spec.callback) {
 						spec.callback();	
 					}
+					updatePageVisibility();
 				}
 			}));
 		};
@@ -422,7 +434,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				prevPageIndex: curPageIndex - 3
 			};
 
-BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
+//BLOCKS.debug("Turn to page: " + (navigating.curPageIndex + 1));
 
 			pages[navigating.middlePageIndex].turnRatio = -1;
 			pages[navigating.targetPageIndex].turnRatio = 0;
@@ -435,6 +447,8 @@ BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
 						direction: "right", 
 						callback: function () {
 						
+							storybook.dispatchEvent("previousPageEnd");
+							
 							// Update the current page
 							curPageIndex = navigating.targetPageIndex;
 							navigating = null;
@@ -459,7 +473,7 @@ BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
 				targetPageIndex: curPageIndex + 2
 			};
 
-BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
+//BLOCKS.debug("Turn to page: " + (navigating.curPageIndex + 1));
 
 			pages[navigating.middlePageIndex].turnRatio = 0;
 			turnPage({
@@ -471,6 +485,8 @@ BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
 						page: pages[navigating.middlePageIndex], 
 						direction:"left", 
 						callback: function () {
+							
+							storybook.dispatchEvent("nextPageEnd");
 						
 							// Update the current page
 							curPageIndex = navigating.targetPageIndex;
@@ -513,6 +529,11 @@ BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
 		}
 	};
 	
+	storybook.getChildren = function (pageIndex) {
+
+		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].getChildren();
+	};
+	
 	storybook.getChild = function (name, pageIndex) {
 
 		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].getChild(name);
@@ -521,6 +542,12 @@ BLOCKS.debug("Turn to page: " + navigating.curPageIndex);
 	Object.defineProperty(storybook, "numberOfPages", {
 		get: function () {
 			return pages.length;
+		}
+	});
+	
+	Object.defineProperty(storybook, "targetPageIndex", {
+		get: function () {
+			return navigating && navigating.targetPageIndex;
 		}
 	});
 	

@@ -837,7 +837,7 @@ BLOCKS.game = function (spec, element) {
 		
 		if (!loadStarted) {
 			loadStarted = true;
-
+		
 			game.imageLoader.loadFromTree(spec);
 	
 			// Define game sounds
@@ -862,6 +862,11 @@ BLOCKS.game = function (spec, element) {
 			});
 			game.imageLoader.load();
 		}
+	};
+	
+	game.exit = function () {
+		
+		game.dispatchEvent("exit");
 	};
 	
 	game.stop = function () {
