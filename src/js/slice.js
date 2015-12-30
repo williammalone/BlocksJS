@@ -324,8 +324,8 @@ BLOCKS.slice = function (options) {
 								sourceHeight: slice.cropHeight || frameHeight,
 								destX: (x + slice.offsetX - cameraOffset.x) / slice.layer.scale,
 								destY: (y + slice.offsetY - cameraOffset.y) / slice.layer.scale, 
-								destWidth: (slice.cropWidth * slice.scaleX || slice.width * slice.scaleX) / slice.layer.scale,
-								destHeight: (slice.cropHeight * slice.scaleY || slice.height * slice.scaleY) / slice.layer.scale
+								destWidth: (slice.cropWidth * slice.scaleX || slice.width) / slice.layer.scale,
+								destHeight: (slice.cropHeight * slice.scaleY || slice.height) / slice.layer.scale
 							});
 						}
 						

@@ -23,7 +23,7 @@ BLOCKS.view = function (options) {
 	var view = BLOCKS.eventDispatcher(),
 	
 		// Properties
-		x, y, width, height, offsetX, offsetY, angle, scale, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
+		x, y, width, height, offsetX, offsetY, angle, scale, scaleX, scaleY, alpha, visible, layer, hotspots, minHotspot, stack, centerRegistrationPoint,
 		
 		motors = [],
 			
@@ -275,12 +275,48 @@ BLOCKS.view = function (options) {
 		scale = options.scale !== undefined ? options.scale : 1;
 		Object.defineProperty(view, "scale", {
 			get: function () {
-				return scale;
+				
+				if (scaleX === scaleY) {
+					return scaleX;	
+				} else {
+					return {
+						x: scaleX,
+						y: scaleY	
+					};
+				}
 			},
 			set: function (value) {
 				if (scale !== value) {
 					view.dirty = true;
 					scale = value;
+					scaleX = value;
+					scaleY = value;
+				}
+			}
+		});
+		
+		scaleX = options.scaleX !== undefined ? options.scaleX : scale;
+		Object.defineProperty(view, "scaleX", {
+			get: function () {
+				return scaleX;
+			},
+			set: function (value) {
+				if (scaleX !== value) {
+					view.dirty = true;
+					scaleX = value;
+				}
+			}
+		});
+		
+		scaleY = options.scaleY !== undefined ? options.scaleY : scale;
+		Object.defineProperty(view, "scaleY", {
+			get: function () {
+				return scaleY;
+			},
+			set: function (value) {
+				if (scaleY !== value) {
+					view.dirty = true;
+					scaleY = value;
 				}
 			}
 		});
@@ -288,12 +324,12 @@ BLOCKS.view = function (options) {
 		width = options.width || 0;
 		Object.defineProperty(view, "width", {
 			get: function () {
-				return width * view.scale;
+				return width * view.scaleX;
 			},
 			set: function (value) {
-				if (width !== view.scale ? value / view.scale : value) {
+				if (width !== value / view.scaleX) {
 					view.dirty = true;
-					width = view.scale ? value / view.scale : value;
+					width = value / view.scaleX;
 				}
 			}
 		});
@@ -301,12 +337,12 @@ BLOCKS.view = function (options) {
 		height = options.height || 0;
 		Object.defineProperty(view, "height", {
 			get: function () {
-				return height * view.scale;
+				return height * view.scaleY;
 			},
 			set: function (value) {
-				if (height !== view.scale ? value / view.scale : value) {
+				if (height !== value / view.scaleY) {
 					view.dirty = true;
-					height = view.scale ? value / view.scale : value;
+					height = value / view.scaleY;
 				}
 			}
 		});
