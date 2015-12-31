@@ -379,9 +379,9 @@ BLOCKS.audio.audioElementPlayer = function (spec) {
 			spec.end = audioElement.duration - 0.0001;
 		}
 
-		if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
-			BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
-		}
+		//if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
+		//	BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
+		//}
 
 		sounds[spec.name] = {
 			name: spec.name,
@@ -994,9 +994,9 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	speaker.createSound = function (spec) {
 		
-		if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
-			BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
-		}
+		//if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
+		//	BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
+		//}
 
 		sounds[spec.name] = {
 			name: spec.name,
@@ -1631,9 +1631,9 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		
 		var tmpAudioElement = document.createElement("audio");
 		
-		if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
-			BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
-		}
+		//if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
+		//	BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
+		//}
 		
 		if (spec.extension === undefined || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/x-caf")) || (spec.extension === "mp4" && !tmpAudioElement.canPlayType("audio/mp4"))) {
 			spec.extension = "mp3";	
