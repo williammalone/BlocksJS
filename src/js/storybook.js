@@ -111,6 +111,28 @@ BLOCKS.storybookPage = function (options) {
 		}
 	};
 	
+	page.startHighlighting = function () {
+		
+		var i;
+	
+		for (i = 0; i < items.length; i += 1) {
+			if ((options.content[i].type === "textarea" || options.content[i].text !== undefined) && items[i].startHighlighting) {
+				items[i].startHighlighting();
+			}
+		}
+	},
+	
+	page.stopHighlighting = function () {
+		
+		var i;
+	
+		for (i = 0; i < items.length; i += 1) {
+			if ((options.content[i].type === "textarea" || options.content[i].text !== undefined) && items[i].startHighlighting) {
+				items[i].stopHighlighting();
+			}
+		}
+	},
+	
 	page.getChildren = function () {
 		
 		return children;
@@ -447,7 +469,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 						direction: "right", 
 						callback: function () {
 						
-							storybook.dispatchEvent("previousPageEnd");
+							storybook.dispatchEvent("previousPageEnd", navigating.targetPageIndex);
 							
 							// Update the current page
 							curPageIndex = navigating.targetPageIndex;
@@ -486,7 +508,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 						direction:"left", 
 						callback: function () {
 							
-							storybook.dispatchEvent("nextPageEnd");
+							storybook.dispatchEvent("nextPageEnd", navigating.targetPageIndex);
 						
 							// Update the current page
 							curPageIndex = navigating.targetPageIndex;
@@ -527,6 +549,16 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		if (book) {
 			book.destroy();	
 		}
+	};
+	
+	storybook.startHighlighting = function (pageIndex) {
+
+		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].startHighlighting();
+	};
+	
+	storybook.stopHighlighting = function (pageIndex) {
+
+		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].stopHighlighting();
 	};
 	
 	storybook.getChildren = function (pageIndex) {
