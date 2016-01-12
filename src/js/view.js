@@ -348,7 +348,7 @@ BLOCKS.view = function (options) {
 		offsetX = options.offsetX || 0;
 		Object.defineProperty(view, "offsetX", {
 			get: function () {
-				return view.centerRegistrationPoint ? -view.width / 2 : offsetX;
+				return view.centerRegistrationPoint ? -view.width / 2 : offsetX * scaleX;
 			},
 			set: function (value) {
 				if (offsetX !== value) {
@@ -361,7 +361,7 @@ BLOCKS.view = function (options) {
 		offsetY = options.offsetY || 0;
 		Object.defineProperty(view, "offsetY", {
 			get: function () {
-				return view.centerRegistrationPoint ? -view.height / 2 : offsetY;
+				return view.centerRegistrationPoint ? -view.height / 2 : offsetY * scaleY;
 			},
 			set: function (value) {
 				if (offsetY !== value) {
