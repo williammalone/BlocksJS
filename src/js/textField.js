@@ -27,6 +27,11 @@ BLOCKS.textField = function (options) {
 		numLines,
 		cameraSize,
 		motors = [],
+		highlighting,
+		highlightingIndex,
+		highlights = {},
+		maxHighlightIndex = 0,
+		languages,
 		
 		// Private Method
 		motorDestroyed = function (motor) {
@@ -43,7 +48,7 @@ BLOCKS.textField = function (options) {
 
 		populateParagraphs = function () {
 			
-			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key,
+			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key, prevHighlightEndValue, start, end,
 			
 				charProperties = {
 					fontColor: null,
@@ -53,34 +58,65 @@ BLOCKS.textField = function (options) {
 					fontWeight: null,
 					highlight: null
 				},
+				
 				supportedTags = {
 					b: "fontWeight",
 					i: "fontItalic",
-					hi: "highlights",
+					hi: "highlight",
 					newLine: "newLine"
+				},
+				
+				convertToFrames = function (value) {
+					
+					return Math.floor(parseFloat(value) * 60);
 				},
 				
 				executeTag = function (tagContents, startTag) {
 					
-					var contentArray, tagName, tagValues;
+					var contentArray, tagName, tagValueStr, tagValueArr;
 					
 					contentArray = tagContents.split("=");
 					tagName = contentArray[0];			
 					if (contentArray.length > 1) {
-						tagValues = contentArray[1];	
+						tagValueStr = contentArray[1].replace(/"/g, "").replace(/'/g, "");
+						tagValueArr = tagValueStr.split(",");
 					}
 
 					if (supportedTags[tagName]) {						
 						if (tagName === "b" || tagName === "i") {
 							charProperties[supportedTags[tagName]] = startTag;
+						} else if (tagName === "hi") {
+							if (startTag) {
+								
+								// Set to the first value if there was a comma in the value portion of the tag (e.g. hi="1.2,3.4") otherwise set it to the end value of the previous tag
+								start = tagValueArr.length > 1 ? convertToFrames(tagValueArr[0]) : prevHighlightEndValue;
+								end = convertToFrames(tagValueArr[tagValueArr.length - 1]);
+								
+								// Save the end of the highlights
+								if (end > maxHighlightIndex) {
+									maxHighlightIndex = end;
+								}
+								
+								// Convert from time to frames
+								charProperties[supportedTags[tagName]] = {
+									start: start,
+									end: end
+								};
+								
+								// Save the end value
+								prevHighlightEndValue = end;
+								
+								// Save the start and end times to an object to quickly check  if a highlight has started or ended and then set the textfield to dirty so it will render the change
+								highlights[start] = true;
+								highlights[end] = true;
+							} else {
+								charProperties[supportedTags[tagName]] = false;
+							}
 						}
-					} else {
-//BLOCKS.debug("tag not supported: " + tagName);	
 					}
 				};
 			
 			for (i = 0; i < paragraphs.length; i += 1) {
-//BLOCKS.dir(paragraphs[i]);
 
 				paragraphs[i] = {
 					text: paragraphs[i]
@@ -89,9 +125,9 @@ BLOCKS.textField = function (options) {
 				paragraphs[i].charList = [];
 				lastWordStartIndex = 0;
 				lineCharacterIndex = 0;
+				prevHighlightEndValue = 0;
 				
-				while (lineCharacterIndex < paragraphs[i].text.length) {
-//BLOCKS.dir(paragraphs[i].text.slice(lineCharacterIndex));				
+				while (lineCharacterIndex < paragraphs[i].text.length) {		
 
 					// If encountered an end tag
 					if (/^<\/(.*?)\>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
@@ -140,7 +176,7 @@ BLOCKS.textField = function (options) {
 					}
 				}
 			}
-			
+
 			/*
 			str = "";
 			for (i = 0; i < paragraphs.length; i += 1) {
@@ -151,6 +187,22 @@ BLOCKS.textField = function (options) {
 			BLOCKS.debug("str: " + str);
 			*/
 		};
+		
+	textField.update = function () {
+		
+		if (highlighting) {
+			highlightingIndex += 1;
+					
+			// A highlight has started or ended so a render is needed
+			if (highlights[highlightingIndex]) {
+				textField.dirty = true;
+			}
+			
+			if (highlightingIndex >= maxHighlightIndex) {
+				highlighting = false;
+			} 
+		}	
+	},
 	
 	// Public Methods
 	textField.render = function (e) {
@@ -180,6 +232,7 @@ BLOCKS.textField = function (options) {
 							fontStr += (Number(textField.fontSize.toString().replace("px", ""))  + "px") + " " + textField.fontFamily;
 							context.font = fontStr;
 							
+							
 //BLOCKS.debug(paragraphs[i].charList[j].character + ": fontStr: " + fontStr + " > " + context.measureText(paragraphs[i].charList[j].character).width);
 						
 							if (renderPos) {
@@ -193,8 +246,13 @@ BLOCKS.textField = function (options) {
 									context.lineJoin = textField.strokeLineJoin || "round";
 									context.strokeText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
 								} else {
-								
-									context.fillStyle = textField.fontColor;
+		
+									if (highlighting && paragraphs[i].charList[j].style.highlight && highlightingIndex >= paragraphs[i].charList[j].style.highlight.start && highlightingIndex < paragraphs[i].charList[j].style.highlight.end) {
+										context.fillStyle = textField.highlightColor;
+									} else {
+										context.fillStyle = textField.fontColor;
+									}
+									
 								
 									// Draw this chracter
 									context.fillText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
@@ -415,9 +473,18 @@ BLOCKS.textField = function (options) {
 		}
 	};
 	
-	textField.startHighlighting = function (type) {
-		
-		
+	textField.startHighlighting = function () {
+	
+		highlighting = true;
+		highlightingIndex = 0;
+		textField.dirty = true;
+	};
+	
+	textField.stopHighlighting = function () {
+	
+		highlighting = false;
+		highlightingIndex = 0;
+		textField.dirty = true;
 	};
 	
 	paragraphs = [];
@@ -426,11 +493,14 @@ BLOCKS.textField = function (options) {
 			return paragraphs;
 		},
 		set: function (value) {
-
-			paragraphs = value;
-
-			if (typeof paragraphs === "string") {
-				paragraphs = [paragraphs];
+			
+			// Supported value type are string, array of paragraphs or object of lanuages
+			if (typeof value === "string") {
+				paragraphs = [value];
+			} else if (Array.isArray(value)) {
+				paragraphs = value;
+			} else {
+				paragraphs = [value.english];
 			}
 			
 			// Make a copy of the paragraphs array so the original is not changed
@@ -452,7 +522,7 @@ BLOCKS.textField = function (options) {
 		textField.fontItalic = options.fontItalic;
 		textField.textAlign = options.textAlign || "left";
 		textField.textBaseline = options.textBaseline || "top";
-		textField.lineHeight = options.lineHeight || 10;
+		textField.lineHeight = options.lineHeight || textField.fontSize;
 		textField.paragraphSpacing = options.paragraphSpacing || 10;
 		textField.highlightColor = options.highlightColor || "#999999";
 		

@@ -97,8 +97,8 @@ BLOCKS.game = function (spec, element) {
 				game.dispatchEvent("firstTap");
 				
 				gameTappedOnce = true;
-				
-				if (game.introScreen) {
+			
+				if (game.introScreen && game.introScreen.destroyOnFirsTap !== false) {
 					game.state = "loading";
 					game.introScreen.destroy();
 					game.introScreen = null;
@@ -847,7 +847,7 @@ BLOCKS.game = function (spec, element) {
 			//		game.speaker.createSound(spec.sounds[i]);
 			//	}
 			//}
-			// Creates sounds for any object with an "src" property that has no extension
+			// Creates sounds for any object with an "src" property that has no extension so they will preload
 			game.speaker.createSoundsFromTree(spec);
 	
 			game.imageLoader.addEventListener("update", function () {
@@ -947,6 +947,8 @@ BLOCKS.game = function (spec, element) {
 	}());
 	
 	init();
+	
+	game.localization = BLOCKS.localization();
 	
 	game.imageLoader = (spec && spec.imagesPath) ? BLOCKS.preloader(spec.imagesPath) : BLOCKS.preloader();
 	
