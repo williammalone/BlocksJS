@@ -82,6 +82,7 @@ BLOCKS.slice = function (options) {
 		};
 	
 	slice.loop = options && options.loop;
+	slice.variableFrameDelay = (options && options.variableFrameDelay !== undefined) ? options.variableFrameDelay : {};
 	slice.frameDelay = (options && options.frameDelay !== undefined) ? options.frameDelay : 4;
 	slice.numberOfFrames = (options && options.numberOfFrames) || 1;
 	slice.numberOfRows = (options && options.numberOfRows) || 1;
@@ -105,7 +106,8 @@ BLOCKS.slice = function (options) {
 					// If the current frame is the last frame
 					if (curFrameIndex >= slice.numberOfFrames - 1) {
 						
-						if (frameCnt >= slice.frameDelay) {
+						// Determine if the frame has waited long enough to go to the next frame
+						if (frameCnt >= (slice.variableFrameDelay[curFrameIndex] || slice.frameDelay)) {
 						
 							frameCnt = 0;
 							loopIndex += 1;
@@ -149,8 +151,8 @@ BLOCKS.slice = function (options) {
 					// If the current frame is not the last frame
 					} else {
 	
-						if (frameCnt >= slice.frameDelay) {
-							
+						// Determine if the frame has waited long enough to go to the next frame
+						if (frameCnt >= (slice.variableFrameDelay[curFrameIndex] || slice.frameDelay)) {	
 
 							// Go to the next frame
 							curFrameIndex += 1;
@@ -278,7 +280,7 @@ BLOCKS.slice = function (options) {
 						
 						// Careful about performance when using mirroring
 						if (slice.mirrorX || slice.mirrorY) {
-							context.translate(x, y);
+							context.translate(x - cameraOffset.x, y - cameraOffset.y);
 							if (slice.mirrorX && slice.mirrorY) {
 								context.scale(-1, -1);
 							} else if (slice.mirrorX) {
@@ -286,7 +288,7 @@ BLOCKS.slice = function (options) {
 							} else {
 								context.scale(1, -1);
 							}
-							context.translate(-x, -y);
+							context.translate(-x + cameraOffset.x, -y + cameraOffset.y);
 						}
 						
 						if (slice.colorize) {
