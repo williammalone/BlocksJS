@@ -21,7 +21,6 @@ BLOCKS.storybookPage = function (options) {
 	"use strict";
 	
 	var page = BLOCKS.gear(),
-		sup = {},
 		layer,
 		alpha,
 		visible,
@@ -279,26 +278,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 	"use strict";
 	
 	var storybook = BLOCKS.gear(),
-		sup = {},
 		drawBounds = false,
-		book,
-		element,
-		parentElement,
-		layer,
-		visible,
-		scaleX,
-		scaleY,
-		width,
-		height,
-		bookWidth,
-		bookHeight,
-		x,
-		y,
-		curPageIndex,
-		navigating,
-		pages = [],
-		motors = [],
-		debugShowAllPages,
+		
+		book, element, parentElement, layer, visible, scaleX, scaleY, width, height, bookWidth, bookHeight, x, y, curPageNum, navigating, pages, motors, debugShowAllPages, board, overlay, cover, fauxPageBending,
 		
 		setViewsDirty = function (value) {
 			
@@ -327,20 +309,34 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		updatePageVisibility = function () {
 			
 			var i;
-
-//BLOCKS.debug("updatePageVisibility ----------");		
+	
 			for (i = 0; i < pages.length; i += 1) {
 
 				pages[i].visible = Boolean(debugShowAllPages || 
 					visible && 
-					(!navigating && (i === curPageIndex || i === curPageIndex - 1)) || 
-					(navigating && (i === navigating.curPageIndex || i === navigating.middlePageIndex || i === navigating.targetPageIndex || i === navigating.prevPageIndex)));
-
-//if (pages[i].visible) {				
-//	BLOCKS.debug("page " + i + ": " + pages[i].visible);
-//}
+					(!navigating && (i === curPageNum || i === curPageNum - 1)) || 
+					(navigating && (i === navigating.curPageNum || i === navigating.middlePageNum || i === navigating.targetPageNum || i === navigating.prevPageNum)));
 			}
-//BLOCKS.debug("-------------------------------");
+		},
+		
+		updateBoard = function (pageNum) {
+		
+			// If the cover is about to be shown
+			if (pageNum === 0) {
+				if (overlay) {
+					overlay.visible = false;
+				}
+				if (board) {
+					board.setSlice("cover");
+				}
+			} else {
+				if (overlay) {
+					overlay.visible = true;
+				}
+				if (board) {
+					board.setSlice("open");
+				}
+			}	
 		},
 		
 		turnPage = function (spec) {
@@ -370,9 +366,45 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 					updatePageVisibility();
 				}
 			}));
+			
+			// If not the cover and faux page bending is enabled (Note: faux page
+			//   beind is often used with an overlay to give the illussion of
+			//   pages that are rounded on the top or bottom
+			if (spec.page !== pages[0] && fauxPageBending) {
+				
+				if (fauxPageBending.pageScaleY) {
+					
+					if (scaleAmount === -1) {
+						spec.page.scaleY = storybook.scaleY;
+					} else {
+						spec.page.scaleY = storybook.scaleY + scaleAmount * fauxPageBending.pageScaleY;
+					}
+					spec.page.motorize(BLOCKS.motor({
+						object: spec.page,
+						type: "scaleY",
+						amount: -scaleAmount * fauxPageBending.pageScaleY,
+						duration: storybook.pageTurnDuration,
+						clock: storybook
+					}));
+				}
+				if (fauxPageBending.pageMoveY) {
+					if (scaleAmount === -1) {
+						spec.page.y = storybook.y;
+					} else {
+						spec.page.y = storybook.y - scaleAmount * fauxPageBending.pageMoveY;
+					}
+					spec.page.motorize(BLOCKS.motor({
+						object: spec.page,
+						type: "y",
+						amount: scaleAmount * fauxPageBending.pageMoveY,
+						duration: storybook.pageTurnDuration,
+						clock: storybook
+					}));
+				}
+			}
 		};
 		
-	storybook.pageTurnDuration = 1000;
+	storybook.pageTurnDuration = (collectionSpec.book && collectionSpec.book.pageTurnDuration !== undefined) ? collectionSpec.book.pageTurnDuration : 1000;
 	
 	// Public Methods
 	storybook.update = function () {
@@ -387,16 +419,41 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				pages[i].update();
 			}
 		}
+		
+		if (cover) {
+			cover.update();
+		}
+		
+		if (board) {
+			board.update();
+		}
+		
+		if (overlay) {
+			overlay.update();
+		}
 	};
 	
 	storybook.render = function (e) {
 		
-		var i;
+		var i, renderNeeded;
+		
+		if (getViewsDirty() || (board && board.dirty) || (overlay && overlay.dirty) || (cover && cover.dirty)) {
+			
+			renderNeeded = true;
+			// Mark one page dirty so they all will be dirty
+			pages[0].dirty = true;	
+		}
+		
+		// If any of the pages are dirty then render the board
+		if (board && renderNeeded) {		
+			board.dirty = true;
+			board.render(e);
+		}
 		
 		// Render the pages on the left
 		for (i = 0; i < pages.length; i += 1) {
-			// If odd
-			if (i % 2 === 0 || i === 0) {
+			// If even
+			if (i % 2) {
 				if (pages[i].visible) {
 					pages[i].render(e);
 				}
@@ -404,12 +461,24 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		}
 		// Render the pages on the right but in reverse order so the first pages are on top
 		for (i = pages.length - 1; i >= 0; i -= 1) {
-			// If even
-			if (i % 2) {
+			// If odd
+			if (i % 2 === 0 || i === 0) {
 				if (pages[i].visible) {
 					pages[i].render(e);
 				}
 			}
+		}
+		
+		// If any of the pages are dirty then render the overlay
+		if (overlay && renderNeeded) {		
+			overlay.dirty = true;
+			overlay.render(e);
+		}
+		
+		// If any of the pages are dirty then render the cover
+		if (cover && renderNeeded) {		
+			cover.dirty = true;
+			cover.render(e);
 		}
 		
 		// For debug only: Draw a rectangle around the storybook bounds
@@ -446,72 +515,80 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 	
 	storybook.back = function () {
 		
-		// If not at the end of the book
-		if (!navigating && curPageIndex - 2 > 0) {
+		// If not at the beginning of the book
+		if (!navigating) {
 			
-			navigating = {
-				curPageIndex: curPageIndex,
-				middlePageIndex: curPageIndex - 1,
-				targetPageIndex: curPageIndex - 2,
-				prevPageIndex: curPageIndex - 3
-			};
-
-//BLOCKS.debug("Turn to page: " + (navigating.curPageIndex + 1));
-
-			pages[navigating.middlePageIndex].turnRatio = -1;
-			pages[navigating.targetPageIndex].turnRatio = 0;
-			turnPage({
-				page: pages[navigating.middlePageIndex],
-				direction: "right", 
-				callback: function () {
-					turnPage({
-						page: pages[navigating.targetPageIndex], 
-						direction: "right", 
-						callback: function () {
+			if (curPageNum - 2 >= 0) {
+			
+				navigating = {
+					curPageNum: curPageNum,
+					middlePageNum: curPageNum - 1,
+					targetPageNum: curPageNum - 2,
+					prevPageNum: curPageNum - 3
+				};
+	
+//BLOCKS.debug("Turn to page: " + (navigating.curPageNum + 1));
+	
+				pages[navigating.middlePageNum].turnRatio = -1;
+				pages[navigating.targetPageNum].turnRatio = 0;
+				turnPage({
+					page: pages[navigating.middlePageNum],
+					direction: "right", 
+					callback: function () {
 						
-							storybook.dispatchEvent("previousPageEnd", navigating.targetPageIndex);
+						updateBoard(navigating.targetPageNum);
+						
+						turnPage({
+							page: pages[navigating.targetPageNum], 
+							direction: "right", 
+							callback: function () {
 							
-							// Update the current page
-							curPageIndex = navigating.targetPageIndex;
-							navigating = null;
-						}
-					});
-				}
-			});
-			
-			updatePageVisibility();
+								storybook.dispatchEvent("previousPageEnd", navigating.targetPageNum);
+								
+								// Update the current page
+								curPageNum = navigating.targetPageNum;
+								navigating = null;
+							}
+						});
+					}
+				});
+				
+				updatePageVisibility();
+			}
 		}		
 	},
 	
 	storybook.next = function () {
 		
 		// If not at the end of the book
-		if (!navigating && curPageIndex + 2 <= pages.length) {
+		if (!navigating && curPageNum + 2 <= pages.length) {
 			
 			navigating = {
-				prevPageIndex: curPageIndex - 1,
-				curPageIndex: curPageIndex,
-				middlePageIndex: curPageIndex + 1,
-				targetPageIndex: curPageIndex + 2
+				prevPageNum: curPageNum - 1,
+				curPageNum: curPageNum,
+				middlePageNum: curPageNum + 1,
+				targetPageNum: curPageNum + 2
 			};
 
-//BLOCKS.debug("Turn to page: " + (navigating.curPageIndex + 1));
+//BLOCKS.debug("Turn to page: " + (navigating.curPageNum + 1));
 
-			pages[navigating.middlePageIndex].turnRatio = 0;
+			pages[navigating.middlePageNum].turnRatio = 0;
 			turnPage({
-				page: pages[navigating.curPageIndex], 
+				page: pages[navigating.curPageNum], 
 				direction: "left",
 				callback: function () {
 					
+					updateBoard(navigating.targetPageNum);
+					
 					turnPage({
-						page: pages[navigating.middlePageIndex], 
+						page: pages[navigating.middlePageNum], 
 						direction:"left", 
 						callback: function () {
 							
-							storybook.dispatchEvent("nextPageEnd", navigating.targetPageIndex);
+							storybook.dispatchEvent("nextPageEnd", navigating.targetPageNum);
 						
 							// Update the current page
-							curPageIndex = navigating.targetPageIndex;
+							curPageNum = navigating.targetPageNum;
 							navigating = null;
 						}
 					});
@@ -524,7 +601,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 	
 	storybook.prevPage = function () {
 		
-		if (book.getCurrentPageIndex() > 1) {
+		if (book.getCurrentPageNum() > 1) {
 		
 			book.previousPage();
 			return true;
@@ -535,7 +612,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 	
 	storybook.nextPage = function () {
 
-		if (book.getCurrentPageIndex() < book.getNumPages() - 3) {
+		if (book.getCurrentPageNum() < book.getNumPages() - 3) {
 			
 			book.nextPage();
 			return true;
@@ -551,50 +628,46 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		}
 	};
 	
-	storybook.startHighlighting = function (pageIndex) {
+	storybook.startHighlighting = function (pageNum) {
 
-		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].startHighlighting();
+		return pages[pageNum !== undefined ? pageNum : curPageNum].startHighlighting();
 	};
 	
-	storybook.stopHighlighting = function (pageIndex) {
+	storybook.stopHighlighting = function (pageNum) {
 
-		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].stopHighlighting();
+		return pages[pageNum !== undefined ? pageNum : curPageNum].stopHighlighting();
 	};
 	
-	storybook.getChildren = function (pageIndex) {
+	storybook.getChildren = function (pageNum) {
 
-		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].getChildren();
+		return pages[pageNum !== undefined ? pageNum : curPageNum].getChildren();
 	};
 	
-	storybook.getChild = function (name, pageIndex) {
-
-		return pages[pageIndex !== undefined ? pageIndex : curPageIndex].getChild(name);
+	storybook.getChild = function (name, pageNum) {
+		return pages[pageNum !== undefined ? pageNum : curPageNum].getChild(name);
 	};
 	
 	Object.defineProperty(storybook, "numberOfPages", {
 		get: function () {
+			if (cover) {
+				return pages.length - 1;
+			}
 			return pages.length;
 		}
 	});
 	
-	Object.defineProperty(storybook, "targetPageIndex", {
+	Object.defineProperty(storybook, "targetPageNum", {
 		get: function () {
-			return navigating && navigating.targetPageIndex;
+			return navigating && navigating.targetPageNum;
 		}
 	});
 	
-	Object.defineProperty(storybook, "curPageIndex", {
+	Object.defineProperty(storybook, "curPageNum", {
 		get: function () {
-			return curPageIndex;
+			return curPageNum;
 		}
 	});
-	
-	//Object.defineProperty(storybook, "parentElement", {
-	//	get: function () {
-	//		return parentElement;
-	//	}
-	//});
-	
+
 	Object.defineProperty(storybook, "layer", {
 		get: function () {
 			return layer;
@@ -609,6 +682,14 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				
 				for (i = 0 ; i < pages.length; i += 1)  {
 					pages[i].layer = value;
+				}
+				
+				if (board) {
+					board.layer = value;	
+				}
+				
+				if (overlay) {
+					overlay.layer = value;	
 				}
 			}
 		}
@@ -645,6 +726,14 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				for (i = 0 ; i < pages.length; i += 1)  {
 					pages[i].x = value;
 				}
+				
+				if (board) {
+					board.x = value;	
+				}
+				
+				if (overlay) {
+					overlay.x = value;	
+				}
 			}
 		}
 	});
@@ -663,6 +752,14 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				
 				for (i = 0 ; i < pages.length; i += 1)  {
 					pages[i].y = value;
+				}
+				
+				if (board) {
+					board.y = value;	
+				}
+				
+				if (overlay) {
+					overlay.y = value;	
 				}
 			}
 		}
@@ -697,6 +794,13 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				for (i = 0 ; i < pages.length; i += 1)  {
 					pages[i].scaleX = value;
 				}
+			
+				if (board) {
+					board.scaleX = value;	
+				}
+				if (overlay) {
+					overlay.scaleX = value;
+				}
 			}
 		}
 	});
@@ -717,6 +821,13 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				for (i = 0 ; i < pages.length; i += 1)  {
 					pages[i].scaleY = value;
 				}
+				
+				if (board) {
+					board.scaleY = value;	
+				}
+				if (overlay) {
+					overlay.scaleY = value;
+				}
 			}
 		}
 	});
@@ -733,29 +844,69 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 	
 	(function () {
 		
-		var i,
-			y = 0;
+		var i, y, page;
+
+		y = 0;	
+		motors = [];
+		pages = [];
+
+		if (storybookSpec.cover) {
+			pages[0] = BLOCKS.storybookPage(storybookSpec.cover);
+			cover = pages[0];
+		} else {
+			BLOCKS.error("BLOCKS storybook requires a cover property in the the storybook object");
+		}
 
 		// Add each page of the storybook
 		for (i = 0; i < storybookSpec.pages.length; i += 1) {
-			pages[i] = BLOCKS.storybookPage(storybookSpec.pages[i]);
 			
-			if (debugShowAllPages) {
-				pages[i].y -= 10 * Math.ceil(storybookSpec.pages.length / 2);
-				pages[i].y += y;
-				pages[i].alpha = 0.8;
-			}
+			page = BLOCKS.storybookPage(storybookSpec.pages[i]);
 			
-			// If odd
-			if (i % 2 === 0 || i === 0) {
-				pages[i].turnRatio = -1;
-			} else {
+			if (page) {
 				if (debugShowAllPages) {
-					y += 10;
+					page.y -= 10 * Math.ceil(storybookSpec.pages.length / 2);
+					page.y += y;
+					page.alpha = 0.8;
+				}
+				
+				// If even
+				if (i % 2 === 0) {
+					page.turnRatio = -1;
+				} else {
+					if (debugShowAllPages) {
+						y += 10;
+					}
 				}
 			}
+			pages.push(page);
 		}
-		curPageIndex = 1;
+		
+		fauxPageBending = collectionSpec.book.fauxPageBending;
+
+		if (collectionSpec.book.board) {
+			board = BLOCKS.block(collectionSpec.book.board);
+			board.layer = layer;
+			board.x = storybook.x;
+			board.y = storybook.y;
+			board.scaleX = storybook.scaleX;
+			board.scaleY = storybook.scaleY;
+		}
+		
+		if (collectionSpec.book.overlay) {
+			overlay = BLOCKS.block(collectionSpec.book.overlay);
+			overlay.layer = layer;
+			overlay.x = storybook.x;
+			overlay.y = storybook.y;
+			overlay.scaleX = storybook.scaleX;
+			overlay.scaleY = storybook.scaleY;
+		}
+		
+		if (cover) {
+			curPageNum = (collectionSpec.book.startOnSpread * 2) || 0;
+		} else {
+			curPageNum = (collectionSpec.book.startOnSpread * 2) || 1;
+		}
+		updateBoard(curPageNum);
 		
 		// Hide pages not visible
 		updatePageVisibility();
