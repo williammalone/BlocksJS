@@ -31,10 +31,14 @@ BLOCKS.localization = function (options) {
 	currentLanguage = "english";
 	Object.defineProperty(localization, "language", {
 		get: function () {
-			if (autoDetect || currentLanguage === undefined) {
+			
+			if (currentLanguage && !autoDetect) {
+				return currentLanguage;
+			}
+			
+			if (autoDetect) {
 				return navigator.language;
 			}
-			return currentLanguage;
 		},
 		set: function (value) {
 			currentLanguage = value;

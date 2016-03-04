@@ -257,7 +257,8 @@ BLOCKS.game = function (spec, element) {
 		gameRender = function () {
 			
 			var e = {
-				camera: game.camera
+				camera: game.camera,
+				language: game.language
 			};
 		
 			if (!paused) {
@@ -995,6 +996,21 @@ BLOCKS.game = function (spec, element) {
 	}
 	
 	checkInitialScreenProgress();
+	
+	Object.defineProperty(game, "loaded", {
+		get: function () {
+			return loaded;
+		}
+	});
+	
+	Object.defineProperty(game, "language", {
+		get: function () {
+			return game.localization.language;
+		},
+		set: function (value) {
+			game.localization.language = value;
+		}
+	});
 	
 	return game;
 };

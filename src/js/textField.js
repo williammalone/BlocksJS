@@ -23,7 +23,6 @@ BLOCKS.textField = function (options) {
 	var textField = BLOCKS.view(options),
 		sup = {},
 		drawBounds = false, // Used for debug to see the text field's bounding box
-		paragraphs,
 		numLines,
 		cameraSize,
 		motors = [],
@@ -32,6 +31,7 @@ BLOCKS.textField = function (options) {
 		highlights = {},
 		maxHighlightIndex = 0,
 		languages,
+		curLanguage = "english",
 		
 		// Private Method
 		motorDestroyed = function (motor) {
@@ -48,7 +48,7 @@ BLOCKS.textField = function (options) {
 
 		populateParagraphs = function () {
 			
-			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key, prevHighlightEndValue, start, end,
+			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key, prevHighlightEndValue, start, end, paragraphs,
 			
 				charProperties = {
 					fontColor: null,
@@ -115,77 +115,84 @@ BLOCKS.textField = function (options) {
 						}
 					}
 				};
+				
+			for (key in languages) {
+				
+				if (languages.hasOwnProperty(key)) {
+					
+					paragraphs = languages[key].paragraphs;
 			
-			for (i = 0; i < paragraphs.length; i += 1) {
-
-				paragraphs[i] = {
-					text: paragraphs[i]
-				};				
-				newParagraph = true;
-				paragraphs[i].charList = [];
-				lastWordStartIndex = 0;
-				lineCharacterIndex = 0;
-				prevHighlightEndValue = 0;
-				
-				while (lineCharacterIndex < paragraphs[i].text.length) {		
-
-					// If encountered an end tag
-					if (/^<\/(.*?)\>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
+					for (i = 0; i < paragraphs.length; i += 1) {
+		
+						paragraphs[i] = {
+							text: paragraphs[i]
+						};				
+						newParagraph = true;
+						paragraphs[i].charList = [];
+						lastWordStartIndex = 0;
+						lineCharacterIndex = 0;
+						prevHighlightEndValue = 0;
 						
-						results = /<\/(.*?)\>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
-//BLOCKS.debug("closing tag found! " + results[1]);	
-//BLOCKS.dir(results);
-
-						executeTag(results[1].replace("/", ""), false);
+						while (lineCharacterIndex < paragraphs[i].text.length) {		
+		
+							// If encountered an end tag
+							if (/^<\/(.*?)\>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
+								
+								results = /<\/(.*?)\>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
+		//BLOCKS.debug("closing tag found! " + results[1]);	
+		//BLOCKS.dir(results);
+		
+								executeTag(results[1].replace("/", ""), false);
+								
+								lineCharacterIndex += results[0].length;
+							
+							// If encountered an opening tag
+							} else if (/^<(.*?)>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
 						
-						lineCharacterIndex += results[0].length;
-					
-					// If encountered an opening tag
-					} else if (/^<(.*?)>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
-				
-						// Get the details of the tag
-						results = /<(.*?)>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
-//BLOCKS.debug("opening tag found! " + results[1]);	
-//BLOCKS.dir(results);
-						
-						executeTag(results[1], true);
-
-						lineCharacterIndex += results[0].length;
-					} else {
-					
-						// If it is a space then remember it's location to tell the next characters what word they belong to
-						if (paragraphs[i].text[lineCharacterIndex] === " ") {
-							lastWordStartIndex = paragraphs[i].charList.length + 2;	
+								// Get the details of the tag
+								results = /<(.*?)>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
+		//BLOCKS.debug("opening tag found! " + results[1]);	
+		//BLOCKS.dir(results);
+								
+								executeTag(results[1], true);
+		
+								lineCharacterIndex += results[0].length;
+							} else {
+							
+								// If it is a space then remember it's location to tell the next characters what word they belong to
+								if (paragraphs[i].text[lineCharacterIndex] === " ") {
+									lastWordStartIndex = paragraphs[i].charList.length + 2;	
+								}
+								
+								// Save the character
+								paragraphs[i].charList.push({
+									character: paragraphs[i].text[lineCharacterIndex],
+									wordStartIndex: lastWordStartIndex,
+									newParagraph: newParagraph,
+									style: {}
+								});
+								
+								// Save the current font styles
+								for (key in charProperties) {
+									paragraphs[i].charList[paragraphs[i].charList.length - 1].style[key] = charProperties[key];
+								}
+								
+								newParagraph = false;
+								lineCharacterIndex += 1;
+							}
 						}
-						
-						// Save the character
-						paragraphs[i].charList.push({
-							character: paragraphs[i].text[lineCharacterIndex],
-							wordStartIndex: lastWordStartIndex,
-							newParagraph: newParagraph,
-							style: {}
-						});
-						
-						// Save the current font styles
-						for (key in charProperties) {
-							paragraphs[i].charList[paragraphs[i].charList.length - 1].style[key] = charProperties[key];
-						}
-						
-						newParagraph = false;
-						lineCharacterIndex += 1;
 					}
+		
+					//str = "";
+					//for (i = 0; i < paragraphs.length; i += 1) {
+					//	for (j = 0; j < paragraphs[i].charList.length; j += 1) {
+					//		str += paragraphs[i].charList[j].character;
+					//	}
+					//}
+					//BLOCKS.debug("str: " + str);
+					
 				}
 			}
-
-			/*
-			str = "";
-			for (i = 0; i < paragraphs.length; i += 1) {
-				for (j = 0; j < paragraphs[i].charList.length; j += 1) {
-					str += paragraphs[i].charList[j].character;
-				}
-			}
-			BLOCKS.debug("str: " + str);
-			*/
 		};
 		
 	textField.update = function () {
@@ -208,7 +215,7 @@ BLOCKS.textField = function (options) {
 	textField.render = function (e) {
 	
 		var i, j, bounds, restoreNeeded, wordArr, curLine, newLineIndex, xLoc, yLoc,
-			context, cameraOffset, fontStr, x, y, index,
+			context, cameraOffset, fontStr, x, y, index, paragraphs,
 			
 			renderCharactersOnThisLine = function (spec) {
 				
@@ -254,7 +261,7 @@ BLOCKS.textField = function (options) {
 									}
 									
 								
-									// Draw this chracter
+									// Draw this character
 									context.fillText(paragraphs[i].charList[j].character, renderPos.x + curWidth, renderPos.y);
 								}
 							}
@@ -341,8 +348,13 @@ BLOCKS.textField = function (options) {
 			index = 0;
 			yLoc = textField.y - cameraOffset.y;
 			numLines = 0;
+			
+			curLanguage = e.language;
+
+			// Get the current language text
+			paragraphs = textField.text;
 			for (i = 0; i < paragraphs.length; i += 1) {
-				
+			
 				curLine = "";
 				newLineIndex = 0;
 				
@@ -425,15 +437,17 @@ BLOCKS.textField = function (options) {
 					bounds = [bounds];
 				}
 				
-				context.lineWidth = 4;
+				textField.height = bounds[0].height || (numLines * textField.lineHeight);
 				
+				context.lineWidth = 4;
+
 				for (i = 0; i < bounds.length; i += 1) {
 					context.beginPath();
 					context.strokeStyle = "rgba(255, 10, 255, 0.4)";
 					if (textField.textAlign === "center") {
-						context.strokeRect(bounds[i].x - cameraOffset.x - (bounds[i].width || cameraSize.width) / 2, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), bounds[i].height || (numLines * textField.lineHeight));
+						context.strokeRect(bounds[i].x - cameraOffset.x - (bounds[i].width || cameraSize.width) / 2, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), textField.height);
 					} else {
-						context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), bounds[i].height || (numLines * textField.lineHeight));
+						context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), textField.height);
 					}
 					context.closePath();
 				}
@@ -487,27 +501,65 @@ BLOCKS.textField = function (options) {
 		textField.dirty = true;
 	};
 	
-	paragraphs = [];
+	languages = {};
 	Object.defineProperty(textField, "text", {
 		get: function () {
-			return paragraphs;
+			
+			// Default to english if the language is missing or not specified
+			if (curLanguage === undefined || !languages[curLanguage]) {
+				if (languages.english) {
+					return languages.english.paragraphs;
+				} else {
+					BLOCKS.warn("No english version of this text exists.");	
+					return [];
+				}
+			}
+			
+			return languages[curLanguage].paragraphs;
 		},
 		set: function (value) {
 			
-			// Supported value type are string, array of paragraphs or object of lanuages
-			if (typeof value === "string") {
-				paragraphs = [value];
-			} else if (Array.isArray(value)) {
-				paragraphs = value;
-			} else {
-				paragraphs = [value.english];
-			}
+			var key;
 			
-			// Make a copy of the paragraphs array so the original is not changed
-			paragraphs = paragraphs.slice(0);
+			// Supported value type are string, array of paragraphs or object of languages
+			if (typeof value === "string") {
+				
+				languages.english = {};
+				languages.english.paragraphs = [value];
+				
+				languages.english.paragraphs = languages.english.paragraphs.slice(0);
+			} else if (Array.isArray(value)) {
+				
+				languages.english = {};
+				languages.english.paragraphs = value;
+				
+				// Make a copy of the paragraphs array so the original is not changed
+				languages.english.paragraphs = languages.english.paragraphs.slice(0);
+			} else {
+				// Value is an object so assuming properties are language labels
+				for (key in value) {
+					
+					if (value.hasOwnProperty(key)) {
+						languages[key] = {};
+						languages[key].paragraphs = value[key];
+						
+						if (typeof languages[key].paragraphs === "string") {
+							languages[key].paragraphs = [languages[key].paragraphs];
+						}
+						// Make a copy of the paragraphs array so the original is not changed
+						languages[key].paragraphs = languages[key].paragraphs.slice(0);
+					}
+				}
+			}
 
 			populateParagraphs();
 			textField.dirty = true;
+		}
+	});
+	
+	Object.defineProperty(textField, "numLines", {
+		get: function () {
+			return numLines;
 		}
 	});
 	
@@ -515,12 +567,12 @@ BLOCKS.textField = function (options) {
 		
 		options = options || {};
 		
-		textField.fontColor = options.fontColor || "#000000";
+		textField.fontColor = options.fontColor || options.color || "#000000";
 		textField.fontFamily = options.fontFamily || "Arial,sans";
 		textField.fontSize = (options.fontSize && Number(options.fontSize.toString().replace("px", ""))) || 24;
 		textField.fontWeight = options.fontWeight;
 		textField.fontItalic = options.fontItalic;
-		textField.textAlign = options.textAlign || "left";
+		textField.textAlign = options.textAlign || options.align || "left";
 		textField.textBaseline = options.textBaseline || "top";
 		textField.lineHeight = options.lineHeight || textField.fontSize;
 		textField.paragraphSpacing = options.paragraphSpacing || 10;
