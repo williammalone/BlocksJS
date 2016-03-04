@@ -997,6 +997,11 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		//if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
 		//	BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
 		//}
+		
+		if (typeof spec.src !== "string") {
+			BLOCKS.warn("Sound ('" + spec.name + "') src property is not a string.");
+			return;
+		}
 
 		sounds[spec.name] = {
 			name: spec.name,
@@ -1635,6 +1640,11 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		//	BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
 		//}
 		
+		if (typeof spec.src !== "string") {
+			BLOCKS.warn("Sound ('" + spec.name + "') src property is not a string.");
+			return;
+		}
+		
 		if (spec.extension === undefined || (spec.extension === "caf" && !tmpAudioElement.canPlayType("audio/x-caf")) || (spec.extension === "mp4" && !tmpAudioElement.canPlayType("audio/mp4"))) {
 			spec.extension = "mp3";	
 		}
@@ -1766,7 +1776,7 @@ BLOCKS.speaker = function (spec) {
 		
 		traverse(spec, function (key, obj) {
 			// If no extension then assume it is a sound
-			if (key === "src" && obj[key].indexOf(".") === -1) {
+			if (key === "src" && typeof obj[key] === "string" && obj[key].indexOf(".") === -1) {
 				speaker.createSound(obj);
 			}
 		});
