@@ -22,7 +22,7 @@ BLOCKS.textField = function (options) {
 	
 	var textField = BLOCKS.view(options),
 		sup = {},
-		drawBounds = true, // Used for debug to see the text field's bounding box
+		drawBounds = false, // Used for debug to see the text field's bounding box
 		numLines,
 		cameraSize,
 		motors = [],
@@ -32,6 +32,7 @@ BLOCKS.textField = function (options) {
 		maxHighlightIndex = 0,
 		languages,
 		curLanguage = "english",
+		isIE,
 		
 		// Private Method
 		motorDestroyed = function (motor) {
@@ -223,7 +224,7 @@ BLOCKS.textField = function (options) {
 				highlighting = false;
 			} 
 		}	
-	},
+	};
 	
 	// Public Methods
 	textField.render = function (e) {
@@ -281,6 +282,11 @@ BLOCKS.textField = function (options) {
 							}
 							
 							curWidth += context.measureText(paragraphs[i].charList[j].character).width;
+							
+							// If Internet Explorer then increase the kerning a little to match other browsers
+							if (isIE) {
+								curWidth += 0.1;
+							}
 						}
 						
 						return curWidth;
@@ -302,7 +308,7 @@ BLOCKS.textField = function (options) {
 				} else {
 					x = textField.x - cameraOffset.x;
 				}
-				
+					
 				y = spec.y;
 	
 				if (textField.strokeColor) {
@@ -592,6 +598,28 @@ BLOCKS.textField = function (options) {
 	
 	(function () {
 		
+		var isBrowserIE = function () {
+			
+			var ua = window.navigator.userAgent;
+			
+			// IE 10 or lower
+			if (ua.indexOf('MSIE ') > 0) {
+				return true;
+			}
+			
+			// IE 11
+			if (ua.indexOf('Trident/') > 0) {
+				return true;
+			}
+			
+			// IE 12+ (Edge)
+			if (ua.indexOf('Edge/') > 0) {
+				return true;
+			}
+			
+			return false;
+		};
+		
 		options = options || {};
 		
 		textField.fontColor = options.fontColor || options.color || "#000000";
@@ -607,6 +635,8 @@ BLOCKS.textField = function (options) {
 		
 		// Make sure the text is set last
 		textField.text = options.text || "";
+		
+		isIE = isBrowserIE();
 	}());
 	
 	return textField;
