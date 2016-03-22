@@ -16,7 +16,7 @@ if (BLOCKS === undefined) {
 	BLOCKS = {};
 }
 
-BLOCKS.storybookPage = function (options) {
+BLOCKS.storybookPage = function (options, language) {
 	
 	"use strict";
 	
@@ -201,15 +201,44 @@ BLOCKS.storybookPage = function (options) {
 	
 	(function () {
 		
-		var i, item, spec;
+		var i, key, item, spec,
+		
+			getSpecWithLanguageSupport = function (spec) {
+				
+				var key,
+					newSpec = {};
+				
+				for (key in spec) {
+					if (spec.hasOwnProperty(key)) {
+						newSpec[key] = spec[key];
+					}
+				}
+				// Support different specs for different languages
+				if (language && spec[language]) {
+					for (key in spec[language]) {
+						if (spec[language].hasOwnProperty(key)) {
+							newSpec[key] = spec[language][key];
+						}
+					}
+				} else if (spec.english) {
+					for (key in spec.english) {
+						if (spec.english.hasOwnProperty(key)) {
+							newSpec[key] = spec.english[key];
+						}
+					}
+				}
+				
+				return newSpec;
+			};
 		
 		options = options || {};
 		
+		spec = getSpecWithLanguageSupport(options.background || options.bg);
+		
 		if (options.background) {
-			bg = BLOCKS.slice(options.background);
-		} else if (options.bg) {
-			bg = BLOCKS.slice(options.bg);
+			bg = BLOCKS.slice(spec);
 		}
+
 		if (bg) {
 			bg.world = {
 				x: bg.x || 0,
@@ -226,19 +255,18 @@ BLOCKS.storybookPage = function (options) {
 		// For each content item on the page
 		if (options && options.content) {
 			for (i = 0; i < options.content.length; i += 1) {
+				
+				spec = getSpecWithLanguageSupport(options.content[i]);
 
-				if (options.content[i].slices) {
+				if (spec.slices) {
 					
-					spec = options.content[i];
 					item = BLOCKS.block(spec);
 					
-				} else if (options.content[i].src) {
+				} else if (spec.src) {
 					
-					spec = options.content[i];
 					item = BLOCKS.slice(spec);					
-				} else if (options.content[i].type === "textarea" || options.content[i].text !== undefined) {
+				} else if (spec.type === "textarea" || spec.text !== undefined) {
 					
-					spec = options.content[i];
 					item = BLOCKS.textField(spec);	
 				}
 				// Save the initial properties so they can be reset
@@ -273,14 +301,14 @@ BLOCKS.storybookPage = function (options) {
 	return page;
 };
 
-BLOCKS.storybook = function (storybookSpec, collectionSpec) {
+BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 	
 	"use strict";
 	
 	var storybook = BLOCKS.gear(),
 		drawBounds = false,
 		
-		book, element, parentElement, layer, visible, scaleX, scaleY, width, height, bookWidth, bookHeight, x, y, curPageNum, navigating, pages, motors, debugShowAllPages, board, overlay, cover, fauxPageBending,
+		book, element, parentElement, layer, visible, scaleX, scaleY, width, height, bookWidth, bookHeight, x, y, curPageNum, navigating, pages, motors, debugShowAllPages, board, overlay, cover, fauxPageBending, pageShadow,
 		
 		setViewsDirty = function (value) {
 			
@@ -327,6 +355,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 					overlay.visible = false;
 				}
 				if (board) {
+					board.visible = Boolean(board.getSlice().name === "cover");
 					board.setSlice("cover");
 				}
 			} else {
@@ -334,6 +363,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 					overlay.visible = true;
 				}
 				if (board) {
+					board.visible = Boolean(board.getSlice().name === "open");
 					board.setSlice("open");
 				}
 			}	
@@ -351,6 +381,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 			
 			// Animate the page to look like it is turning
 			spec.page.turning = true;
+			pageShadow.visible = true;
 			spec.page.motorize(BLOCKS.motor({
 				object: spec.page,
 				type: "turnRatio",
@@ -359,6 +390,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				clock: storybook,
 				callback: function () {
 					spec.page.turning = false;
+					pageShadow.visible = false;
 					
 					if (spec.callback) {
 						spec.callback();	
@@ -402,6 +434,48 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 					}));
 				}
 			}
+		},
+		
+		renderPageShadow = function (e, turningPage) {
+			
+			var turnRatio;
+			
+			if (pageShadow && turningPage.dirty) {
+				
+				turnRatio = turningPage.turnRatio * 1.5;
+				if (turningPage.turnRatio < 0) {
+
+					pageShadow.mirrorX = true;
+					if (turnRatio < -1) {
+						turnRatio = -1;	
+					}
+					pageShadow.scaleX = storybook.scaleX * turnRatio;
+					pageShadow.x = storybook.x + pageShadow.width;
+				} else {
+					pageShadow.mirrorX = false;
+					
+					if (turnRatio > 1) {
+						turnRatio = 1;
+					}
+					pageShadow.scaleX = storybook.scaleX * turnRatio;
+					pageShadow.x = storybook.x;	
+				}
+				
+				// If the cover is not turning and the left page
+				if (turningPage !== cover && turningPage.turnRatio < 0 && fauxPageBending) {
+					if (fauxPageBending.pageScaleY) {
+						pageShadow.scaleY = 1 + fauxPageBending.pageScaleY;
+					}
+					if (fauxPageBending.pageScaleY)
+					pageShadow.y = storybook.y - fauxPageBending.pageMoveY;
+				} else {
+					pageShadow.scaleY = turningPage.scaleY;
+					pageShadow.y = storybook.y;
+				}
+				
+				pageShadow.dirty = true;
+				pageShadow.render(e);
+			}
 		};
 		
 	storybook.pageTurnDuration = (collectionSpec.book && collectionSpec.book.pageTurnDuration !== undefined) ? collectionSpec.book.pageTurnDuration : 1000;
@@ -423,13 +497,14 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		if (cover) {
 			cover.update();
 		}
-		
 		if (board) {
 			board.update();
 		}
-		
 		if (overlay) {
 			overlay.update();
+		}
+		if (pageShadow) {
+			pageShadow.update();	
 		}
 	};
 	
@@ -437,11 +512,11 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		
 		var i, renderNeeded;
 		
-		if (getViewsDirty() || (board && board.dirty) || (overlay && overlay.dirty) || (cover && cover.dirty)) {
+		if (getViewsDirty() || (board && board.dirty) || (overlay && overlay.dirty) || (cover && cover.dirty) || (pageShadow && pageShadow.dirty)) {
 			
 			renderNeeded = true;
-			// Mark one page dirty so they all will be dirty
-			pages[0].dirty = true;	
+			// Mark all pages dirty 
+			setViewsDirty(true);	
 		}
 		
 		// If any of the pages are dirty then render the board
@@ -455,6 +530,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 			// If even
 			if (i % 2) {
 				if (pages[i].visible) {
+					if (pages[i].turning) {
+						renderPageShadow(e, pages[i]);
+					}
 					pages[i].render(e);
 				}
 			}
@@ -464,6 +542,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 			// If odd
 			if (i % 2 === 0 || i === 0) {
 				if (pages[i].visible) {
+					if (pages[i].turning) {
+						renderPageShadow(e, pages[i]);
+					}
 					pages[i].render(e);
 				}
 			}
@@ -480,7 +561,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 			cover.dirty = true;
 			cover.render(e);
 		}
-		
+			
 		// For debug only: Draw a rectangle around the storybook bounds
 		if (drawBounds) {	
 			(function () {
@@ -687,9 +768,11 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				if (board) {
 					board.layer = value;	
 				}
-				
 				if (overlay) {
 					overlay.layer = value;	
+				}
+				if (pageShadow) {
+					pageShadow.layer = value;
 				}
 			}
 		}
@@ -730,9 +813,11 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				if (board) {
 					board.x = value;	
 				}
-				
 				if (overlay) {
 					overlay.x = value;	
+				}
+				if (pageShadow) {
+					pageShadow.x = value;
 				}
 			}
 		}
@@ -757,9 +842,11 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				if (board) {
 					board.y = value;	
 				}
-				
 				if (overlay) {
 					overlay.y = value;	
+				}
+				if (pageShadow) {
+					pageShadow.y = value;
 				}
 			}
 		}
@@ -801,6 +888,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				if (overlay) {
 					overlay.scaleX = value;
 				}
+				if (pageShadow) {
+					pageShadow.scaleX = value;
+				}
 			}
 		}
 	});
@@ -828,6 +918,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 				if (overlay) {
 					overlay.scaleY = value;
 				}
+				if (pageShadow) {
+					pageShadow.scaleY = value;
+				}
 			}
 		}
 	});
@@ -851,7 +944,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		pages = [];
 
 		if (storybookSpec.cover) {
-			pages[0] = BLOCKS.storybookPage(storybookSpec.cover);
+			pages[0] = BLOCKS.storybookPage(storybookSpec.cover, language);
 			cover = pages[0];
 		} else {
 			BLOCKS.error("BLOCKS storybook requires a cover property in the the storybook object");
@@ -860,7 +953,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 		// Add each page of the storybook
 		for (i = 0; i < storybookSpec.pages.length; i += 1) {
 			
-			page = BLOCKS.storybookPage(storybookSpec.pages[i]);
+			page = BLOCKS.storybookPage(storybookSpec.pages[i], language);
 			
 			if (page) {
 				if (debugShowAllPages) {
@@ -899,6 +992,16 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec) {
 			overlay.y = storybook.y;
 			overlay.scaleX = storybook.scaleX;
 			overlay.scaleY = storybook.scaleY;
+		}
+		
+		if (collectionSpec.book.pageShadow) {
+			pageShadow = BLOCKS.slice(collectionSpec.book.pageShadow);
+			pageShadow.layer = layer;
+			pageShadow.x = storybook.x;
+			pageShadow.y = storybook.y;
+			pageShadow.scaleX = storybook.scaleX;
+			pageShadow.scaleY = storybook.scaleY;
+			pageShadow.visible = false;
 		}
 		
 		if (cover) {

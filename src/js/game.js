@@ -393,17 +393,13 @@ BLOCKS.game = function (spec, element) {
 		checkLoadProgress = function () {
 		
 //BLOCKS.debug("checkLoadProgress: " + gameTappedOnce + " " + game.imageLoader.isLoaded() + " " + game.speaker.isReady());
+
 			if (!loaded) {
 				if ((game.introScreen && gameTappedOnce) || !game.introScreen) {
 					// If all images are loaded and all sounds (or number of sounds is zero) are laoded
 					if (game.imageLoader.isLoaded() && (game.speaker.isReady() || game.speaker.getNumFiles() === 0)) {
-		
+
 						loaded = true;
-						
-						if (game.loadingScreen) {
-							game.loadingScreen.destroy();
-							game.loadingScreen = null;
-						}
 						
 						// If autoStart is not turned off then start
 						if (game.autoStart !== false) {
@@ -413,16 +409,33 @@ BLOCKS.game = function (spec, element) {
 						game.dispatchEvent("loaded");
 					}
 				}
+			} else {
+				// In case the game was loaded but never started (could happen if game is loaded then additional assets are assigned to preload before starting - e.g. loading loanguage files after tapping a language button)
+				if (!prepared && game.autoStart !== false) {
+					game.start();
+				}
 			}
 		},
 		
 		// See wmalone.com/scale for an article discussing this scaling approach
 		resizeGame = function () {
 		
-			var i, viewport, newGameWidth, newGameHeight, newGameX, newGameY;
+			var i, viewport, newGameWidth, newGameHeight, newGameX, newGameY, urlBarOffset;
+
+			// If an iPhone and the window height is different than the game element height then the url bar is probably visible
+			if (navigator.userAgent.match(/iPhone/i) &&
+				game.element && 
+				game.element.offsetHeight > window.innerHeight) {
 				
+				window.scrollTo(0, 1);
+				
+				urlBarOffset = game.element.offsetHeight - window.innerHeight * game.pixelMultiplier;			
+			} else {
+				urlBarOffset = 0;	
+			}
+
 			// Get the dimensions of the viewport
-			if (game.element) {
+			if (game.element && urlBarOffset === 0) {
 				viewport = {
 					width: game.element.offsetWidth,
 					height: game.element.offsetHeight
@@ -432,7 +445,7 @@ BLOCKS.game = function (spec, element) {
 					width: window.innerWidth * game.pixelMultiplier,
 					height: window.innerHeight * game.pixelMultiplier
 				};
-			}	
+			}
 			
 			// If the viewport is greater than a minimum or maximum game dimension use that instead
 			if (minWidth && viewport.width < minWidth) {
@@ -440,6 +453,7 @@ BLOCKS.game = function (spec, element) {
 			}
 			if (minHeight && viewport.height < minHeight) {
 				viewport.height = minHeight;
+				viewport.width = minWidth;
 			}
 			if (maxWidth && viewport.width > maxWidth) {
 				viewport.width = maxWidth;
@@ -482,7 +496,7 @@ BLOCKS.game = function (spec, element) {
 		
 			newGameX = (viewport.width - newGameWidth) / 2;
 			newGameY = (viewport.height - newGameHeight) / 2;
-			
+		
 			// Save the game scale amount
 			game.scale = newGameWidth / game.width;
 			
@@ -498,7 +512,7 @@ BLOCKS.game = function (spec, element) {
 				gameContainer.style.height = (viewport.height - Math.max(newGameY, 0) * 2)+ "px";
 						
 				// Set the new padding of the game so it will be centered
-				gameContainer.style.padding = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
+				gameContainer.style.padding = Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px " + Math.max(newGameY, 0) + "px " + Math.max(newGameX, 0) + "px";
 			}
 			
 			// Tell the controller the game dimensions
@@ -860,10 +874,7 @@ BLOCKS.game = function (spec, element) {
 				}
 			});
 			
-			game.imageLoader.addEventListener("complete", function () {
-			
-				checkLoadProgress();
-			});
+			game.imageLoader.addEventListener("complete", checkLoadProgress);
 			game.imageLoader.load();
 		}
 	};
@@ -887,7 +898,13 @@ BLOCKS.game = function (spec, element) {
 		remainingUpdate = 0;
 		
 		if (!prepared) {
+			
 			prepared = true;
+			
+			if (game.loadingScreen) {
+				game.loadingScreen.destroy();
+				game.loadingScreen = null;
+			}
 
 			if (game.prepare) {
 				game.prepare();
@@ -963,12 +980,16 @@ BLOCKS.game = function (spec, element) {
 		game.intro = "intro";
 	}
 	
-	// Create sound player
-	game.speaker = BLOCKS.speaker({
-		path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
-		src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : "",
-		audioPlayerType: spec.audioPlayerType
-	});
+	if (spec.audioPlayer) {
+		game.speaker = spec.audioPlayer;
+	} else {
+		// Create sound player
+		game.speaker = BLOCKS.speaker({
+			path: (spec && spec.audioPath !== undefined) ? spec.audioPath : "",
+			src: (spec && spec.audioSpriteSrc !== undefined) ? spec.audioSpriteSrc : "",
+			audioPlayerType: spec.audioPlayerType
+		});
+	}
 	
 	game.speaker.addEventListener("update", function (e) {
 		var assetsLoaded = game.imageLoader.getNumFilesLoaded() + game.speaker.getNumFilesLoaded();
@@ -978,9 +999,7 @@ BLOCKS.game = function (spec, element) {
 		}
 	});
 	
-	game.speaker.addEventListener("ready", function () {
-		checkLoadProgress();
-	}, true);
+	game.speaker.addEventListener("ready", checkLoadProgress);
 	
 	Object.defineProperty(game, "paused", {
 		get: function () {

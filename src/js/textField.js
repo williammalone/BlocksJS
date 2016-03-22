@@ -22,7 +22,7 @@ BLOCKS.textField = function (options) {
 	
 	var textField = BLOCKS.view(options),
 		sup = {},
-		drawBounds = false, // Used for debug to see the text field's bounding box
+		drawBounds = true, // Used for debug to see the text field's bounding box
 		numLines,
 		cameraSize,
 		motors = [],
@@ -48,7 +48,7 @@ BLOCKS.textField = function (options) {
 
 		populateParagraphs = function () {
 			
-			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key, prevHighlightEndValue, start, end, paragraphs,
+			var i, j, newParagraph, str, results, lineCharacterIndex, lastWordStartIndex, key, prevHighlightEndValue, start, end, paragraphs, newline,
 			
 				charProperties = {
 					fontColor: null,
@@ -132,15 +132,26 @@ BLOCKS.textField = function (options) {
 						lastWordStartIndex = 0;
 						lineCharacterIndex = 0;
 						prevHighlightEndValue = 0;
+						newline = false;
 						
 						while (lineCharacterIndex < paragraphs[i].text.length) {		
 		
 							// If encountered an end tag
-							if (/^<\/(.*?)\>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
+							if (/^<newline>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
+								
+								results = /<newline>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
+//BLOCKS.debug("newline tag found! " + results[1]);	
+//BLOCKS.dir(results);
+								
+								lineCharacterIndex += results[0].length;
+								
+								newline = true;
+								
+							} else if (/^<\/(.*?)\>/i.test(paragraphs[i].text.slice(lineCharacterIndex))) {
 								
 								results = /<\/(.*?)\>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
-		//BLOCKS.debug("closing tag found! " + results[1]);	
-		//BLOCKS.dir(results);
+//BLOCKS.debug("closing tag found! " + results[1]);	
+//BLOCKS.dir(results);
 		
 								executeTag(results[1].replace("/", ""), false);
 								
@@ -151,12 +162,13 @@ BLOCKS.textField = function (options) {
 						
 								// Get the details of the tag
 								results = /<(.*?)>/i.exec(paragraphs[i].text.slice(lineCharacterIndex));
-		//BLOCKS.debug("opening tag found! " + results[1]);	
-		//BLOCKS.dir(results);
+//BLOCKS.debug("opening tag found! " + results[1]);	
+//BLOCKS.dir(results);
 								
 								executeTag(results[1], true);
 		
 								lineCharacterIndex += results[0].length;
+								
 							} else {
 							
 								// If it is a space then remember it's location to tell the next characters what word they belong to
@@ -169,6 +181,7 @@ BLOCKS.textField = function (options) {
 									character: paragraphs[i].text[lineCharacterIndex],
 									wordStartIndex: lastWordStartIndex,
 									newParagraph: newParagraph,
+									newline: newline,
 									style: {}
 								});
 								
@@ -177,6 +190,7 @@ BLOCKS.textField = function (options) {
 									paragraphs[i].charList[paragraphs[i].charList.length - 1].style[key] = charProperties[key];
 								}
 								
+								newline = false;
 								newParagraph = false;
 								lineCharacterIndex += 1;
 							}
@@ -372,7 +386,7 @@ BLOCKS.textField = function (options) {
 							startIndex: newLineIndex,
 							endIndex: j,
 							measureOnly: true	
-						}) > textField.width / textField.scaleX) {  // If current line is wider
+						}) > textField.width / textField.scaleX || paragraphs[i].charList[j].newline) {  // If current line is wider
 						
 						// If only one word is on the line then the word has to be broken
 						if (paragraphs[i].charList[j].wordStartIndex > newLineIndex) {
@@ -428,6 +442,19 @@ BLOCKS.textField = function (options) {
 					width: textField.width / textField.scaleX || cameraSize.width,
 					height: textField.lineHeight * numLines
 				}];
+				if (textField.textAlign === "center") {
+					textField.hotspots[0].x = -textField.hotspots[0].width / 2;
+				}
+			} else {
+				textField.hotspots = [{
+					x: 0,
+					y: 0,
+					width: textField.width / textField.scaleX || cameraSize.width,
+					height: textField.lineHeight * numLines
+				}];
+				if (textField.textAlign === "center") {
+					textField.hotspots[0].x = -textField.hotspots[0].width / 2;
+				}
 			}
 			
 			if (drawBounds) {
@@ -444,11 +471,11 @@ BLOCKS.textField = function (options) {
 				for (i = 0; i < bounds.length; i += 1) {
 					context.beginPath();
 					context.strokeStyle = "rgba(255, 10, 255, 0.4)";
-					if (textField.textAlign === "center") {
-						context.strokeRect(bounds[i].x - cameraOffset.x - (bounds[i].width || cameraSize.width) / 2, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), textField.height);
-					} else {
+					//if (textField.textAlign === "center") {
+					//	context.strokeRect(bounds[i].x - cameraOffset.x - (bounds[i].width || cameraSize.width) / 2, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), textField.height);
+					//} else {
 						context.strokeRect(bounds[i].x - cameraOffset.x, bounds[i].y - cameraOffset.y, (bounds[i].width || cameraSize.width), textField.height);
-					}
+					//}
 					context.closePath();
 				}
 			}

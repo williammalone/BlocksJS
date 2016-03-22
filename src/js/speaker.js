@@ -506,7 +506,7 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 					if (speaker.debug) {
 						BLOCKS.debug("audio ready");
 					}
-//BLOCKS.debug("speaker is ready");
+
 					speaker.dispatchEvent("ready");
 				}
 			}
@@ -994,12 +994,29 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 	
 	speaker.createSound = function (spec) {
 		
+		var src;
+		
 		//if (sounds[spec.name] && spec.name !== "BlocksTestSound") {
 		//	BLOCKS.warn("Sound ('" + spec.name + "') already created. Overriding previous sound.");
 		//}
-		
-		if (typeof spec.src !== "string") {
-			BLOCKS.warn("Sound ('" + spec.name + "') src property is not a string.");
+
+		if (typeof spec.src === "string") {
+			src = spec.src;
+		} else if (spec.language) {
+			if (spec.src[spec.language]) {
+				//BLOCKS.debug("Sound ('" + spec.name + "') has a translation for requested language (" + spec.language + ").");
+				src = spec.src[spec.language];
+			} else {
+				if (spec.src.english) {
+					BLOCKS.warn("Sound ('" + spec.name + "') does not have a translation for requested language (" + spec.language + "). Using English version.");
+					src = spec.src.english;
+				} else {
+					BLOCKS.warn("Sound ('" + spec.name + "') does not have a translation for requested language (" + spec.language + ").");
+					return;
+				}
+			}
+		} else {
+			BLOCKS.warn("Sound ('" + spec.name + "') src property is not valid.");
 			return;
 		}
 
@@ -1007,18 +1024,26 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 			name: spec.name,
 			start: spec.start,
 			end: spec.end,
-			loop: spec.loop
+			loop: spec.loop,
+			src: src
 		};
-//BLOCKS.debug("Create Sound: " + spec.name);
-		if (!files[spec.src]) {
-			files[spec.src] = {
-				src: spec.src
+		//BLOCKS.debug("Create Sound: " + spec.name);
+		if (!files[src]) {
+			
+			files[src] = {
+				src: src
 			};
-			loadFile(files[spec.src]);
-//BLOCKS.debug("Load Sound: " + spec.src);
+			if (spec.preload !== false) {
+				
+				// Reset the ready state
+				ready = false;
+			
+				loadFile(files[src]);
+				//BLOCKS.debug("Load Sound: " + spec.src);
+			}
 		}
 		
-		sounds[spec.name].file = files[spec.src];
+		sounds[spec.name].file = files[src];
 	};
 	
 	speaker.getActiveSoundInstances = function () {
@@ -1752,7 +1777,7 @@ BLOCKS.speaker = function (spec) {
 		}
 	}());
 	
-	speaker.createSoundsFromTree = function (spec) {
+	speaker.createSoundsFromTree = function (tree, language) {
 		
 		var traverse = function (obj, callback) {
 			
@@ -1774,9 +1799,13 @@ BLOCKS.speaker = function (spec) {
 			}
 		};
 		
-		traverse(spec, function (key, obj) {
+		traverse(tree, function (key, obj) {
 			// If no extension then assume it is a sound
-			if (key === "src" && typeof obj[key] === "string" && obj[key].indexOf(".") === -1) {
+			if (key === "src" && ((typeof obj[key] === "string" && obj[key].indexOf(".") === -1) || (language && obj[key].english && obj[key].english.indexOf(".") === -1))) {
+				
+				if (language) {
+					obj.language = language;	
+				}
 				speaker.createSound(obj);
 			}
 		});
