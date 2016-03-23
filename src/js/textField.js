@@ -238,7 +238,8 @@ BLOCKS.textField = function (options) {
 				
 					loop = function (renderPos) {
 						
-						var curWidth = 0;
+						var charWidth,
+							curWidth = 0;
 				
 						for (j = spec.startIndex; j < spec.endIndex; j += 1) {
 							
@@ -281,11 +282,14 @@ BLOCKS.textField = function (options) {
 								}
 							}
 							
-							curWidth += context.measureText(paragraphs[i].charList[j].character).width;
+							charWidth = context.measureText(paragraphs[i].charList[j].character).width;
+							
+							curWidth += charWidth;
 							
 							// If Internet Explorer then increase the kerning a little to match other browsers
 							if (isIE) {
-								curWidth += 0.1;
+								curWidth += 0.11;
+								//curWidth += charWidth * 0.013;
 							}
 						}
 						
