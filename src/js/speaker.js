@@ -1031,9 +1031,22 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		if (!files[src]) {
 			
 			files[src] = {
-				src: src
+				src: src,
+				preload: Boolean(spec.preload !== false)
 			};
 			if (spec.preload !== false) {
+				
+				// Reset the ready state
+				ready = false;
+			
+				loadFile(files[src]);
+				//BLOCKS.debug("Load Sound: " + spec.src);
+			}
+		} else {
+			
+			// If the file already belongs to at least one sound but it was not previously set to preload
+			if (spec.preload !== false && files[src].preload === false) {
+				files[src].preload = true;
 				
 				// Reset the ready state
 				ready = false;
@@ -1060,7 +1073,9 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		// Determine load progress
 		for (key in files) {
 			if (files.hasOwnProperty(key)) {
-				totalNumFiles += 1;
+				if (files[key].preload !== false) {
+					totalNumFiles += 1;
+				}
 			}
 		}
 		
@@ -1108,8 +1123,12 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		
 		// Use ogg for Firefox due to a bud decoding buffer data
 		fireFoxDetected = (navigator.userAgent.toLowerCase().indexOf('firefox') > -1);
+		
+//BLOCKS.debug('tmpAudioElement.canPlayType("audio/mp4;").replace(/no/, "")): ' + Boolean(tmpAudioElement.canPlayType("audio/mp4;").replace(/no/, "") && !!(tmpAudioElement.canPlayType)));
 
-		if (tmpAudioElement.canPlayType("audio/mpeg;").replace(/no/, "") && !!(tmpAudioElement.canPlayType) && !fireFoxDetected) {
+		if (false && tmpAudioElement.canPlayType("audio/mp4;").replace(/no/, "") && !!(tmpAudioElement.canPlayType)) {
+			extension = ".m4a";
+		} else if (tmpAudioElement.canPlayType("audio/mpeg;").replace(/no/, "") && !!(tmpAudioElement.canPlayType) && !fireFoxDetected) {
 			extension = ".mp3";
 		} else {
 			extension = ".ogg";
@@ -1129,6 +1148,8 @@ BLOCKS.audio.webAudioPlayer = function (spec) {
 		} else {
 			BLOCKS.error("Cannot create audio context.");
 		}
+		
+//BLOCKS.debug("sample rate: " + ctx.sampleRate);
 		
 		createTrack("default");
 	}());
@@ -1450,7 +1471,7 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 			
 				for (key in files) {
 					if (files.hasOwnProperty(key)) {
-						if (!files[key].loaded) {
+						if (!files[key].loaded && files[key].preload) {
 							
 							// Cancel the request
 							if (files[key].request) {
@@ -1706,7 +1727,9 @@ BLOCKS.audio.multiAudioElementPlayer = function (spec) {
 		// Determine load progress
 		for (key in files) {
 			if (files.hasOwnProperty(key)) {
-				totalNumFiles += 1;
+				if (files[key].preload !== false) {
+					totalNumFiles += 1;
+				}
 			}
 		}
 		
