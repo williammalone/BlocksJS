@@ -381,7 +381,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 			
 			// Animate the page to look like it is turning
 			spec.page.turning = true;
-			pageShadow.visible = true;
+			if (pageShadow) {
+				pageShadow.visible = true;
+			}
 			spec.page.motorize(BLOCKS.motor({
 				object: spec.page,
 				type: "turnRatio",
@@ -390,7 +392,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 				clock: storybook,
 				callback: function () {
 					spec.page.turning = false;
-					pageShadow.visible = false;
+					if (pageShadow) {
+						pageShadow.visible = false;
+					}
 					
 					if (spec.callback) {
 						spec.callback();	
@@ -1001,7 +1005,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 			pageShadow.y = storybook.y;
 			pageShadow.scaleX = storybook.scaleX;
 			pageShadow.scaleY = storybook.scaleY;
-			pageShadow.visible = false;
+			if (pageShadow) {
+				pageShadow.visible = false;
+			}
 		}
 		
 		if (cover) {
