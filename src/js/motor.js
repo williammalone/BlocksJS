@@ -53,40 +53,45 @@ BLOCKS.tween = function (spec) {
 	tween.tick = function () {
 	
 		if (!destroyed) {
-		
-			curTick += 1;
-		
-			tween.dispatchEvent("tick");
 			
-			if (easing === "easeIn") {
-				easeAmt = Math.pow(curTick / duration, 4) * total;
-			} else if (easing === "easeOut") {
-				easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
-			} else if (easing === "easeInOut") {
-				if (curTick / (duration / 2) < 1) {
-					easeAmt = Math.pow(curTick / (duration / 2), 4) * total / 2;
-				} else {
-					easeAmt = -(Math.pow(curTick / (duration / 2) - 2, 4) - 2) * total / 2;
-				}
-			} else if (easing === "easeOutElastic") {
-				easeAmt = (Math.pow(2, -10 * curTick / duration) * Math.sin((curTick / duration - 0.075) * (2 * Math.PI) / 0.3) + 1) * total;
-			} else {
-				easeAmt = current + speed;
-			}
-			object[property] += easeAmt - current;
-
-			if (curTick === duration) {
-
-				object.dirty = true;
-				
+			if (duration === 0) {
 				complete();
-				
 			} else {
+		
+				curTick += 1;
+			
+				tween.dispatchEvent("tick");
+				
+				if (easing === "easeIn") {
+					easeAmt = Math.pow(curTick / duration, 4) * total;
+				} else if (easing === "easeOut") {
+					easeAmt = -(Math.pow(curTick / duration - 1, 4) - 1) * total;
+				} else if (easing === "easeInOut") {
+					if (curTick / (duration / 2) < 1) {
+						easeAmt = Math.pow(curTick / (duration / 2), 4) * total / 2;
+					} else {
+						easeAmt = -(Math.pow(curTick / (duration / 2) - 2, 4) - 2) * total / 2;
+					}
+				} else if (easing === "easeOutElastic") {
+					easeAmt = (Math.pow(2, -10 * curTick / duration) * Math.sin((curTick / duration - 0.075) * (2 * Math.PI) / 0.3) + 1) * total;
+				} else {
+					easeAmt = current + speed;
+				}
+				object[property] += easeAmt - current;
 	
-				current = easeAmt;
-				if (Math.abs(lastDirtyValue - current) > dirtyTolerance) {
-					lastDirtyValue = current;
+				if (curTick === duration) {
+	
 					object.dirty = true;
+					
+					complete();
+					
+				} else {
+		
+					current = easeAmt;
+					if (Math.abs(lastDirtyValue - current) > dirtyTolerance) {
+						lastDirtyValue = current;
+						object.dirty = true;
+					}
 				}
 			}
 		}
