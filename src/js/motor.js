@@ -35,7 +35,19 @@ BLOCKS.tween = function (spec) {
 		speed,
 		easeAmt,
 		curTick,
-		destroyed;
+		destroyed,
+		
+		complete = function () {
+		
+			tween.dispatchEvent("complete", tween);
+				
+			if (callback) {
+				callback();
+			}
+			if (tween) {
+				tween.destroy();
+			}
+		};
 	
 	// Public Methods
 	tween.tick = function () {
@@ -67,14 +79,8 @@ BLOCKS.tween = function (spec) {
 
 				object.dirty = true;
 				
-				tween.dispatchEvent("complete", tween);
+				complete();
 				
-				if (callback) {
-					callback();
-				}
-				if (tween) {
-					tween.destroy();
-				}
 			} else {
 	
 				current = easeAmt;
@@ -110,9 +116,10 @@ BLOCKS.tween = function (spec) {
 			return null;
 		}
 		
-		if (!duration) {
+		if (duration === null || duration === undefined) {
+			
 			BLOCKS.error("Duration is required for tween property: " + property);
-			return null;
+			return null;	
 		} 
 		
 		if (!total) {
@@ -131,7 +138,12 @@ BLOCKS.tween = function (spec) {
 			clock.addEventListener("tick", tween.tick);
 		}
 		
-		speed = total / duration;
+		// Don't divide by zero
+		if (duration === 0) {
+			speed = 0;
+		} else {
+			speed = total / duration;
+		}
 		
 		curTick = 0;
 	}());
