@@ -207,28 +207,31 @@ BLOCKS.storybookPage = function (options, language) {
 				
 				var key,
 					newSpec = {};
+					
+				if (spec) {
 				
-				for (key in spec) {
-					if (spec.hasOwnProperty(key)) {
-						newSpec[key] = spec[key];
-					}
-				}
-				// Support different specs for different languages
-				if (language && spec[language]) {
-					for (key in spec[language]) {
-						if (spec[language].hasOwnProperty(key)) {
-							newSpec[key] = spec[language][key];
+					for (key in spec) {
+						if (spec.hasOwnProperty(key)) {
+							newSpec[key] = spec[key];
 						}
 					}
-				} else if (spec.english) {
-					for (key in spec.english) {
-						if (spec.english.hasOwnProperty(key)) {
-							newSpec[key] = spec.english[key];
+					// Support different specs for different languages
+					if (language && spec[language]) {
+						for (key in spec[language]) {
+							if (spec[language].hasOwnProperty(key)) {
+								newSpec[key] = spec[language][key];
+							}
+						}
+					} else if (spec.english) {
+						for (key in spec.english) {
+							if (spec.english.hasOwnProperty(key)) {
+								newSpec[key] = spec.english[key];
+							}
 						}
 					}
+					
+					return newSpec;
 				}
-				
-				return newSpec;
 			};
 		
 		options = options || {};
@@ -384,6 +387,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 			if (pageShadow) {
 				pageShadow.visible = true;
 			}
+
 			spec.page.motorize(BLOCKS.motor({
 				object: spec.page,
 				type: "turnRatio",
@@ -391,6 +395,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 				duration: storybook.pageTurnDuration,
 				clock: storybook,
 				callback: function () {
+				
 					spec.page.turning = false;
 					if (pageShadow) {
 						pageShadow.visible = false;
@@ -662,7 +667,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 				page: pages[navigating.curPageNum], 
 				direction: "left",
 				callback: function () {
-					
+
 					updateBoard(navigating.targetPageNum);
 					
 					turnPage({
