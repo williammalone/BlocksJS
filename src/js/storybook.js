@@ -323,6 +323,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 		},
 		
 		getViewsDirty = function () {
+			
 			var i;
 			
 			for (i = 0; i < pages.length; i += 1) {
@@ -385,6 +386,8 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 			
 			if (storybook.pageTurnDuration === 0) {
 				
+				overlay.setSlice(Math.floor(navigating.targetPageNum / 2));
+				
 				spec.page.turnRatio = scaleAmount;
 						
 				if (spec.callback) {
@@ -393,8 +396,6 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 				// No page turn animation so return
 				return;
 			}
-			
-			
 			
 			// Animate the page to look like it is turning
 			spec.page.turning = true;
