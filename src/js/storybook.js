@@ -380,7 +380,21 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 				BLOCKS.error("turnPage function requires a page to turn");	
 			}
 			
+			// Determine the scale of the page (flipped horizontally if negative)
 			scaleAmount = (spec.direction === "left" || spec.direction === -1) ? -1 : 1;
+			
+			if (storybook.pageTurnDuration === 0) {
+				
+				spec.page.turnRatio = scaleAmount;
+						
+				if (spec.callback) {
+					spec.callback();	
+				}
+				// No page turn animation so return
+				return;
+			}
+			
+			
 			
 			// Animate the page to look like it is turning
 			spec.page.turning = true;
@@ -395,7 +409,7 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 				duration: storybook.pageTurnDuration,
 				clock: storybook,
 				callback: function () {
-				
+			
 					spec.page.turning = false;
 					if (pageShadow) {
 						pageShadow.visible = false;
