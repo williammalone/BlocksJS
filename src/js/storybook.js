@@ -772,6 +772,21 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 			return curPageNum;
 		}
 	});
+	
+	Object.defineProperty(storybook, "overlay", {
+		get: function () {
+			return overlay;
+		},
+		set: function (value) {
+			
+			if (overlay !== value) {
+				
+				overlay = value;
+				
+				setViewsDirty(true);
+			}
+		}
+	});
 
 	Object.defineProperty(storybook, "layer", {
 		get: function () {
