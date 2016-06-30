@@ -386,7 +386,9 @@ BLOCKS.storybook = function (storybookSpec, collectionSpec, language) {
 			
 			if (storybook.pageTurnDuration === 0) {
 				
-				overlay.setSlice(Math.floor(navigating.targetPageNum / 2));
+				if (overlay) {
+					overlay.setSlice(Math.floor(navigating.targetPageNum / 2));
+				}
 				
 				spec.page.turnRatio = scaleAmount;
 						
